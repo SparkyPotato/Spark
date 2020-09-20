@@ -1,0 +1,59 @@
+project "Spark"
+	language "C++"
+	cppdialect "C++20"
+	staticruntime "on"
+	
+	characterset "Unicode"
+	
+	targetdir ("../Binaries/%{cfg.buildcfg}/Spark")
+	objdir ("../Intermediate/%{cfg.buildcfg}/Spark")
+	
+	pchheader "SparkPCH.h"
+	pchsource "PCH/SparkPCH.cpp"
+	
+	filter "system:windows"
+		systemversion "latest"
+		entrypoint "wWinMainCRTStartup"
+		
+	filter "configurations:*Lib"
+		kind "StaticLib"
+		defines "IS_LIB"
+	
+	filter "configurations:*Editor"
+		kind "WindowedApp"
+		defines "IS_EDITOR"
+		
+	filter "configurations:*Console"
+		kind "ConsoleApp"
+		defines { "IS_CONSOLE", "IS_EDITOR" }
+		
+	filter "configurations:*Release"
+		optimize "speed"
+		symbols "off"
+		runtime "Release"
+		defines "CONFIG_RELEASE"
+		
+	filter "configurations:*Debug"
+		optimize "off"
+		symbols "on"
+		runtime "Debug"
+		defines "CONFIG_DEBUG"
+		
+	filter {}
+	
+	includedirs
+	{
+		"Source",
+		"PCH"
+	}
+	
+	files
+	{
+		"Source/**.h",
+		"Source/**.cpp",
+		"PCH/**"
+	}
+	
+	filter { "files:**.cpp", "files:not **.build.cpp", "files:not PCH/SparkPCH.cpp" }
+		flags "ExcludeFromBuild"
+	
