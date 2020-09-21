@@ -15,29 +15,29 @@ project "Spark"
 		systemversion "latest"
 		entrypoint "wWinMainCRTStartup"
 		
-	filter "configurations:*Lib"
+	filter "configurations:*Lib*"
 		kind "StaticLib"
 		defines "IS_LIB"
 	
-	filter "configurations:*Editor"
+	filter "configurations:*Editor*"
 		kind "WindowedApp"
 		defines "IS_EDITOR"
 		
-	filter "configurations:*Console"
+	filter "configurations:*Console*"
 		kind "ConsoleApp"
 		defines { "IS_CONSOLE", "IS_EDITOR" }
 		
-	filter "configurations:*Release"
+	filter "configurations:*Release*"
 		optimize "speed"
 		symbols "off"
 		runtime "Release"
-		defines "CONFIG_RELEASE"
+		defines "IS_RELEASE"
 		
-	filter "configurations:*Debug"
+	filter "configurations:*Debug*"
 		optimize "off"
 		symbols "on"
 		runtime "Debug"
-		defines "CONFIG_DEBUG"
+		defines "IS_DEBUG"
 		
 	filter {}
 	

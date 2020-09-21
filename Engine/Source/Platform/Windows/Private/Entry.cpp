@@ -2,5 +2,8 @@
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
-	// Entry point
+	// Initialize the memory manager
+	Spark::Memory::Init();
+
+	Spark::Memory::Shutdown();
 }
