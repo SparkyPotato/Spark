@@ -9,4 +9,6 @@ workspace "SparkEngine"
 		"Release Editor"
 	}
 	
+	flags "FatalWarnings"
+	
 	include "Engine"

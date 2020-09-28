@@ -13,8 +13,8 @@ namespace Spark
 		static void Init();
 		static void Shutdown();
 
-		static void AllocSize(size_t size);
-		static void DeallocSize(size_t size);
+		static void* AllocSize(size_t size);
+		static void Dealloc(void* pointer);
 
 	private:
 		static Memory* s_Memory;

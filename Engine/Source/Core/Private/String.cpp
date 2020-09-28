@@ -169,23 +169,71 @@ namespace Spark
 		return *this;
 	}
 
-	String& String::operator--() noexcept
+	String String::operator--() noexcept
+	{
+		String string = *this;
+		m_DataPointer[--m_UsedMemory] = L'\0';
+
+		return string;
+	}
+
+	String& String::operator--(int) noexcept
 	{
 		m_DataPointer[--m_UsedMemory] = L'\0';
 
 		return *this;
 	}
 
-	Char& String::operator[](unsigned int at) noexcept
+	Char& String::operator[](unsigned int offset) noexcept
 	{
-		SPARK_ASSERT(at < m_UsedMemory);
+		SPARK_ASSERT(offset < m_UsedMemory);
 
-		return m_DataPointer[at];
+		return m_DataPointer[offset];
 	}
 
 	String::operator const Char*() const
 	{
 		return m_DataPointer;
+	}
+
+	String::Iterator<Char> String::begin()
+	{
+		return Iterator<Char>(m_DataPointer, this);
+	}
+
+	String::Iterator<Char> String::end()
+	{
+		return Iterator<Char>(m_DataPointer + m_UsedMemory, this);
+	}
+
+	String::Iterator<const Char> String::cbegin()
+	{
+		return Iterator<const Char>(m_DataPointer, this);
+	}
+
+	String::Iterator<const Char> String::cend()
+	{
+		return Iterator<const Char>(m_DataPointer + m_UsedMemory, this);
+	}
+
+	String::ReverseIterator<Char> String::rbegin()
+	{
+		return ReverseIterator<Char>(m_DataPointer + Length(), this);
+	}
+
+	String::ReverseIterator<Char> String::rend()
+	{
+		return ReverseIterator<Char>(m_DataPointer - 1, this);
+	}
+
+	String::ReverseIterator<const Char> String::crbegin()
+	{
+		return ReverseIterator<const Char>(m_DataPointer + Length(), this);
+	}
+
+	String::ReverseIterator<const Char> String::crend()
+	{
+		return ReverseIterator<const Char>(m_DataPointer - 1, this);
 	}
 
 	String::operator std::wstring() const
@@ -205,7 +253,7 @@ namespace Spark
 
 	void String::Reserve(unsigned int characters)
 	{
-		SPARK_ASSERT(characters >= m_AllocatedSize);
+		//SPARK_ASSERT(characters >= m_AllocatedSize);
 		Realloc(characters + 1);
 	}
 
@@ -231,6 +279,66 @@ namespace Spark
 		}
 
 		return i;
+	}
+
+	String::Iterator<const Char> String::Find(Char character, unsigned int occurrence) noexcept
+	{
+		if (occurrence == 0) return cend();
+
+		for (auto& c : *this)
+		{
+			if (c == character)
+			{
+				--occurrence;
+				if (occurrence == 0) return Iterator<const Char>(&c, this);
+			}
+		}
+
+		return cend();
+	}
+
+	String::Iterator<const Char> String::FindAt(Char character, Iterator<Char> start, unsigned int occurence) noexcept
+	{
+		if (occurence == 0) return cend();
+
+		while (start != end())
+		{
+			if (*start == character)
+			{
+				--occurence;
+				if (occurence == 0) return Iterator<const Char>(&(*start), this);
+			}
+			++start;
+		}
+
+		return cend();
+	}
+
+	String::Iterator<const Char> String::FindAt(Char character, Iterator<const Char> start, unsigned int occurence) noexcept
+	{
+		if (occurence == 0) return cend();
+
+		while (start != cend())
+		{
+			if (*start == character)
+			{
+				--occurence;
+				if (occurence == 0) return Iterator<const Char>(&(*start), this);
+			}
+			++start;
+		}
+
+		return cend();
+	}
+
+	void String::Insert(Char character, unsigned int index) noexcept
+	{
+		UNIMPLEMENTED_VOID;
+	}
+
+	Char String::Erase(unsigned int index) noexcept
+	{
+		UNIMPLEMENTED;
 	}
 
 	void String::Realloc(unsigned int sizeRequired)

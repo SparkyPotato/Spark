@@ -12,10 +12,12 @@
 
 #ifdef ON_WINDOWS
 
-#if !IS_DEBUG
-#define NDEBUG
-#endif
+#if IS_DEBUG
 #include <assert.h>
-#define SPARK_ASSERT(x) assert(x); __debugbreak()
+#define SPARK_ASSERT(x) do { assert(x); __debugbreak(); } while(false)
+#endif
 
 #endif
+
+#define UNIMPLEMENTED SPARK_ASSERT(false); return 0
+#define UNIMPLEMENTED_VOID SPARK_ASSERT(false)

@@ -21,21 +21,33 @@ namespace Spark
 		s_Memory = nullptr;
 	}
 
-	void Memory::AllocSize(size_t size)
+	void* Memory::AllocSize(size_t size)
 	{
+		auto pointer = (size_t*) malloc(size + sizeof(size_t));
+		pointer[0] = size;
+
 		if (s_Memory)
 		{
 			s_Memory->m_MemoryAllocatedBytes += size;
 			s_Memory->m_AllocationCount++;
 		}
+
+		return &pointer[1];
 	}
 
-	void Memory::DeallocSize(size_t size)
+	void Memory::Dealloc(void* pointer)
 	{
-		if (s_Memory)
+		if (pointer)
 		{
-			s_Memory->m_MemoryAllocatedBytes -= size;
-			s_Memory->m_DeallocationCount++;
+			auto ptr = (size_t*) pointer;
+
+			if (s_Memory)
+			{
+				s_Memory->m_MemoryAllocatedBytes -= ptr[-1];
+				s_Memory->m_DeallocationCount++;
+			}
+
+			free(--ptr);
 		}
 	}
 
@@ -46,41 +58,21 @@ namespace Spark
 // Count all allocations and deallocations if we are in debug mode
 void* operator new(size_t size)
 {
-	auto pointer = (size_t*) malloc(size + sizeof(size_t));
-	pointer[0] = size;
-	Spark::Memory::AllocSize(size);
-
-	return &pointer[1];
+	return Spark::Memory::AllocSize(size);
 }
 
 void* operator new[](size_t size)
 {
-	auto pointer = (size_t*) malloc(size + sizeof(size_t));
-	pointer[0] = size;
-	Spark::Memory::AllocSize(size);
-
-	return &pointer[1];
+	return Spark::Memory::AllocSize(size);
 }
 
 void operator delete(void* pointer) noexcept
 {
-	if (pointer)
-	{
-		auto ptr = (size_t*) pointer;
-		Spark::Memory::DeallocSize(ptr[-1]);
-
-		free(--ptr);
-	}
+	Spark::Memory::Dealloc(pointer);
 }
 
 void operator delete[](void* pointer) noexcept
 {
-	if (pointer)
-	{
-		auto ptr = (size_t*) pointer;
-		Spark::Memory::DeallocSize(ptr[-1]);
-
-		free(--ptr);
-	}
+	Spark::Memory::Dealloc(pointer);
 }
 #endif
