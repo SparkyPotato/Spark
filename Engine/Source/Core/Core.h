@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef SPARK_CORE
-#define SPARK_CORE
-
 #ifdef _WIN32
 	#ifdef _WIN64
 		#define ON_WINDOWS
@@ -12,5 +9,13 @@
 #else
 	#error "Windows is the only supported platform!"
 #endif
+
+#ifdef ON_WINDOWS
+
+#if !IS_DEBUG
+#define NDEBUG
+#endif
+#include <assert.h>
+#define SPARK_ASSERT(x) assert(x); __debugbreak()
 
 #endif

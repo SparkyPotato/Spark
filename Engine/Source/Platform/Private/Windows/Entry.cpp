@@ -1,9 +1,12 @@
-#include <Windows.h>
-
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
-	// Initialize the memory manager
-	Spark::Memory::Init();
+	using namespace Spark;
 
-	Spark::Memory::Shutdown();
+	// Initialize the memory manager
+	Memory::Init();
+
+	
+
+	// Shut the memory manager down
+	Memory::Shutdown();
 }

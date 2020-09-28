@@ -1,4 +1,4 @@
-workspace "Spark Engine"
+workspace "SparkEngine"
 	architecture "x86_64"
 	configurations
 	{

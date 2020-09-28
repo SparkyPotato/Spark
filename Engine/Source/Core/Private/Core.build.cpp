@@ -1,3 +1,4 @@
 #include "SparkPCH.h"
 
-#include "Core/Private/Memory.cpp"
+#include "Memory.cpp"
+#include "String.cpp"
