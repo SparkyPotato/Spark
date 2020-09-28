@@ -25,6 +25,7 @@ namespace Spark
 		// Append operators
 		String operator+(Char append) const noexcept;
 		String operator+(const String& append) const noexcept;
+		String operator+(const Char* append) noexcept;
 
 		// Remove the last character
 		String& operator--() noexcept;

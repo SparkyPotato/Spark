@@ -105,7 +105,23 @@ namespace Spark
 		Char* data = new Char[m_UsedMemory + append.Length()];
 		memcpy(data, m_DataPointer, Length() * sizeof(Char)); // Copy our data
 		// Copy the other string's data (including null)
-		memcpy(data + Length(), append.m_DataPointer, m_UsedMemory * sizeof(Char));
+		memcpy(data + Length(), append.m_DataPointer, append.m_UsedMemory * sizeof(Char));
+
+		String temp(data); // Create string, deallocate, and return
+		delete[] data;
+
+		return temp;
+	}
+
+	String String::operator+(const Char* append) noexcept
+	{
+		unsigned int size = GetCharPointerLength(append);
+
+		// Allocate a buffer with the size of the strings + 1 extra for the null
+		Char* data = new Char[Length() + size];
+		memcpy(data, m_DataPointer, Length() * sizeof(Char)); // Copy our data
+		// Copy the other string's data (including null)
+		memcpy(data + Length(), append, size * sizeof(Char));
 
 		String temp(data); // Create string, deallocate, and return
 		delete[] data;
@@ -156,6 +172,8 @@ namespace Spark
 	String& String::operator--() noexcept
 	{
 		m_DataPointer[--m_UsedMemory] = L'\0';
+
+		return *this;
 	}
 
 	Char& String::operator[](unsigned int at) noexcept
