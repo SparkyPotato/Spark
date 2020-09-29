@@ -13,6 +13,14 @@ namespace Spark
 		Fatal = 6
 	};
 
+	struct Log
+	{
+		String CategoryName;
+		LogLevel Level;
+		String FormattedMessage;
+		DateTime Time;
+	};
+
 	template<LogLevel LeastLevel>
 	class LogCategory
 	{
@@ -21,10 +29,9 @@ namespace Spark
 			: m_CategoryName(Name)
 		{}
 
-		inline bool CheckIfShouldLog(LogLevel level)
-		{
-			return level >= LeastLevel;
-		}
+		inline bool ShouldLog(LogLevel level) { return level >= LeastLevel; }
+
+		const String& GetCategoryName() { return m_CategoryName; }
 
 	private:
 		String m_CategoryName;

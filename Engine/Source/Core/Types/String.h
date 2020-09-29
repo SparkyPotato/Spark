@@ -21,13 +21,13 @@ namespace Spark
 	public:
 		// Use the STRING(x) macro to convert to Char
 		String() noexcept;
-		String(unsigned int size) noexcept;
+		String(uint size) noexcept;
 		String(const Char* charArray) noexcept;
 		String(const String& other) noexcept;
 		String(const std::wstring& stdString) noexcept;
 		String(String&& other) noexcept;
 		// Generates a substring from the given indices (inclusive)
-		String(const String& other, unsigned int start, unsigned int end) noexcept;
+		String(const String& other, uint start, uint end) noexcept;
 
 		~String();
 
@@ -48,11 +48,11 @@ namespace Spark
 		String& operator+=(const String& append) noexcept;
 		String& operator+=(const Char* append) noexcept;
 
-		Char& operator[](unsigned int offset) noexcept;
+		Char& operator[](uint offset) noexcept;
 
 		// Conversion operators
-		operator const Char*() const;
-		operator std::wstring() const;
+		explicit operator const Char*() const;
+		explicit operator std::wstring() const;
 
 		// Iterators
 		Iterator<Char> begin() const noexcept;
@@ -66,13 +66,13 @@ namespace Spark
 		ReverseIterator<const Char> crend() const noexcept;
 
 		// Does not include the terminating null character
-		unsigned int Length() const;
+		uint Length() const;
 
 		// The max amount of characters the string can hold without needing a reallocation
-		unsigned int Capacity() const;
+		uint Capacity() const;
 
 		// Reserve characters, so reallocation is not required till the limit is reached
-		void Reserve(unsigned int characters);
+		void Reserve(uint characters);
 
 		// Clear the entire string
 		void Clear();
@@ -81,14 +81,16 @@ namespace Spark
 		bool IsEmpty();
 
 		// Ensure the string is null-terminated. Does not include the ending null character
-		unsigned int GetCharPointerLength(const Char* string);
+		uint GetCharPointerLength(const Char* string);
+
+		const Char* GetCharPointer() const;
 
 		// Finds the specified occurrence of the character and returns a constant iterator to it. Defaults to the first occurrence
-		Iterator<const Char> Find(Char character, unsigned int occurence = 1) const noexcept;
+		Iterator<const Char> Find(Char character, uint occurence = 1) const noexcept;
 
 		// Finds the character occurrence, starting the search at the iterator given. Defaults to the first occurence
-		Iterator<const Char> FindAt(Char character, Iterator<Char> start, unsigned int occurence = 1) const noexcept;
-		Iterator<const Char> FindAt(Char character, Iterator<const Char> start, unsigned int occurence = 1) const noexcept;
+		Iterator<const Char> FindAt(Char character, Iterator<Char> start, uint occurence = 1) const noexcept;
+		Iterator<const Char> FindAt(Char character, Iterator<const Char> start, uint occurence = 1) const noexcept;
 
 		// Inserts the given character at the iterator position
 		template<typename T>
@@ -96,7 +98,7 @@ namespace Spark
 		template<typename T>
 		void Insert(Char character, ReverseIterator<T> iterator) noexcept;
 		// Inserts the given character at the index
-		void Insert(Char character, unsigned int index) noexcept;
+		void Insert(Char character, uint index) noexcept;
 
 		// Erases the character at the iterator position and returns it
 		template<typename T>
@@ -104,7 +106,7 @@ namespace Spark
 		template<typename T>
 		Char Erase(ReverseIterator<T> iterator) noexcept;
 		// Erases the character at the index and returns it
-		Char Erase(unsigned int index) noexcept;
+		Char Erase(uint index) noexcept;
 
 		// Erases the substring between the two iterators (inclusive), and returns the erased string
 		template<typename T>
@@ -112,14 +114,16 @@ namespace Spark
 		template<typename T>
 		String Erase(ReverseIterator<T> start, ReverseIterator<T> end) noexcept;
 		// Erases the substring between the two indices (inclusive), and returns the erased string
-		String Erase(unsigned int start, unsigned int end) noexcept;
+		String Erase(uint start, uint end) noexcept;
+
+		String& Reverse() noexcept;
 
 	private:
-		void Realloc(unsigned int sizeRequired);
+		void Realloc(uint sizeRequired);
 
 		Char* m_DataPointer = nullptr;
-		unsigned int m_UsedMemory = 0;
-		unsigned int m_AllocatedSize = 0;
+		uint m_UsedMemory = 0;
+		uint m_AllocatedSize = 0;
 
 	public:
 		template<typename Type>
@@ -153,7 +157,7 @@ namespace Spark
 				return *this; 
 			}
 
-			Type& operator[](unsigned int offset) { return m_Pointer[offset]; }
+			Type& operator[](uint offset) { return m_Pointer[offset]; }
 
 			Type& operator*() noexcept { return *m_Pointer; }
 			Type* operator->() noexcept { return m_Pointer; }
@@ -197,7 +201,7 @@ namespace Spark
 				return *this;
 			}
 
-			Type& operator[](unsigned int offset) { return m_Pointer[offset]; }
+			Type& operator[](uint offset) { return m_Pointer[offset]; }
 
 			Type& operator*() noexcept { return *m_Pointer; }
 			Type* operator->() noexcept { return m_Pointer; }
@@ -209,6 +213,45 @@ namespace Spark
 			Type* m_Pointer;
 			const String* m_Owner;
 		};
+	};
+
+	class StringStream
+	{
+	public:
+		StringStream() = default;
+
+		const String& GetString();
+
+		StringStream& operator<<(Char character) noexcept;
+		StringStream& operator<<(const String& string) noexcept;
+
+		StringStream& operator<<(int integer) noexcept;
+		StringStream& operator<<(float decimal) noexcept;
+		StringStream& operator<<(double decimal) noexcept;
+
+	private:
+		String m_InternalString;
+	};
+
+	class Formatter
+	{
+	public:
+		Formatter() = default;
+
+		template<typename ...Args>
+		static String Format(String format, Args... args)
+		{
+			int i = 100;
+			String temp(i);
+			
+			while (swprintf_s(const_cast<Char*>(temp.GetCharPointer()), i, format.GetCharPointer(), args...) == i)
+			{
+				i *= 2;
+				temp.Reserve(i);
+			}
+
+			return temp;
+		}
 	};
 
 	template<typename T>

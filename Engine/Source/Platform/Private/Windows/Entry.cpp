@@ -6,7 +6,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	Memory::Init();
 	Logger::Init();
 	
-	
+	int a = 500;
+
+	DEFINE_LOG_CATEGORY_FILE(Log, Warning);
+	SPARK_LOG(Log, Warning, STRING("This is me %d"), a);
 
 	// Shut the logger and memory manager down
 	Logger::Shutdown();

@@ -1,5 +1,4 @@
 #include "Core/Types/String.h"
-#include <iostream>
 
 namespace Spark
 {
@@ -7,18 +6,20 @@ namespace Spark
 	{
 		Realloc(10);
 		m_DataPointer[0] = L'\0';
+		m_UsedMemory = 1;
 	}
 
-	String::String(unsigned int size) noexcept
+	String::String(uint size) noexcept
 	{
 		Realloc(size + 1);
 		m_DataPointer[0] = L'\0';
+		m_UsedMemory = 1;
 	}
 
 	String::String(const Char* charArray) noexcept
 	{
 		// Allocate memory
-		unsigned int arraySize = GetCharPointerLength(charArray);
+		uint arraySize = GetCharPointerLength(charArray);
 
 		Realloc(arraySize);
 		m_UsedMemory = arraySize;
@@ -51,21 +52,21 @@ namespace Spark
 	String::String(const std::wstring& stdString) noexcept
 	{
 		// Allocate memory
-		Realloc((unsigned int) stdString.size() + 1);
+		Realloc((uint) stdString.size() + 1);
 		m_UsedMemory = m_AllocatedSize;
 
 		// Copy
 		memcpy(m_DataPointer, stdString.data(), (stdString.size() + 1) * sizeof(Char));
 	}
 
-	String::String(const String& other, unsigned int start, unsigned int end) noexcept
+	String::String(const String& other, uint start, uint end) noexcept
 	{
 		SPARK_ASSERT(start <= end);
 
 		Realloc(end - start + 2);
 		m_UsedMemory = end - start + 2;
 
-		memcpy(m_DataPointer, &other[start], (end - start  + 1) * sizeof(Char));
+		memcpy(m_DataPointer, other.GetCharPointer() + start, (end - start  + 1) * sizeof(Char));
 
 		m_DataPointer[m_UsedMemory - 1] = L'\0';
 	}
@@ -129,7 +130,7 @@ namespace Spark
 
 	String String::operator+(const Char* append) noexcept
 	{
-		unsigned int size = GetCharPointerLength(append);
+		uint size = GetCharPointerLength(append);
 
 		// Allocate a buffer with the size of the strings + 1 extra for the null
 		Char* data = new Char[Length() + size];
@@ -157,7 +158,7 @@ namespace Spark
 
 	String& String::operator+=(const String& append) noexcept
 	{
-		unsigned int originalLength = Length();
+		uint originalLength = Length();
 
 		// Make sure we have enough space for both strings
 		Realloc(originalLength + append.m_UsedMemory);
@@ -171,8 +172,8 @@ namespace Spark
 
 	String& String::operator+=(const Char* append) noexcept
 	{
-		unsigned int originalLength = Length();
-		unsigned int size = GetCharPointerLength(append);
+		uint originalLength = Length();
+		uint size = GetCharPointerLength(append);
 
 		// Make sure we have enough space for both strings
 		Realloc(originalLength + size);
@@ -198,14 +199,14 @@ namespace Spark
 		return *this;
 	}
 
-	Char& String::operator[](unsigned int offset) noexcept
+	Char& String::operator[](uint offset) noexcept
 	{
 		SPARK_ASSERT(offset < m_UsedMemory);
 
 		return m_DataPointer[offset];
 	}
 
-	String::operator const Char*() const
+	String::operator const Char* () const
 	{
 		return m_DataPointer;
 	}
@@ -255,17 +256,17 @@ namespace Spark
 		return ReverseIterator<const Char>(m_DataPointer - 1, this);
 	}
 
-	unsigned int String::Length() const
+	uint String::Length() const
 	{
 		return m_UsedMemory - 1;
 	}
 
-	unsigned int String::Capacity() const
+	uint String::Capacity() const
 	{
 		return m_AllocatedSize - 1;
 	}
 
-	void String::Reserve(unsigned int characters)
+	void String::Reserve(uint characters)
 	{
 		if (characters > m_AllocatedSize)
 		{
@@ -284,7 +285,7 @@ namespace Spark
 		return m_UsedMemory == 0;
 	}
 
-	unsigned int String::GetCharPointerLength(const Char* string)
+	uint String::GetCharPointerLength(const Char* string)
 	{
 		const Char* pointer = string;
 		int i = 0;
@@ -297,7 +298,12 @@ namespace Spark
 		return i + 1;
 	}
 
-	String::Iterator<const Char> String::Find(Char character, unsigned int occurrence) const noexcept
+	const Char* String::GetCharPointer() const
+	{
+		return m_DataPointer;
+	}
+
+	String::Iterator<const Char> String::Find(Char character, uint occurrence) const noexcept
 	{
 		if (occurrence == 0) return cend();
 
@@ -313,7 +319,7 @@ namespace Spark
 		return cend();
 	}
 
-	String::Iterator<const Char> String::FindAt(Char character, Iterator<Char> start, unsigned int occurence) const noexcept
+	String::Iterator<const Char> String::FindAt(Char character, Iterator<Char> start, uint occurence) const noexcept
 	{
 		if (occurence == 0) return cend();
 
@@ -330,7 +336,7 @@ namespace Spark
 		return cend();
 	}
 
-	String::Iterator<const Char> String::FindAt(Char character, Iterator<const Char> start, unsigned int occurence) const noexcept
+	String::Iterator<const Char> String::FindAt(Char character, Iterator<const Char> start, uint occurence) const noexcept
 	{
 		if (occurence == 0) return cend();
 
@@ -347,16 +353,16 @@ namespace Spark
 		return cend();
 	}
 
-	void String::Insert(Char character, unsigned int index) noexcept
+	void String::Insert(Char character, uint index) noexcept
 	{
 		UNIMPLEMENTED(void);
 	}
 
-	Char String::Erase(unsigned int index) noexcept
+	Char String::Erase(uint index) noexcept
 	{
 		Char temp = m_DataPointer[index];
 
-		for (unsigned int i = index; i < Length(); i++)
+		for (uint i = index; i < Length(); i++)
 		{
 			m_DataPointer[i] = m_DataPointer[i + 1];
 		}
@@ -364,12 +370,24 @@ namespace Spark
 		return temp;
 	}
 
-	String String::Erase(unsigned int start, unsigned int end) noexcept
+	String String::Erase(uint start, uint end) noexcept
 	{
 		return String();
 	}
 
-	void String::Realloc(unsigned int sizeRequired)
+	String& String::Reverse() noexcept
+	{
+		for (uint i = 0; i < Length() / 2; ++i)
+		{
+			Char temp = m_DataPointer[i];
+			m_DataPointer[i] = m_DataPointer[Length() - 1 - i];
+			m_DataPointer[Length() - 1 - i] = temp;
+		}
+
+		return *this;
+	}
+
+	void String::Realloc(uint sizeRequired)
 	{
 		if (m_AllocatedSize > sizeRequired)
 		{
@@ -386,5 +404,53 @@ namespace Spark
 		Memory::AllocString(m_AllocatedSize * sizeof(Char));
 
 		m_DataPointer = newPointer;
+	}
+
+	const String& StringStream::GetString()
+	{
+		return m_InternalString;
+	}
+
+	StringStream& StringStream::operator<<(Char character) noexcept
+	{
+		m_InternalString += character;
+
+		return *this;
+	}
+
+	StringStream& StringStream::operator<<(const String& string) noexcept
+	{
+		m_InternalString += string;
+
+		return *this;
+	}
+
+	StringStream& StringStream::operator<<(int integer) noexcept
+	{
+		int i = 0, n = integer;
+		while (n != 0)
+		{
+			i++;
+			n /= 10;
+		}
+
+		Char* temp = new Char[i + 2];
+		swprintf_s(temp, i + 2, STRING("%d"), integer);
+
+		m_InternalString += temp;
+
+		delete temp;
+
+		return *this;
+	}
+
+	StringStream& StringStream::operator<<(float decimal) noexcept
+	{
+		return *this;
+	}
+
+	StringStream& StringStream::operator<<(double decimal) noexcept
+	{
+		return *this;
 	}
 }
