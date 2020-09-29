@@ -1,6 +1,4 @@
 #pragma once
-#include "Platform/PlatformInterface.h" // Character encoding is platform specific and also defines string macros
-
 #include <string>
 
 namespace Spark
@@ -28,6 +26,8 @@ namespace Spark
 		String(const String& other) noexcept;
 		String(const std::wstring& stdString) noexcept;
 		String(String&& other) noexcept;
+		// Generates a substring from the given indices (inclusive)
+		String(const String& other, unsigned int start, unsigned int end) noexcept;
 
 		~String();
 
@@ -55,15 +55,15 @@ namespace Spark
 		operator std::wstring() const;
 
 		// Iterators
-		Iterator<Char> begin();
-		Iterator<Char> end();
-		Iterator<const Char> cbegin();
-		Iterator<const Char> cend();
+		Iterator<Char> begin() const noexcept;
+		Iterator<Char> end() const noexcept;
+		Iterator<const Char> cbegin() const noexcept;
+		Iterator<const Char> cend() const noexcept;
 
-		ReverseIterator<Char> rbegin();
-		ReverseIterator<Char> rend();
-		ReverseIterator<const Char> crbegin();
-		ReverseIterator<const Char> crend();
+		ReverseIterator<Char> rbegin() const noexcept;
+		ReverseIterator<Char> rend() const noexcept;
+		ReverseIterator<const Char> crbegin() const noexcept;
+		ReverseIterator<const Char> crend() const noexcept;
 
 		// Does not include the terminating null character
 		unsigned int Length() const;
@@ -84,11 +84,11 @@ namespace Spark
 		unsigned int GetCharPointerLength(const Char* string);
 
 		// Finds the specified occurrence of the character and returns a constant iterator to it. Defaults to the first occurrence
-		Iterator<const Char> Find(Char character, unsigned int occurence = 1) noexcept;
+		Iterator<const Char> Find(Char character, unsigned int occurence = 1) const noexcept;
 
 		// Finds the character occurrence, starting the search at the iterator given. Defaults to the first occurence
-		Iterator<const Char> FindAt(Char character, Iterator<Char> start, unsigned int occurence = 1) noexcept;
-		Iterator<const Char> FindAt(Char character, Iterator<const Char> start, unsigned int occurence = 1) noexcept;
+		Iterator<const Char> FindAt(Char character, Iterator<Char> start, unsigned int occurence = 1) const noexcept;
+		Iterator<const Char> FindAt(Char character, Iterator<const Char> start, unsigned int occurence = 1) const noexcept;
 
 		// Inserts the given character at the iterator position
 		template<typename T>
@@ -106,6 +106,14 @@ namespace Spark
 		// Erases the character at the index and returns it
 		Char Erase(unsigned int index) noexcept;
 
+		// Erases the substring between the two iterators (inclusive), and returns the erased string
+		template<typename T>
+		String Erase(Iterator<T> start, Iterator<T> end) noexcept;
+		template<typename T>
+		String Erase(ReverseIterator<T> start, ReverseIterator<T> end) noexcept;
+		// Erases the substring between the two indices (inclusive), and returns the erased string
+		String Erase(unsigned int start, unsigned int end) noexcept;
+
 	private:
 		void Realloc(unsigned int sizeRequired);
 
@@ -118,7 +126,7 @@ namespace Spark
 		class Iterator
 		{
 		public:
-			Iterator<Type>(Type* pointer, String* owner) noexcept
+			Iterator<Type>(Type* pointer, const String* owner) noexcept
 				: m_Pointer(pointer), m_Owner(owner)
 			{}
 
@@ -155,14 +163,14 @@ namespace Spark
 
 		private:
 			Type* m_Pointer;
-			String* m_Owner;
+			const String* m_Owner;
 		};
 
 		template<typename Type>
 		class ReverseIterator
 		{
 		public:
-			ReverseIterator(Type* pointer, String* owner) noexcept
+			ReverseIterator(Type* pointer, const String* owner) noexcept
 				: m_Pointer(pointer), m_Owner(owner)
 			{}
 
@@ -199,31 +207,43 @@ namespace Spark
 
 		private:
 			Type* m_Pointer;
-			String* m_Owner;
+			const String* m_Owner;
 		};
 	};
 
 	template<typename T>
 	Char String::Erase(ReverseIterator<T> iterator) noexcept
 	{
-		UNIMPLEMENTED;
+		UNIMPLEMENTED(Char);
 	}
 
 	template<typename T>
 	Char String::Erase(Iterator<T> iterator) noexcept
 	{
-		UNIMPLEMENTED;
+		UNIMPLEMENTED(Char);
+	}
+
+	template<typename T>
+	String String::Erase(Iterator<T> start, Iterator<T> end) noexcept
+	{
+		UNIMPLEMENTED(String)
+	}
+
+	template<typename T>
+	String String::Erase(ReverseIterator<T> start, ReverseIterator<T> end) noexcept
+	{
+		UNIMPLEMENTED(String)
 	}
 
 	template<typename T>
 	void String::Insert(Char character, ReverseIterator<T> iterator) noexcept
 	{
-		UNIMPLEMENTED;
+		UNIMPLEMENTED(void);
 	}
 
 	template<typename T>
 	void String::Insert(Char character, Iterator<T> iterator) noexcept
 	{
-		UNIMPLEMENTED;
+		UNIMPLEMENTED(void);
 	}
 }

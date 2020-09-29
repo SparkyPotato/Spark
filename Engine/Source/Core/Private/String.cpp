@@ -6,11 +6,13 @@ namespace Spark
 	String::String() noexcept
 	{
 		Realloc(10);
+		m_DataPointer[0] = L'\0';
 	}
 
 	String::String(unsigned int size) noexcept
 	{
 		Realloc(size + 1);
+		m_DataPointer[0] = L'\0';
 	}
 
 	String::String(const Char* charArray) noexcept
@@ -54,6 +56,18 @@ namespace Spark
 
 		// Copy
 		memcpy(m_DataPointer, stdString.data(), (stdString.size() + 1) * sizeof(Char));
+	}
+
+	String::String(const String& other, unsigned int start, unsigned int end) noexcept
+	{
+		SPARK_ASSERT(start <= end);
+
+		Realloc(end - start + 2);
+		m_UsedMemory = end - start + 2;
+
+		memcpy(m_DataPointer, &other[start], (end - start  + 1) * sizeof(Char));
+
+		m_DataPointer[m_UsedMemory - 1] = L'\0';
 	}
 
 	String::~String()
@@ -196,49 +210,49 @@ namespace Spark
 		return m_DataPointer;
 	}
 
-	String::Iterator<Char> String::begin()
+	String::operator std::wstring() const
+	{
+		return std::wstring(m_DataPointer);
+	}
+
+	String::Iterator<Char> String::begin() const noexcept
 	{
 		return Iterator<Char>(m_DataPointer, this);
 	}
 
-	String::Iterator<Char> String::end()
+	String::Iterator<Char> String::end() const noexcept
 	{
 		return Iterator<Char>(m_DataPointer + m_UsedMemory, this);
 	}
 
-	String::Iterator<const Char> String::cbegin()
+	String::Iterator<const Char> String::cbegin() const noexcept
 	{
 		return Iterator<const Char>(m_DataPointer, this);
 	}
 
-	String::Iterator<const Char> String::cend()
+	String::Iterator<const Char> String::cend() const noexcept
 	{
 		return Iterator<const Char>(m_DataPointer + m_UsedMemory, this);
 	}
 
-	String::ReverseIterator<Char> String::rbegin()
+	String::ReverseIterator<Char> String::rbegin() const noexcept
 	{
 		return ReverseIterator<Char>(m_DataPointer + Length(), this);
 	}
 
-	String::ReverseIterator<Char> String::rend()
+	String::ReverseIterator<Char> String::rend() const noexcept
 	{
 		return ReverseIterator<Char>(m_DataPointer - 1, this);
 	}
 
-	String::ReverseIterator<const Char> String::crbegin()
+	String::ReverseIterator<const Char> String::crbegin() const noexcept
 	{
 		return ReverseIterator<const Char>(m_DataPointer + Length(), this);
 	}
 
-	String::ReverseIterator<const Char> String::crend()
+	String::ReverseIterator<const Char> String::crend() const noexcept
 	{
 		return ReverseIterator<const Char>(m_DataPointer - 1, this);
-	}
-
-	String::operator std::wstring() const
-	{
-		return std::wstring(m_DataPointer);
 	}
 
 	unsigned int String::Length() const
@@ -253,8 +267,10 @@ namespace Spark
 
 	void String::Reserve(unsigned int characters)
 	{
-		//SPARK_ASSERT(characters >= m_AllocatedSize);
-		Realloc(characters + 1);
+		if (characters > m_AllocatedSize)
+		{
+			Realloc(characters + 1);
+		}
 	}
 
 	void String::Clear()
@@ -278,14 +294,14 @@ namespace Spark
 			pointer++;
 		}
 
-		return i;
+		return i + 1;
 	}
 
-	String::Iterator<const Char> String::Find(Char character, unsigned int occurrence) noexcept
+	String::Iterator<const Char> String::Find(Char character, unsigned int occurrence) const noexcept
 	{
 		if (occurrence == 0) return cend();
 
-		for (auto& c : *this)
+		for (const auto& c : *this)
 		{
 			if (c == character)
 			{
@@ -297,7 +313,7 @@ namespace Spark
 		return cend();
 	}
 
-	String::Iterator<const Char> String::FindAt(Char character, Iterator<Char> start, unsigned int occurence) noexcept
+	String::Iterator<const Char> String::FindAt(Char character, Iterator<Char> start, unsigned int occurence) const noexcept
 	{
 		if (occurence == 0) return cend();
 
@@ -314,7 +330,7 @@ namespace Spark
 		return cend();
 	}
 
-	String::Iterator<const Char> String::FindAt(Char character, Iterator<const Char> start, unsigned int occurence) noexcept
+	String::Iterator<const Char> String::FindAt(Char character, Iterator<const Char> start, unsigned int occurence) const noexcept
 	{
 		if (occurence == 0) return cend();
 
@@ -333,12 +349,24 @@ namespace Spark
 
 	void String::Insert(Char character, unsigned int index) noexcept
 	{
-		UNIMPLEMENTED_VOID;
+		UNIMPLEMENTED(void);
 	}
 
 	Char String::Erase(unsigned int index) noexcept
 	{
-		UNIMPLEMENTED;
+		Char temp = m_DataPointer[index];
+
+		for (unsigned int i = index; i < Length(); i++)
+		{
+			m_DataPointer[i] = m_DataPointer[i + 1];
+		}
+
+		return temp;
+	}
+
+	String String::Erase(unsigned int start, unsigned int end) noexcept
+	{
+		return String();
 	}
 
 	void String::Realloc(unsigned int sizeRequired)
