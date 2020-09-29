@@ -2,11 +2,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 {
 	using namespace Spark;
 
-	// Initialize the memory manager
+	// Initialize the memory manager and logger
 	Memory::Init();
-
+	Logger::Init();
+	
 	
 
-	// Shut the memory manager down
+	// Shut the logger and memory manager down
+	Logger::Shutdown();
 	Memory::Shutdown();
 }

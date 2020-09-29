@@ -16,11 +16,16 @@ namespace Spark
 		static void* AllocSize(size_t size);
 		static void Dealloc(void* pointer);
 
+		static inline void AllocString(size_t size);
+		static inline void DeallocString(size_t size);
+
 	private:
 		static Memory* s_Memory;
 
 		size_t m_MemoryAllocatedBytes;
 		size_t m_AllocationCount;
 		size_t m_DeallocationCount;
+
+		size_t m_StringAllocation;
 	};
 }

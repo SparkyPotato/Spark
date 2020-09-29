@@ -119,7 +119,7 @@ namespace Spark
 
 		Char* m_DataPointer = nullptr;
 		unsigned int m_UsedMemory = 0;
-		unsigned int m_AllocatedSize = 1;
+		unsigned int m_AllocatedSize = 0;
 
 	public:
 		template<typename Type>

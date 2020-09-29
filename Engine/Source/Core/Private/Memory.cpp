@@ -26,11 +26,13 @@ namespace Spark
 		auto pointer = (size_t*) malloc(size + sizeof(size_t));
 		pointer[0] = size;
 
+		#ifdef IS_DEBUG
 		if (s_Memory)
 		{
 			s_Memory->m_MemoryAllocatedBytes += size;
 			s_Memory->m_AllocationCount++;
 		}
+		#endif
 
 		return &pointer[1];
 	}
@@ -41,21 +43,32 @@ namespace Spark
 		{
 			auto ptr = (size_t*) pointer;
 
+			#ifdef IS_DEBUG
 			if (s_Memory)
 			{
 				s_Memory->m_MemoryAllocatedBytes -= ptr[-1];
 				s_Memory->m_DeallocationCount++;
 			}
+			#endif
 
 			free(--ptr);
 		}
 	}
 
+	void Memory::AllocString(size_t size)
+	{
+		s_Memory->m_StringAllocation += size;
+	}
+
+	void Memory::DeallocString(size_t size)
+	{
+		s_Memory->m_StringAllocation -= size;
+	}
+
 	Memory* Memory::s_Memory = nullptr;
 }
 
-#ifdef IS_DEBUG
-// Count all allocations and deallocations if we are in debug mode
+// Route allocations to the memory manager
 void* operator new(size_t size)
 {
 	return Spark::Memory::AllocSize(size);
@@ -75,4 +88,3 @@ void operator delete[](void* pointer) noexcept
 {
 	Spark::Memory::Dealloc(pointer);
 }
-#endif

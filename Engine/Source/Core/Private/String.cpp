@@ -376,11 +376,14 @@ namespace Spark
 			return;
 		}
 
-		while (m_AllocatedSize < sizeRequired) m_AllocatedSize *= 2;
+		Memory::DeallocString(m_AllocatedSize * sizeof(Char));
+
+		while (m_AllocatedSize < sizeRequired) (m_AllocatedSize *= 2) += 1;
 
 		auto newPointer = new Char[m_AllocatedSize];
 		memcpy(newPointer, m_DataPointer, m_UsedMemory * sizeof(Char));
 		delete[] m_DataPointer;
+		Memory::AllocString(m_AllocatedSize * sizeof(Char));
 
 		m_DataPointer = newPointer;
 	}
