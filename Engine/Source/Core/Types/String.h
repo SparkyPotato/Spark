@@ -1,36 +1,37 @@
 #pragma once
-#include <string>
 
 namespace Spark
 {
-	// Stores strings internally in Unicode
+	/*
+		Dynamic, Heap-allocated Unicode-encoded string. Use the STRING(x) macro to convert to Unicode.
+		For example, String str(STRING("Hello")) will work, but String str("Hello") will not.
+	*/
 	class String
 	{
 	public:
-		// Iterator stuff
-		template<typename Type>
+		// Iterator forward declarations
 		class Iterator;
-		template<typename Type>
+		class ConstIterator;
 		class ReverseIterator;
-
-		friend class Iterator<Char>;
-		friend class Iterator<const Char>;
-		friend class ReverseIterator<Char>;
-		friend class ReverseIterator<const Char>;
+		class ConstReverseIterator;
 
 	public:
-		// Use the STRING(x) macro to convert to Char
+		// Constructs a default string with space for 10 characters
 		String() noexcept;
+		// Constructs a string with space for size characters + 1 for the terminating null
 		String(uint size) noexcept;
+		// Constructs a string from a STRING()ified const char*
 		String(const Char* charArray) noexcept;
+		// Copy constructor
 		String(const String& other) noexcept;
-		String(const std::wstring& stdString) noexcept;
+		// Move constructor
 		String(String&& other) noexcept;
-		// Generates a substring from the given indices (inclusive)
+		// Generates a substring from the given indices (both inclusive)
 		String(const String& other, uint start, uint end) noexcept;
 
 		~String();
 
+		// Copy and move assignment operators
 		String& operator=(const String& other) noexcept;
 		String& operator=(String&& other) noexcept;
 
@@ -39,31 +40,31 @@ namespace Spark
 		String operator+(const String& append) const noexcept;
 		String operator+(const Char* append) noexcept;
 
-		// Remove the last character
-		String operator--() noexcept;
-		String& operator--(int) noexcept;
+		// Removes the last character (not the terminating null!)
+		String& operator--() noexcept; // Prefix
+		String operator--(int) noexcept; // Postfix
 
 		// Append and assign operators
 		String& operator+=(Char append) noexcept;
 		String& operator+=(const String& append) noexcept;
 		String& operator+=(const Char* append) noexcept;
 
+		// Get the character at the index
 		Char& operator[](uint offset) noexcept;
 
-		// Conversion operators
+		// Explicitly convert a string to a const Char* (static_cast<const Char*>), can use GetCharPointer() as well
 		explicit operator const Char*() const;
-		explicit operator std::wstring() const;
 
 		// Iterators
-		Iterator<Char> begin() const noexcept;
-		Iterator<Char> end() const noexcept;
-		Iterator<const Char> cbegin() const noexcept;
-		Iterator<const Char> cend() const noexcept;
+		Iterator begin() const noexcept;
+		Iterator end() const noexcept;
+		ConstIterator cbegin() const noexcept;
+		ConstIterator cend() const noexcept;
 
-		ReverseIterator<Char> rbegin() const noexcept;
-		ReverseIterator<Char> rend() const noexcept;
-		ReverseIterator<const Char> crbegin() const noexcept;
-		ReverseIterator<const Char> crend() const noexcept;
+		ReverseIterator rbegin() const noexcept;
+		ReverseIterator rend() const noexcept;
+		ConstReverseIterator crbegin() const noexcept;
+		ConstReverseIterator crend() const noexcept;
 
 		// Does not include the terminating null character
 		uint Length() const;
@@ -80,137 +81,181 @@ namespace Spark
 		// Is the string empty?
 		bool IsEmpty();
 
-		// Ensure the string is null-terminated. Does not include the ending null character
+		// Ensure the string is null-terminated. Does not include the ending null character in the length
 		uint GetCharPointerLength(const Char* string);
 
+		// Converts the string to a const Char*, can use the explicit conversion operator as well
 		const Char* GetCharPointer() const;
+		// Gets access to the raw string data, which can be modified
+		Char* GetDataPointer();
 
 		// Finds the specified occurrence of the character and returns a constant iterator to it. Defaults to the first occurrence
-		Iterator<const Char> Find(Char character, uint occurence = 1) const noexcept;
+		ConstIterator Find(Char character, uint occurence = 1) const noexcept;
+		// Finds the specified occurence of the string and returns a constant iterator to the first character of it. Defaults to the first occurence
+		ConstIterator Find(const String& string, uint occurence = 1) const noexcept;
 
 		// Finds the character occurrence, starting the search at the iterator given. Defaults to the first occurence
-		Iterator<const Char> FindAt(Char character, Iterator<Char> start, uint occurence = 1) const noexcept;
-		Iterator<const Char> FindAt(Char character, Iterator<const Char> start, uint occurence = 1) const noexcept;
+		ConstIterator FindAt(Char character, Iterator start, uint occurence = 1) const noexcept;
+		ConstIterator FindAt(Char character, ConstIterator start, uint occurence = 1) const noexcept;
+		// Finds the character occurrence, starting the backwards search at the iterator given. Defaults to the first occurence
+		ConstIterator FindAt(Char character, ReverseIterator start, uint occurence = 1) const noexcept;
+		ConstIterator FindAt(Char character, ConstReverseIterator start, uint occurence = 1) const noexcept;
+
+		// Finds the string occurence, starting the search at the given iterator. No reverse iterator version exists
+		ConstIterator FindAt(const String& character, Iterator start, uint occurence = 1) const noexcept;
+		ConstIterator FindAt(const String& character, ConstIterator start, uint occurence = 1) const noexcept;
 
 		// Inserts the given character at the iterator position
-		template<typename T>
-		void Insert(Char character, Iterator<T> iterator) noexcept;
-		template<typename T>
-		void Insert(Char character, ReverseIterator<T> iterator) noexcept;
+		void Insert(Char character, Iterator iterator) noexcept;
+		void Insert(Char character, ConstIterator iterator) noexcept;
+		void Insert(Char character, ReverseIterator iterator) noexcept;
+		void Insert(Char character, ConstReverseIterator iterator) noexcept;
 		// Inserts the given character at the index
 		void Insert(Char character, uint index) noexcept;
 
+		// Inserts the given string at the iterator position
+		void Insert(String character, Iterator iterator) noexcept;
+		void Insert(String character, ConstIterator iterator) noexcept;
+		void Insert(String character, ReverseIterator iterator) noexcept;
+		void Insert(String character, ConstReverseIterator iterator) noexcept;
+		// Inserts the given string at the index
+		void Insert(String character, uint index) noexcept;
+
 		// Erases the character at the iterator position and returns it
-		template<typename T>
-		Char Erase(Iterator<T> iterator) noexcept;
-		template<typename T>
-		Char Erase(ReverseIterator<T> iterator) noexcept;
+		Char Erase(Iterator iterator) noexcept;
+		Char Erase(ConstIterator iterator) noexcept;
+		Char Erase(ReverseIterator iterator) noexcept;
+		Char Erase(ConstReverseIterator iterator) noexcept;
 		// Erases the character at the index and returns it
 		Char Erase(uint index) noexcept;
 
-		// Erases the substring between the two iterators (inclusive), and returns the erased string
-		template<typename T>
-		String Erase(Iterator<T> start, Iterator<T> end) noexcept;
-		template<typename T>
-		String Erase(ReverseIterator<T> start, ReverseIterator<T> end) noexcept;
-		// Erases the substring between the two indices (inclusive), and returns the erased string
+		// Erases the substring between the two iterators (both inclusive), and returns the erased string
+		String Erase(Iterator start, Iterator end) noexcept;
+		String Erase(ConstIterator start, ConstIterator end) noexcept;
+		String Erase(ReverseIterator start, ReverseIterator end) noexcept;
+		String Erase(ConstReverseIterator start, ConstReverseIterator end) noexcept;
+		// Erases the substring between the two indices (both inclusive), and returns the erased string
 		String Erase(uint start, uint end) noexcept;
 
+		// Reverses the order of the entire string
 		String& Reverse() noexcept;
 
 	private:
+		// Ensure the string has enough space for sizeRequired characters (including terminating null), and reallocate if required
 		void Realloc(uint sizeRequired);
 
 		Char* m_DataPointer = nullptr;
+		// Amount of memory used in the allocated region. m_DataPointer[m_UsedMemory - 1] is always null ('\0')
 		uint m_UsedMemory = 0;
+		// Total allocated memory
 		uint m_AllocatedSize = 0;
 
 	public:
-		template<typename Type>
 		class Iterator
 		{
 		public:
-			Iterator<Type>(Type* pointer, const String* owner) noexcept
-				: m_Pointer(pointer), m_Owner(owner)
-			{}
+			Iterator(Char* pointer, const String* owner) noexcept;
 
-			Iterator<Type> operator++() noexcept 
-			{
-				auto self = *this;  
-				++m_Pointer; 
-				return self; 
-			}
-			Iterator<Type>& operator++(int) noexcept 
-			{ 
-				++m_Pointer; 
-				return *this; 
-			}
-			Iterator<Type> operator--() noexcept
-			{ 
-				auto self = *this; 
-				--m_Pointer; 
-				return self; 
-			}
-			Iterator<Type>& operator--(int) noexcept 
-			{ 
-				--m_Pointer; 
-				return *this; 
-			}
+			Iterator operator+(uint offset) noexcept;
 
-			Type& operator[](uint offset) { return m_Pointer[offset]; }
+			Iterator operator-(uint offset) noexcept;
 
-			Type& operator*() noexcept { return *m_Pointer; }
-			Type* operator->() noexcept { return m_Pointer; }
+			Iterator& operator++() noexcept;
+			Iterator operator++(int) noexcept;
+			Iterator& operator--() noexcept;
+			Iterator operator--(int) noexcept;
 
-			bool operator==(const Iterator<Type>& other) noexcept { return m_Pointer == other.m_Pointer; }
-			bool operator!=(const Iterator<Type>& other) noexcept { return m_Pointer != other.m_Pointer; }
+			Char& operator[](uint offset);
+
+			Char& operator*() noexcept;
+			Char* operator->() noexcept;
+
+			bool operator==(const Iterator& other) noexcept;
+			bool operator!=(const Iterator& other) noexcept;
 
 		private:
-			Type* m_Pointer;
+			Char* m_Pointer;
 			const String* m_Owner;
 		};
 
-		template<typename Type>
+		class ConstIterator
+		{
+		public:
+			ConstIterator(const Char* pointer, const String* owner) noexcept;
+
+			ConstIterator operator+(uint offset) noexcept;
+
+			ConstIterator operator-(uint offset) noexcept;
+
+			ConstIterator& operator++() noexcept;
+			ConstIterator operator++(int) noexcept;
+			ConstIterator& operator--() noexcept;
+			ConstIterator operator--(int) noexcept;
+
+			const Char& operator[](uint offset);
+
+			const Char& operator*() noexcept;
+			const Char* operator->() noexcept;
+
+			bool operator==(const ConstIterator& other) noexcept;
+			bool operator!=(const ConstIterator& other) noexcept;
+
+		private:
+			const Char* m_Pointer;
+			const String* m_Owner;
+		};
+
 		class ReverseIterator
 		{
 		public:
-			ReverseIterator(Type* pointer, const String* owner) noexcept
-				: m_Pointer(pointer), m_Owner(owner)
-			{}
+			ReverseIterator(Char* pointer, const String* owner) noexcept;
 
-			ReverseIterator operator++() noexcept
-			{
-				auto self = *this;
-				--m_Pointer;
-				return self;
-			}
-			ReverseIterator& operator++(int) noexcept
-			{
-				--m_Pointer;
-				return *this;
-			}
-			ReverseIterator operator--() noexcept
-			{
-				auto self = *this;
-				++m_Pointer;
-				return self;
-			}
-			ReverseIterator& operator--(int) noexcept
-			{
-				++m_Pointer;
-				return *this;
-			}
+			ReverseIterator operator+(uint offset) noexcept;
 
-			Type& operator[](uint offset) { return m_Pointer[offset]; }
+			ReverseIterator operator-(uint offset) noexcept;
 
-			Type& operator*() noexcept { return *m_Pointer; }
-			Type* operator->() noexcept { return m_Pointer; }
+			ReverseIterator& operator++() noexcept;
+			ReverseIterator operator++(int) noexcept;
+			ReverseIterator& operator--() noexcept;
+			ReverseIterator operator--(int) noexcept;
 
-			bool operator==(const ReverseIterator& other) noexcept { return m_Pointer == other.m_Pointer; }
-			bool operator!=(const ReverseIterator& other) noexcept { return m_Pointer != other.m_Pointer; }
+			Char& operator[](uint offset);
+
+			Char& operator*() noexcept;
+			Char* operator->() noexcept;
+
+			bool operator==(const ReverseIterator& other) noexcept;
+			bool operator!=(const ReverseIterator& other) noexcept;
 
 		private:
-			Type* m_Pointer;
+			Char* m_Pointer;
+			const String* m_Owner;
+		};
+
+		class ConstReverseIterator
+		{
+		public:
+			ConstReverseIterator(const Char* pointer, const String* owner) noexcept;
+
+			ConstReverseIterator operator+(uint offset) noexcept;
+
+			ConstReverseIterator operator-(uint offset) noexcept;
+
+			ConstReverseIterator& operator++() noexcept;
+			ConstReverseIterator operator++(int) noexcept;
+			ConstReverseIterator& operator--() noexcept;
+			ConstReverseIterator operator--(int) noexcept;
+
+			const Char& operator[](uint offset);
+
+			const Char& operator*() noexcept;
+			const Char* operator->() noexcept;
+
+			bool operator==(const ConstReverseIterator& other) noexcept;
+			bool operator!=(const ConstReverseIterator& other) noexcept;
+
+		private:
+			const Char* m_Pointer;
 			const String* m_Owner;
 		};
 	};
@@ -236,15 +281,17 @@ namespace Spark
 	class Formatter
 	{
 	public:
-		Formatter() = default;
+		Formatter() = delete; // We don't construct Formatters yet
 
+		// Format the given string using swprintf_s. Defaults to assuming the string is 100 characters long,
+		// but doubles the size every failed attempt and tries to format again
 		template<typename ...Args>
 		static String Format(String format, Args... args)
 		{
 			int i = 100;
 			String temp(i);
 			
-			while (swprintf_s(const_cast<Char*>(temp.GetCharPointer()), i, format.GetCharPointer(), args...) == i)
+			while (swprintf_s(temp.GetDataPointer(), i, format.GetCharPointer(), args...) == i)
 			{
 				i *= 2;
 				temp.Reserve(i);
@@ -253,40 +300,4 @@ namespace Spark
 			return temp;
 		}
 	};
-
-	template<typename T>
-	Char String::Erase(ReverseIterator<T> iterator) noexcept
-	{
-		UNIMPLEMENTED(Char);
-	}
-
-	template<typename T>
-	Char String::Erase(Iterator<T> iterator) noexcept
-	{
-		UNIMPLEMENTED(Char);
-	}
-
-	template<typename T>
-	String String::Erase(Iterator<T> start, Iterator<T> end) noexcept
-	{
-		UNIMPLEMENTED(String)
-	}
-
-	template<typename T>
-	String String::Erase(ReverseIterator<T> start, ReverseIterator<T> end) noexcept
-	{
-		UNIMPLEMENTED(String)
-	}
-
-	template<typename T>
-	void String::Insert(Char character, ReverseIterator<T> iterator) noexcept
-	{
-		UNIMPLEMENTED(void);
-	}
-
-	template<typename T>
-	void String::Insert(Char character, Iterator<T> iterator) noexcept
-	{
-		UNIMPLEMENTED(void);
-	}
 }

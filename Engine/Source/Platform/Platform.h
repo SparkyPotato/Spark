@@ -50,4 +50,4 @@ namespace Spark
 	#endif
 #endif
 
-#define UNIMPLEMENTED(type) SPARK_ASSERT(false); return (type) 0
+#define UNIMPLEMENTED(Char) SPARK_ASSERT(false); return (Char) 0

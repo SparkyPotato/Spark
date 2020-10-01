@@ -6,7 +6,7 @@ namespace Spark
 	class LogSink
 	{
 	public:
-		virtual void SinkLog(const Log& log) = 0;
+		virtual void PushLog(const Log& log) = 0;
 	};
 
 	class Logger

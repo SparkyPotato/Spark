@@ -6,11 +6,12 @@ namespace Spark
 	{
 		Verbose = 0,
 		Trace = 1,
-		Debug = 2,
-		Info = 3,
-		Warning = 4,
-		Error = 5,
-		Fatal = 6
+		Log = 2,
+		Debug = 3,
+		Info = 4,
+		Warning = 5,
+		Error = 6,
+		Fatal = 7
 	};
 
 	struct Log

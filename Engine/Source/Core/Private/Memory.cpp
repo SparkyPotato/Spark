@@ -2,6 +2,8 @@
 
 namespace Spark
 {
+	Memory* Memory::s_Memory = nullptr;
+
 	void Memory::Init()
 	{
 		if (s_Memory) return;
@@ -57,15 +59,17 @@ namespace Spark
 
 	void Memory::AllocString(size_t size)
 	{
-		s_Memory->m_StringAllocation += size;
+		#ifdef IS_DEBUG
+		if (s_Memory) s_Memory->m_StringAllocation += size;
+		#endif
 	}
 
 	void Memory::DeallocString(size_t size)
 	{
-		s_Memory->m_StringAllocation -= size;
+		#ifdef IS_DEBUG
+		if (s_Memory) s_Memory->m_StringAllocation -= size;
+		#endif
 	}
-
-	Memory* Memory::s_Memory = nullptr;
 }
 
 // Route allocations to the memory manager

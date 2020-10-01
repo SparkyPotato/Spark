@@ -8,7 +8,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	
 	int a = 500;
 
-	DEFINE_LOG_CATEGORY_FILE(Log, Warning);
+	DEFINE_LOG_CATEGORY_FILE(Log, Trace);
 	SPARK_LOG(Log, Warning, STRING("This is me %d"), a);
 
 	// Shut the logger and memory manager down
