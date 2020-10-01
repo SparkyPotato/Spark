@@ -288,14 +288,10 @@ namespace Spark
 		template<typename ...Args>
 		static String Format(String format, Args... args)
 		{
-			int i = 100;
+			int i = format.Length() * 2 + 50;
 			String temp(i);
 			
-			while (swprintf_s(temp.GetDataPointer(), i, format.GetCharPointer(), args...) == i)
-			{
-				i *= 2;
-				temp.Reserve(i);
-			}
+			swprintf_s(temp.GetDataPointer(), i, format.GetCharPointer(), args...);
 
 			return temp;
 		}
