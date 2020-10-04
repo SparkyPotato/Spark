@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	
+	<Type Name="Spark::String">
+		<DisplayString Condition="m_UsedMemory == 1">Empty</DisplayString>
+		<DisplayString Condition="m_UsedMemory &gt; 1">{m_DataPointer,su}</DisplayString>
+		<Expand>
+			<Item Name="Size">m_UsedMemory - 1</Item>
+			<Item Name="Capacity">m_AllocatedSize - 1</Item>
+		</Expand>
+	</Type>
+	
+	
+	<Type Name="Spark::Array&lt;*&gt;">
+		<DisplayString Condition="m_CreatedObjects == 0">Empty</DisplayString>
+		<DisplayString Condition="m_CreatedObjects &gt; 0">Size = {m_CreatedObjects}</DisplayString>
+		<Expand>
+			<Item Name="Capacity">m_AllocatedSpace</Item>
+			<ArrayItems>
+				<Size>m_CreatedObjects</Size>
+				<ValuePointer>m_DataPointer</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	
+</AutoVisualizer>

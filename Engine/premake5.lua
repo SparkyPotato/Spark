@@ -56,4 +56,7 @@ project "Spark"
 	
 	filter { "files:**.cpp", "files:not **.build.cpp", "files:not PCH/SparkPCH.cpp" }
 		flags "ExcludeFromBuild"
+		
+	filter "action:vs*"
+		files { "**.natvis" }
 	

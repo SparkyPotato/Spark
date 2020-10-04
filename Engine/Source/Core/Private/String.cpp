@@ -723,7 +723,7 @@ namespace Spark
 
 		m_InternalString += temp;
 
-		delete temp;
+		delete[] temp;
 
 		return *this;
 	}

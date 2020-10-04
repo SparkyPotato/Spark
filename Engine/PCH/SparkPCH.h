@@ -7,6 +7,7 @@
 
 #include "Core/Types/String.h"
 #include "Core/Types/Time.h"
+#include "Core/Types/Container.h"
 
 #include "Core/Memory/Memory.h"
 

@@ -26,13 +26,13 @@ namespace Spark
 	class LogCategory
 	{
 	public:
-		LogCategory(String Name)
+		explicit LogCategory(String Name)
 			: m_CategoryName(Name)
 		{}
 
 		inline bool ShouldLog(LogLevel level) { return level >= LeastLevel; }
 
-		const String& GetCategoryName() { return m_CategoryName; }
+		const String& GetCategoryName() const { return m_CategoryName; }
 
 	private:
 		String m_CategoryName;
