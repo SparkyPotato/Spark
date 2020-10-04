@@ -12,7 +12,7 @@ namespace Spark
 		auto object = malloc(sizeof(Memory));
 		memset(object, 0, sizeof(Memory));
 
-		s_Memory = (Memory*) object;
+		s_Memory = reinterpret_cast<Memory*>(object);
 	}
 
 	void Memory::Shutdown()
@@ -25,7 +25,7 @@ namespace Spark
 
 	void* Memory::AllocSize(size_t size)
 	{
-		auto pointer = (size_t*) malloc(size + sizeof(size_t));
+		auto pointer = reinterpret_cast<size_t*>(malloc(size + sizeof(size_t)));
 		pointer[0] = size;
 
 		#ifdef IS_DEBUG
@@ -43,7 +43,7 @@ namespace Spark
 	{
 		if (pointer)
 		{
-			auto ptr = (size_t*) pointer;
+			auto ptr = reinterpret_cast<size_t*>(pointer);
 
 			#ifdef IS_DEBUG
 			if (s_Memory)

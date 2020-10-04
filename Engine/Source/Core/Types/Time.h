@@ -10,11 +10,15 @@ namespace Spark
 	struct DateTime
 	{
 		uint16 Year;
-		uint8 Month;
-		uint8 Day;
-		uint8 Hour;
-		uint8 Minute;
-		uint8 Second;
+		uint16 Month;
+		uint16 Day;
+		uint16 Hour;
+		uint16 Minute;
+		uint16 Second;
 		uint16 Millisecond;
+
+		String ToString() const noexcept;
+
+		static DateTime Now();
 	};
 }

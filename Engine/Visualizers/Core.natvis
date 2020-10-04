@@ -2,6 +2,7 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 	
 	<Type Name="Spark::String">
+		<DisplayString Condition="m_UsedMemory == 0">Invalid</DisplayString>
 		<DisplayString Condition="m_UsedMemory == 1">Empty</DisplayString>
 		<DisplayString Condition="m_UsedMemory &gt; 1">{m_DataPointer,su}</DisplayString>
 		<Expand>

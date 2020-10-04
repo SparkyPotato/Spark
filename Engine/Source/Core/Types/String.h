@@ -15,6 +15,8 @@ namespace Spark
 		class ReverseIterator;
 		class ConstReverseIterator;
 
+		friend class Formatter;
+
 	public:
 		// Constructs a default string with space for 10 characters
 		String() noexcept;
@@ -154,7 +156,7 @@ namespace Spark
 		class Iterator
 		{
 		public:
-			Iterator(Char* pointer, const String* owner) noexcept;
+			Iterator(Char* pointer) noexcept;
 
 			Iterator operator+(uint offset) noexcept;
 
@@ -175,13 +177,12 @@ namespace Spark
 
 		private:
 			Char* m_Pointer;
-			const String* m_Owner;
 		};
 
 		class ConstIterator
 		{
 		public:
-			ConstIterator(const Char* pointer, const String* owner) noexcept;
+			ConstIterator(const Char* pointer) noexcept;
 
 			ConstIterator operator+(uint offset) noexcept;
 
@@ -202,13 +203,12 @@ namespace Spark
 
 		private:
 			const Char* m_Pointer;
-			const String* m_Owner;
 		};
 
 		class ReverseIterator
 		{
 		public:
-			ReverseIterator(Char* pointer, const String* owner) noexcept;
+			ReverseIterator(Char* pointer) noexcept;
 
 			ReverseIterator operator+(uint offset) noexcept;
 
@@ -229,13 +229,12 @@ namespace Spark
 
 		private:
 			Char* m_Pointer;
-			const String* m_Owner;
 		};
 
 		class ConstReverseIterator
 		{
 		public:
-			ConstReverseIterator(const Char* pointer, const String* owner) noexcept;
+			ConstReverseIterator(const Char* pointer) noexcept;
 
 			ConstReverseIterator operator+(uint offset) noexcept;
 
@@ -256,7 +255,6 @@ namespace Spark
 
 		private:
 			const Char* m_Pointer;
-			const String* m_Owner;
 		};
 	};
 
@@ -286,12 +284,13 @@ namespace Spark
 		// Format the given string using swprintf_s. Defaults to assuming the string is 100 characters long,
 		// but doubles the size every failed attempt and tries to format again
 		template<typename ...Args>
-		static String Format(String format, Args... args)
+		static String Format(const String& format, Args... args)
 		{
-			int i = format.Length() * 2 + 50;
+			int i = format.Length() * 2 + 100;
 			String temp(i);
 			
-			swprintf_s(temp.GetDataPointer(), i, format.GetCharPointer(), args...);
+			uint written = swprintf_s(temp.GetDataPointer(), i, format.GetCharPointer(), args...);
+			temp.m_UsedMemory = written + 1;
 
 			return temp;
 		}

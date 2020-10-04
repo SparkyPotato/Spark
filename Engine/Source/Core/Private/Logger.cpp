@@ -23,7 +23,9 @@ namespace Spark
 
 	void Logger::Init()
 	{
-		
+	#ifdef IS_DEBUG
+		PushSink(new DebugSink);
+	#endif
 	}
 
 	void Logger::Shutdown()
@@ -37,5 +39,16 @@ namespace Spark
 	void Logger::PushSink(LogSink* sink) noexcept
 	{
 		m_RegisteredSinks.Add(sink);
+	}
+
+	void DebugSink::PushLog(const Log& log)
+	{
+		StringStream temp;
+		temp << STRING("[") << log.Time.Hour << STRING(":") << log.Time.Minute << STRING(":") << log.Time.Second << STRING(":") << log.Time.Millisecond << STRING("] "); // Time
+		temp << log.CategoryName; // Category Name
+		temp << STRING(" (") << LogLevelToString(log.Level) << STRING(") "); // Log Level
+		temp << log.FormattedMessage << STRING("\n"); // Message
+
+		Platform::DebugOutput(temp.GetString());
 	}
 }

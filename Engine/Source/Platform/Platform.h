@@ -50,4 +50,16 @@ namespace Spark
 	#endif
 #endif
 
-#define UNIMPLEMENTED(Char) SPARK_ASSERT(false); return (Char) 0
+#define UNIMPLEMENTED(type) SPARK_ASSERT(false); return (type) 0
+
+namespace Spark
+{
+	struct DateTime;
+	class String;
+
+namespace Platform
+{
+	DateTime GetCurrentSystemTime() noexcept;
+	void DebugOutput(const String& string) noexcept;
+}
+}

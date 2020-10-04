@@ -2,5 +2,13 @@
 
 namespace Spark
 {
-	
+	String DateTime::ToString() const noexcept
+	{
+		return String();
+	}
+
+	DateTime DateTime::Now()
+	{
+		return Platform::GetCurrentSystemTime();
+	}
 }

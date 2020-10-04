@@ -1,15 +1,9 @@
 #pragma once
 #include "Core/Log/Log.h"
-#include <iostream>
+#include "Core/Log/Sinks.h"
 
 namespace Spark
 {
-	class LogSink
-	{
-	public:
-		virtual void PushLog(const Log& log) = 0;
-	};
-
 	class Logger
 	{
 	public:
@@ -17,7 +11,7 @@ namespace Spark
 		static void Shutdown();
 
 		template<LogLevel T, typename ...Args>
-		static void DoLog(LogCategory<T>* category, LogLevel level, String format, Args... args);
+		static void DoLog(LogCategory<T>* category, LogLevel level, const String& format, Args... args);
 
 		static void PushSink(LogSink* sink) noexcept;
 
@@ -26,14 +20,11 @@ namespace Spark
 	};
 
 	template<LogLevel T, typename ...Args>
-	void Logger::DoLog(LogCategory<T>* category, LogLevel level, String format, Args... args)
+	void Logger::DoLog(LogCategory<T>* category, LogLevel level, const String& format, Args... args)
 	{
 		if (!category->ShouldLog(level)) return;
 
-		Log log;
-		log.CategoryName = category->GetCategoryName();
-		log.Level = level;
-		log.FormattedMessage = Formatter::Format(format, args...);
+		Log log(category->GetCategoryName(), level, Formatter::Format(format, args...), DateTime::Now());
 
 		for (auto sink : m_RegisteredSinks)
 		{
