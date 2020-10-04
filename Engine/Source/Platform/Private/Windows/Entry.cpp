@@ -8,7 +8,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		Logger::Init();
 
 		DEFINE_LOG_CATEGORY_FILE(Temp, Verbose);
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 10000; i++)
 		{
 			SPARK_LOG(Temp, Log, STRING("Iteration %d"), i);
 		}

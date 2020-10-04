@@ -43,12 +43,11 @@ namespace Spark
 
 	void DebugSink::PushLog(const Log& log)
 	{
-		StringStream temp;
-		temp << STRING("[") << log.Time.Hour << STRING(":") << log.Time.Minute << STRING(":") << log.Time.Second << STRING(":") << log.Time.Millisecond << STRING("] "); // Time
-		temp << log.CategoryName; // Category Name
-		temp << STRING(" (") << LogLevelToString(log.Level) << STRING(") "); // Log Level
-		temp << log.FormattedMessage << STRING("\n"); // Message
+		String temp = Formatter::Format(STRING("[%2d:%2d:%2d:%3d] %s (%s): %s\n"), 
+			log.Time.Hour, log.Time.Minute, log.Time.Second, log.Time.Millisecond,
+			log.CategoryName.GetCharPointer(), LogLevelToString(log.Level).GetCharPointer(), log.Message.GetCharPointer()
+		);
 
-		Platform::DebugOutput(temp.GetString());
+		Platform::DebugOutput(temp);
 	}
 }

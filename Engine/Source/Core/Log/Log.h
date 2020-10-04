@@ -19,12 +19,12 @@ namespace Spark
 	struct Log
 	{
 		Log(const String& catName, LogLevel level, const String& message, const DateTime& time)
-			: CategoryName(catName), Level(level), FormattedMessage(message), Time(time)
+			: CategoryName(catName), Level(level), Message(message), Time(time)
 		{}
 
 		String CategoryName;
 		LogLevel Level;
-		String FormattedMessage;
+		String Message;
 		DateTime Time;
 	};
 
