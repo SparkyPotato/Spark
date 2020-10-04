@@ -1,8 +1,11 @@
 #include "Core/Log/Logger.h"
 
+#include <iostream>
+
 namespace Spark
 {
 	Array<LogSink*> Logger::m_RegisteredSinks;
+	String Logger::m_FormatString = STRING("[%2d:%2d:%2d:%3d] %s (%s): ");
 
 	String LogLevelToString(LogLevel level)
 	{
@@ -26,6 +29,10 @@ namespace Spark
 	#ifdef IS_DEBUG
 		PushSink(new DebugSink);
 	#endif
+
+	#ifdef IS_CONSOLE
+		PushSink(new ConsoleSink);
+	#endif
 	}
 
 	void Logger::Shutdown()
@@ -43,11 +50,11 @@ namespace Spark
 
 	void DebugSink::PushLog(const Log& log)
 	{
-		String temp = Formatter::Format(STRING("[%2d:%2d:%2d:%3d] %s (%s): %s\n"), 
-			log.Time.Hour, log.Time.Minute, log.Time.Second, log.Time.Millisecond,
-			log.CategoryName.GetCharPointer(), LogLevelToString(log.Level).GetCharPointer(), log.Message.GetCharPointer()
-		);
+		Platform::DebugOutput(log.FormattedMessage + STRING("\n"));
+	}
 
-		Platform::DebugOutput(temp);
+	void ConsoleSink::PushLog(const Log& log)
+	{
+		std::wcout << log.FormattedMessage.GetCharPointer() << STRING("\n");
 	}
 }

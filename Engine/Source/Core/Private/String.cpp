@@ -118,7 +118,7 @@ namespace Spark
 		return temp;
 	}
 
-	String String::operator+(const Char* append) noexcept
+	String String::operator+(const Char* append) const noexcept
 	{
 		uint size = GetCharPointerLength(append);
 

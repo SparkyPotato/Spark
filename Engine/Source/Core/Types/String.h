@@ -40,7 +40,7 @@ namespace Spark
 		// Append operators
 		String operator+(Char append) const noexcept;
 		String operator+(const String& append) const noexcept;
-		String operator+(const Char* append) noexcept;
+		String operator+(const Char* append) const noexcept;
 
 		// Removes the last character (not the terminating null!)
 		String& operator--() noexcept; // Prefix
@@ -84,7 +84,7 @@ namespace Spark
 		bool IsEmpty();
 
 		// Ensure the string is null-terminated. Does not include the ending null character in the length
-		uint GetCharPointerLength(const Char* string);
+		static uint GetCharPointerLength(const Char* string);
 
 		// Converts the string to a const Char*, can use the explicit conversion operator as well
 		const Char* GetCharPointer() const;

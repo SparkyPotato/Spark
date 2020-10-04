@@ -19,12 +19,12 @@ namespace Spark
 	struct Log
 	{
 		Log(const String& catName, LogLevel level, const String& message, const DateTime& time)
-			: CategoryName(catName), Level(level), Message(message), Time(time)
+			: CategoryName(catName), Level(level), FormattedMessage(message), Time(time)
 		{}
 
 		String CategoryName;
 		LogLevel Level;
-		String Message;
+		String FormattedMessage;
 		DateTime Time;
 	};
 
@@ -47,7 +47,7 @@ namespace Spark
 
 // Define a log category that should exist in a header file, accessible by anyone who includes the header
 #define DECLARE_LOG_CATEGORY(Category, Level) \
-extern struct Log##Category : public LogCategory<LogLevel::Level> \
+extern struct Log##Category : public Spark::LogCategory<Spark::LogLevel::Level> \
 { \
 	Log##Category() : LogCategory(STRING(#Category)) {} \
 } Category;
@@ -58,7 +58,7 @@ Log##Category Category;
 
 // Define a log category usable in only one source file (or unity build unit!)
 #define DEFINE_LOG_CATEGORY_FILE(Category, Level) \
-static struct Log##Category : public LogCategory<LogLevel::Level> \
+static struct Log##Category : public Spark::LogCategory<Spark::LogLevel::Level> \
 { \
 	Log##Category() : LogCategory(STRING(#Category)) {} \
 } Category;

@@ -13,4 +13,10 @@ namespace Spark
 	public:
 		void PushLog(const Log& log) override;
 	};
+
+	class ConsoleSink : public LogSink
+	{
+	public:
+		void PushLog(const Log& log) override;
+	};
 }

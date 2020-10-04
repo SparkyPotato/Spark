@@ -1,3 +1,5 @@
+DEFINE_LOG_CATEGORY_FILE(LogEntry, Verbose);
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
 	using namespace Spark;
@@ -6,12 +8,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	Memory::Init(); 
 	{
 		Logger::Init();
-
-		DEFINE_LOG_CATEGORY_FILE(Temp, Verbose);
-		for (int i = 0; i < 10000; i++)
-		{
-			SPARK_LOG(Temp, Log, STRING("Iteration %d"), i);
-		}
+		SPARK_LOG(LogEntry, Verbose, STRING("Logger initialized"));
 		
 		Logger::Shutdown();
 	}

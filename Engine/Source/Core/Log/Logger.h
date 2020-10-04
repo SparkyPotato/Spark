@@ -17,6 +17,7 @@ namespace Spark
 
 	private:
 		static Array<LogSink*> m_RegisteredSinks;
+		static String m_FormatString;
 	};
 
 	template<LogLevel T, typename ...Args>
@@ -24,7 +25,14 @@ namespace Spark
 	{
 		if (!category->ShouldLog(level)) return;
 
-		Log log(category->GetCategoryName(), level, Formatter::Format(format, args...), DateTime::Now());
+		DateTime now = DateTime::Now();
+
+		String temp = Formatter::Format(m_FormatString + format,
+			now.Hour, now.Minute, now.Second, now.Millisecond, category->GetCategoryName().GetCharPointer(), 
+			LogLevelToString(level).GetCharPointer(), args...
+		);
+
+		Log log(category->GetCategoryName(), level, temp, now);
 
 		for (auto sink : m_RegisteredSinks)
 		{
@@ -34,4 +42,4 @@ namespace Spark
 }
 
 #define SPARK_LOG(Category, Level, Text, ...) \
-Logger::DoLog(&Category, LogLevel::##Level, Text, __VA_ARGS__);
+Spark::Logger::DoLog(&Category, LogLevel::##Level, Text, __VA_ARGS__);
