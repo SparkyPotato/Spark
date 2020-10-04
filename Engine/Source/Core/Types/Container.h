@@ -29,7 +29,16 @@ namespace Spark
 
 		~Array() noexcept;
 
+		// Copy and move assignment operators
+		Array<Type>& operator=(const Array<Type>& other) noexcept;
+		Array<Type>& operator=(Array<Type>&& other) noexcept;
+
+		// Get object at index
 		Type& operator[](uint index) noexcept;
+
+		// Iterators
+		Iterator begin() const noexcept { return Iterator(m_DataPointer); }
+		Iterator end() const noexcept { return Iterator(m_DataPointer + m_CreatedObjects); }
 
 		// Construct an object in place at the end of the Array
 		template<typename ...Args>
@@ -54,13 +63,101 @@ namespace Spark
 		class Iterator
 		{
 		public:
-			Iterator(Type* pointer, Array<Type>* owner)
-				: m_Pointer(pointer), m_Owner(owner)
+			Iterator(Type* pointer)
+				: m_Pointer(pointer)
+			{}
+
+			Iterator operator+(uint offset) noexcept
+			{
+				return Iterator(m_Pointer + offset, m_Owner);
+			}
+
+			Iterator operator-(uint offset) noexcept
+			{
+				return Iterator(m_Pointer - offset, m_Owner);
+			}
+
+			Iterator& operator++() noexcept
+			{
+				m_Pointer++;
+				return *this;
+			}
+			Iterator operator++(int) noexcept
+			{
+				Iterator temp(m_Pointer, m_Owner);
+				m_Pointer++;
+				return temp;
+			}
+			Iterator& operator--() noexcept
+			{
+				m_Pointer--;
+				return *this;
+			}
+			Iterator operator--(int) noexcept
+			{
+				Iterator temp(m_Pointer, m_Owner);
+				m_Pointer--;
+				return temp;
+			}
+
+			Type& operator[](uint offset)
+			{
+				return m_Pointer[offset];
+			}
+
+			Type& operator*() noexcept
+			{
+				return *m_Pointer;
+			}
+			Type* operator->() noexcept
+			{
+				return m_Pointer;
+			}
+
+			bool operator==(const Iterator& other) noexcept
+			{
+				return m_Pointer == other.m_Pointer;
+			}
+			bool operator!=(const Iterator& other) noexcept
+			{
+				return m_Pointer != other.m_Pointer;
+			}
+
+		private:
+			Type* m_Pointer;
+		};
+
+		class ConstIterator
+		{
+		public:
+			ConstIterator(const Type* pointer)
+				: m_Pointer(pointer)
+			{}
+
+		private:
+			const Type* m_Pointer;
+		};
+
+		class ReverseIterator
+		{
+		public:
+			ReverseIterator(Type* pointer)
+				: m_Pointer(pointer)
 			{}
 
 		private:
 			Type* m_Pointer;
-			Array<Type>* m_Owner;
+		};
+
+		class ConstReverseIterator
+		{
+		public:
+			ConstReverseIterator(const Type* pointer)
+				: m_Pointer(pointer)
+			{}
+
+		private:
+			const Type* m_Pointer;
 		};
 	};
 

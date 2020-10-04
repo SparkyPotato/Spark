@@ -7,12 +7,14 @@ namespace Spark
 		Verbose = 0,
 		Trace = 1,
 		Log = 2,
-		Debug = 3,
-		Info = 4,
+		Info = 3,
+		Debug = 4,
 		Warning = 5,
 		Error = 6,
 		Fatal = 7
 	};
+
+	String LogLevelToString(LogLevel level);
 
 	struct Log
 	{

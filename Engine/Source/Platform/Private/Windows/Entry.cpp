@@ -7,8 +7,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	{
 		Logger::Init();
 
-		// Shut the logger and memory manager down
+		DEFINE_LOG_CATEGORY_FILE(Temp, Verbose);
+		SPARK_LOG(Temp, Error, STRING("Hello"));
+		
 		Logger::Shutdown();
-	} 
+	}
+	// Shut the memory manager down
 	Memory::Shutdown();
 }

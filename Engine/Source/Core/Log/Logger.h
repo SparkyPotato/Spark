@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Log/Log.h"
+#include <iostream>
 
 namespace Spark
 {
@@ -18,8 +19,10 @@ namespace Spark
 		template<LogLevel T, typename ...Args>
 		static void DoLog(LogCategory<T>* category, LogLevel level, String format, Args... args);
 
-	private:
+		static void PushSink(LogSink* sink) noexcept;
 
+	private:
+		static Array<LogSink*> m_RegisteredSinks;
 	};
 
 	template<LogLevel T, typename ...Args>
@@ -31,6 +34,11 @@ namespace Spark
 		log.CategoryName = category->GetCategoryName();
 		log.Level = level;
 		log.FormattedMessage = Formatter::Format(format, args...);
+
+		for (auto sink : m_RegisteredSinks)
+		{
+			sink->PushLog(log);
+		}
 	}
 }
 

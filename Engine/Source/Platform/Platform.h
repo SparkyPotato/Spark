@@ -46,7 +46,7 @@ namespace Spark
 
 	#if IS_DEBUG
 		#include <assert.h>
-		#define SPARK_ASSERT(x) do { assert(x); __debugbreak(); } while(false)
+		#define SPARK_ASSERT(x) assert(x)
 	#endif
 #endif
 
