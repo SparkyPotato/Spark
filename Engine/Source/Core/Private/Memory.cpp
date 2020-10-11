@@ -9,10 +9,8 @@ namespace Spark
 		if (s_Memory) return;
 
 		// We use malloc and free here because new relies on the memory manager, which cannot itself rely on new!
-		auto object = malloc(sizeof(Memory));
-		memset(object, 0, sizeof(Memory));
-
-		s_Memory = reinterpret_cast<Memory*>(object);
+		s_Memory = reinterpret_cast<Memory*>(malloc(sizeof(Memory)));
+		memset(s_Memory, 0, sizeof(Memory));
 	}
 
 	void Memory::Shutdown()
@@ -31,8 +29,8 @@ namespace Spark
 		#ifdef IS_DEBUG
 		if (s_Memory)
 		{
-			s_Memory->m_MemoryAllocatedBytes += size;
-			s_Memory->m_AllocationCount++;
+			s_Memory->m_Stats.CurrentAllocation += size;
+			s_Memory->m_Stats.AllocationCount++;
 		}
 		#endif
 
@@ -48,8 +46,8 @@ namespace Spark
 			#ifdef IS_DEBUG
 			if (s_Memory)
 			{
-				s_Memory->m_MemoryAllocatedBytes -= ptr[-1];
-				s_Memory->m_DeallocationCount++;
+				s_Memory->m_Stats.CurrentAllocation -= ptr[-1];
+				s_Memory->m_Stats.DeallocationCount++;
 			}
 			#endif
 
@@ -57,18 +55,9 @@ namespace Spark
 		}
 	}
 
-	void Memory::AllocString(size_t size)
+	const MemoryStatistics& Memory::GetStats()
 	{
-		#ifdef IS_DEBUG
-		if (s_Memory) s_Memory->m_StringAllocation += size;
-		#endif
-	}
-
-	void Memory::DeallocString(size_t size)
-	{
-		#ifdef IS_DEBUG
-		if (s_Memory) s_Memory->m_StringAllocation -= size;
-		#endif
+		return s_Memory->m_Stats;
 	}
 }
 

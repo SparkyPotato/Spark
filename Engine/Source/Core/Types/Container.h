@@ -4,7 +4,8 @@
 namespace Spark
 {
 	/*
-		Dynamic array
+		Dynamic array.
+		Does not require template type to have default, copy, or move constructors.
 	*/
 	template<typename Type>
 	class Array
@@ -114,10 +115,6 @@ namespace Spark
 				return m_Pointer;
 			}
 
-			bool operator==(const Iterator& other) noexcept
-			{
-				return m_Pointer == other.m_Pointer;
-			}
 			bool operator!=(const Iterator& other) noexcept
 			{
 				return m_Pointer != other.m_Pointer;
@@ -276,5 +273,4 @@ namespace Spark
 
 		m_DataPointer = newPointer;
 	}
-
 }

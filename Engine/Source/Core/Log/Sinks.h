@@ -2,19 +2,19 @@
 
 namespace Spark
 {
-	class LogSink
+	class ILogSink
 	{
 	public:
 		virtual void PushLog(const Log& log) = 0;
 	};
 
-	class DebugSink : public LogSink 
+	class DebugSink : public ILogSink 
 	{
 	public:
 		void PushLog(const Log& log) override;
 	};
 
-	class ConsoleSink : public LogSink
+	class ConsoleSink : public ILogSink
 	{
 	public:
 		void PushLog(const Log& log) override;

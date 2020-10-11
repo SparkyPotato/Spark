@@ -2,11 +2,16 @@
 
 namespace Spark
 {
+	struct MemoryStatistics
+	{
+		size_t CurrentAllocation = 0;
+		size_t AllocationCount = 0;
+		size_t DeallocationCount = 0;
+	};
+
 	class Memory
 	{
 	public:
-		// Memory manager should not be constructed with new, since new relies on it to keep track of memory allocation and deallocation
-		// new and delete do check if the manager exists, but this is faster
 		Memory() = delete;
 		~Memory() = delete;
 
@@ -16,16 +21,11 @@ namespace Spark
 		static void* AllocSize(size_t size);
 		static void Dealloc(void* pointer);
 
-		static inline void AllocString(size_t size);
-		static inline void DeallocString(size_t size);
+		static const MemoryStatistics& GetStats();
 
 	private:
 		static Memory* s_Memory;
 
-		size_t m_MemoryAllocatedBytes;
-		size_t m_AllocationCount;
-		size_t m_DeallocationCount;
-
-		size_t m_StringAllocation;
+		MemoryStatistics m_Stats;
 	};
 }

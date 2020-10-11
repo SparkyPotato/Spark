@@ -172,8 +172,8 @@ namespace Spark
 			Char& operator*() noexcept;
 			Char* operator->() noexcept;
 
-			bool operator==(const Iterator& other) noexcept;
-			bool operator!=(const Iterator& other) noexcept;
+			friend bool operator==(const Iterator& first, const Iterator& second) noexcept;
+			friend bool operator!=(const Iterator& first, const Iterator& second) noexcept;
 
 		private:
 			Char* m_Pointer;
@@ -198,8 +198,8 @@ namespace Spark
 			const Char& operator*() noexcept;
 			const Char* operator->() noexcept;
 
-			bool operator==(const ConstIterator& other) noexcept;
-			bool operator!=(const ConstIterator& other) noexcept;
+			friend bool operator==(const ConstIterator& first, const ConstIterator& second) noexcept;
+			friend bool operator!=(const ConstIterator& first, const ConstIterator& second) noexcept;
 
 		private:
 			const Char* m_Pointer;
@@ -224,8 +224,8 @@ namespace Spark
 			Char& operator*() noexcept;
 			Char* operator->() noexcept;
 
-			bool operator==(const ReverseIterator& other) noexcept;
-			bool operator!=(const ReverseIterator& other) noexcept;
+			friend bool operator==(const ReverseIterator& first, const ReverseIterator& second) noexcept;
+			friend bool operator!=(const ReverseIterator& first, const ReverseIterator& second) noexcept;
 
 		private:
 			Char* m_Pointer;
@@ -250,13 +250,27 @@ namespace Spark
 			const Char& operator*() noexcept;
 			const Char* operator->() noexcept;
 
-			bool operator==(const ConstReverseIterator& other) noexcept;
-			bool operator!=(const ConstReverseIterator& other) noexcept;
+			friend bool operator==(const ConstReverseIterator& first, const ConstReverseIterator& second) noexcept;
+			friend bool operator!=(const ConstReverseIterator& first, const ConstReverseIterator& second) noexcept;
 
 		private:
 			const Char* m_Pointer;
 		};
 	};
+
+	String operator+(const Char* cstr, const String& string);
+
+	bool operator==(const String::Iterator& first, const String::Iterator& second) noexcept;
+	bool operator!=(const String::Iterator& first, const String::Iterator& second) noexcept;
+
+	bool operator==(const String::ConstIterator& first, const String::ConstIterator& second) noexcept;
+	bool operator!=(const String::ConstIterator& first, const String::ConstIterator& second) noexcept;
+
+	bool operator==(const String::ReverseIterator& first, const String::ReverseIterator& second) noexcept;
+	bool operator!=(const String::ReverseIterator& first, const String::ReverseIterator& second) noexcept;
+
+	bool operator==(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second) noexcept;
+	bool operator!=(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second) noexcept;
 
 	class StringStream
 	{

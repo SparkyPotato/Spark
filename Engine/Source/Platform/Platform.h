@@ -38,6 +38,8 @@ namespace Spark
 	using fint32 = int_fast32_t;
 	using fint64 = int_fast64_t;
 
+	using byte = uint8;
+
 #endif
 }
 
@@ -47,6 +49,8 @@ namespace Spark
 	#if IS_DEBUG
 		#include <assert.h>
 		#define SPARK_ASSERT(x) assert(x)
+	#else
+		#define SPARK_ASSERT(x)
 	#endif
 #endif
 
@@ -59,7 +63,7 @@ namespace Spark
 
 namespace Platform
 {
-	DateTime GetCurrentSystemTime() noexcept;
+	DateTime GetSystemTime() noexcept;
 	void DebugOutput(const String& string) noexcept;
 }
 }

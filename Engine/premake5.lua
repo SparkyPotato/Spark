@@ -25,7 +25,7 @@ project "Spark"
 		
 	filter "configurations:*Console*"
 		kind "ConsoleApp"
-		defines { "IS_CONSOLE", "IS_EDITOR" }
+		defines "IS_CONSOLE"
 		
 	filter "configurations:*Release*"
 		optimize "speed"

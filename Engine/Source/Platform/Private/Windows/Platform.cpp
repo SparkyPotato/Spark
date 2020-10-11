@@ -4,7 +4,7 @@ namespace Spark
 {
 namespace Platform
 {
-	DateTime GetCurrentSystemTime() noexcept
+	DateTime GetSystemTime() noexcept
 	{
 		SYSTEMTIME time;
 		GetLocalTime(&time);

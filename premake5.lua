@@ -6,7 +6,8 @@ workspace "SparkEngine"
 		"Debug Editor",
 		"Debug Editor Console",
 		"Release Lib",
-		"Release Editor"
+		"Release Editor",
+		"Release Editor Console"
 	}
 	
 	flags "FatalWarnings"

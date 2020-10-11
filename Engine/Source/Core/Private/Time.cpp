@@ -9,6 +9,6 @@ namespace Spark
 
 	DateTime DateTime::Now()
 	{
-		return Platform::GetCurrentSystemTime();
+		return Platform::GetSystemTime();
 	}
 }
