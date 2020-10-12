@@ -5,6 +5,8 @@ namespace Spark
 	class ILogSink
 	{
 	public:
+		virtual ~ILogSink() {}
+
 		virtual void PushLog(const Log& log) = 0;
 	};
 

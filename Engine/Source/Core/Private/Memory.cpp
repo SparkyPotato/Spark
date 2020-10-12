@@ -2,6 +2,8 @@
 
 namespace Spark
 {
+	DEFINE_LOG_CATEGORY_FILE(LogMemory, Verbose);
+
 	Memory* Memory::s_Memory = nullptr;
 
 	void Memory::Init()
@@ -17,8 +19,23 @@ namespace Spark
 	{
 		if (!s_Memory) return;
 
-		free(s_Memory);
+		auto temp = s_Memory;
 		s_Memory = nullptr;
+
+		if (temp->m_Stats.CurrentAllocation > 0)
+		{
+			SPARK_LOG(LogMemory, Warning, STRING("Memory leak detected!"));
+			SPARK_LOG(LogMemory, Warning, STRING("Heap allocation on shutdown: %d bytes"), temp->m_Stats.CurrentAllocation);
+			SPARK_LOG(LogMemory, Warning, STRING("Total allocations: %d"), temp->m_Stats.AllocationCount);
+			SPARK_LOG(LogMemory, Warning, STRING("Total deallocations: %d"), temp->m_Stats.DeallocationCount);
+		}
+		else
+		{
+			SPARK_LOG(LogMemory, Verbose, STRING("Total heap allocations: %d"), temp->m_Stats.AllocationCount);
+			SPARK_LOG(LogMemory, Verbose, STRING("Total heap deallocations: %d"), temp->m_Stats.DeallocationCount);
+		}
+
+		free(temp);
 	}
 
 	void* Memory::AllocSize(size_t size)

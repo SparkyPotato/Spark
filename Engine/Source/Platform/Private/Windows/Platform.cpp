@@ -4,7 +4,7 @@ namespace Spark
 {
 namespace Platform
 {
-	DateTime GetSystemTime() noexcept
+	DateTime GetSystemTime() 
 	{
 		SYSTEMTIME time;
 		GetLocalTime(&time);
@@ -21,7 +21,7 @@ namespace Platform
 		return dateTime;
 	}
 
-	void DebugOutput(const String& string) noexcept
+	void DebugOutput(const String& string) 
 	{
 		OutputDebugStringW(string.GetCharPointer());
 	}

@@ -18,35 +18,35 @@ namespace Spark
 
 	public:
 		// Default constructor
-		Array() noexcept;
+		Array();
 		// Have *atleast* size elements without reallocating
-		Array(uint size) noexcept;
+		Array(uint size);
 		// Generate array from initializer list
-		Array(std::initializer_list<Type> list) noexcept;
+		Array(std::initializer_list<Type> list);
 		// Copy constructor
-		Array(const Array<Type>& other) noexcept;
+		Array(const Array<Type>& other);
 		// Move constructor
-		Array(Array<Type>&& other) noexcept;
+		Array(Array<Type>&& other);
 
-		~Array() noexcept;
+		~Array() ;
 
 		// Copy and move assignment operators
-		Array<Type>& operator=(const Array<Type>& other) noexcept;
-		Array<Type>& operator=(Array<Type>&& other) noexcept;
+		Array<Type>& operator=(const Array<Type>& other);
+		Array<Type>& operator=(Array<Type>&& other);
 
 		// Get object at index
-		Type& operator[](uint index) noexcept;
+		Type& operator[](uint index);
 
 		// Iterators
-		Iterator begin() const noexcept { return Iterator(m_DataPointer); }
-		Iterator end() const noexcept { return Iterator(m_DataPointer + m_CreatedObjects); }
+		Iterator begin() const { return Iterator(m_DataPointer); }
+		Iterator end() const { return Iterator(m_DataPointer + m_CreatedObjects); }
 
 		// Construct an object in place at the end of the Array
 		template<typename ...Args>
-		Type& Emplace(Args... args) noexcept;
+		Type& Emplace(Args... args);
 
 		// Copies the object into the end of the Array
-		Type& Add(const Type& object) noexcept;
+		Type& Add(const Type& object);
 
 		// Returns the number of objects in the Array
 		uint Size();
@@ -54,7 +54,7 @@ namespace Spark
 		uint Capacity();
 
 	private:
-		void Realloc(uint requiredObjects) noexcept;
+		void Realloc(uint requiredObjects) ;
 
 		Type* m_DataPointer = nullptr;
 		uint m_AllocatedSpace = 0;
@@ -68,33 +68,33 @@ namespace Spark
 				: m_Pointer(pointer)
 			{}
 
-			Iterator operator+(uint offset) noexcept
+			Iterator operator+(uint offset) 
 			{
 				return Iterator(m_Pointer + offset, m_Owner);
 			}
 
-			Iterator operator-(uint offset) noexcept
+			Iterator operator-(uint offset) 
 			{
 				return Iterator(m_Pointer - offset, m_Owner);
 			}
 
-			Iterator& operator++() noexcept
+			Iterator& operator++() 
 			{
 				m_Pointer++;
 				return *this;
 			}
-			Iterator operator++(int) noexcept
+			Iterator operator++(int) 
 			{
 				Iterator temp(m_Pointer, m_Owner);
 				m_Pointer++;
 				return temp;
 			}
-			Iterator& operator--() noexcept
+			Iterator& operator--() 
 			{
 				m_Pointer--;
 				return *this;
 			}
-			Iterator operator--(int) noexcept
+			Iterator operator--(int) 
 			{
 				Iterator temp(m_Pointer, m_Owner);
 				m_Pointer--;
@@ -106,16 +106,16 @@ namespace Spark
 				return m_Pointer[offset];
 			}
 
-			Type& operator*() noexcept
+			Type& operator*() 
 			{
 				return *m_Pointer;
 			}
-			Type* operator->() noexcept
+			Type* operator->() 
 			{
 				return m_Pointer;
 			}
 
-			bool operator!=(const Iterator& other) noexcept
+			bool operator!=(const Iterator& other) 
 			{
 				return m_Pointer != other.m_Pointer;
 			}
@@ -159,19 +159,19 @@ namespace Spark
 	};
 
 	template<typename Type>
-	Array<Type>::Array() noexcept
+	Array<Type>::Array() 
 	{
 		Realloc(2); // Actually allocates for 3 objects
 	}
 
 	template<typename Type>
-	Array<Type>::Array(uint size) noexcept
+	Array<Type>::Array(uint size) 
 	{
 		Realloc(size);
 	}
 
 	template<typename Type>
-	Array<Type>::Array(std::initializer_list<Type> list) noexcept
+	Array<Type>::Array(std::initializer_list<Type> list) 
 	{
 		Realloc((uint) list.size());
 
@@ -183,7 +183,7 @@ namespace Spark
 	}
 
 	template<typename Type>
-	Array<Type>::Array(const Array<Type>& other) noexcept
+	Array<Type>::Array(const Array<Type>& other) 
 	{
 		Realloc(other.m_CreatedObjects);
 		m_CreatedObjects = other.m_CreatedObjects;
@@ -195,7 +195,7 @@ namespace Spark
 	}
 
 	template<typename Type>
-	Array<Type>::Array(Array<Type>&& other) noexcept
+	Array<Type>::Array(Array<Type>&& other) 
 	{
 		m_DataPointer = other.m_DataPointer;
 		m_CreatedObjects = other.m_CreatedObjects;
@@ -205,7 +205,7 @@ namespace Spark
 	}
 
 	template<typename Type>
-	Array<Type>::~Array() noexcept
+	Array<Type>::~Array() 
 	{
 		for (uint i = 0; i < m_CreatedObjects; i++)
 		{
@@ -217,7 +217,7 @@ namespace Spark
 	}
 
 	template<typename Type>
-	Type& Array<Type>::operator[](uint index) noexcept
+	Type& Array<Type>::operator[](uint index) 
 	{
 		SPARK_ASSERT(index < m_CreatedObjects);
 
@@ -225,7 +225,7 @@ namespace Spark
 	}
 
 	template<typename Type> template<typename ...Args>
-	Type& Array<Type>::Emplace(Args... args) noexcept
+	Type& Array<Type>::Emplace(Args... args) 
 	{
 		Realloc(m_CreatedObjects + 1);
 
@@ -237,7 +237,7 @@ namespace Spark
 	}
 
 	template<typename Type>
-	Type& Array<Type>::Add(const Type& object) noexcept
+	Type& Array<Type>::Add(const Type& object) 
 	{
 		Realloc(m_CreatedObjects + 1);
 
@@ -261,7 +261,7 @@ namespace Spark
 	}
 
 	template<typename Type>
-	void Array<Type>::Realloc(uint requiredObjects) noexcept
+	void Array<Type>::Realloc(uint requiredObjects) 
 	{
 		if (m_AllocatedSpace >= requiredObjects) return;
 

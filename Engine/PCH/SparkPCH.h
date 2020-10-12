@@ -1,7 +1,8 @@
-#include <cstdlib>
-#include <cstdint>
-#include <cstring>
-#include <cstdio>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
 
 #include "Platform/Platform.h"
 
@@ -10,5 +11,6 @@
 #include "Core/Types/String.h"
 #include "Core/Types/Time.h"
 #include "Core/Types/Container.h"
+#include "Core/Types/Math.h"
 
 #include "Core/Log/Logger.h"

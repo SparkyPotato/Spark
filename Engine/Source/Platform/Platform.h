@@ -63,7 +63,7 @@ namespace Spark
 
 namespace Platform
 {
-	DateTime GetSystemTime() noexcept;
-	void DebugOutput(const String& string) noexcept;
+	DateTime GetSystemTime() ;
+	void DebugOutput(const String& string) ;
 }
 }

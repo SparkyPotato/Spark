@@ -5,5 +5,6 @@
 #include "String.cpp"
 #include "Container.cpp"
 #include "Time.cpp"
+#include "Math.cpp"
 
 #include "Logger.cpp"

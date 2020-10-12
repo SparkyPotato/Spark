@@ -41,7 +41,7 @@ namespace Spark
 		}
 	}
 
-	void Logger::PushSink(ILogSink* sink) noexcept
+	void Logger::PushSink(ILogSink* sink) 
 	{
 		m_RegisteredSinks.Add(sink);
 	}

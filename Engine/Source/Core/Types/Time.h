@@ -17,7 +17,7 @@ namespace Spark
 		uint16 Second;
 		uint16 Millisecond;
 
-		String ToString() const noexcept;
+		String ToString() const;
 
 		static DateTime Now();
 	};

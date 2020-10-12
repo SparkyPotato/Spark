@@ -2,21 +2,21 @@
 
 namespace Spark
 {
-	String::String() noexcept
+	String::String() 
 	{
 		Realloc(11);
 		m_DataPointer[0] = L'\0';
 		m_UsedMemory = 1;
 	}
 
-	String::String(uint size) noexcept
+	String::String(uint size) 
 	{
 		Realloc(size + 1);
 		m_DataPointer[0] = L'\0';
 		m_UsedMemory = 1;
 	}
 
-	String::String(const Char* charArray) noexcept
+	String::String(const Char* charArray) 
 	{
 		// Allocate memory
 		uint arraySize = GetCharPointerLength(charArray);
@@ -28,7 +28,7 @@ namespace Spark
 		memcpy(m_DataPointer, charArray, m_UsedMemory * sizeof(Char));
 	}
 
-	String::String(const String& other) noexcept
+	String::String(const String& other) 
 	{
 		// Allocate memory
 		Realloc(other.m_UsedMemory);
@@ -38,7 +38,7 @@ namespace Spark
 		memcpy(m_DataPointer, other.m_DataPointer, m_UsedMemory * sizeof(Char));
 	}
 
-	String::String(String&& other) noexcept
+	String::String(String&& other) 
 	{
 		// Steal from the other string
 		m_AllocatedSize = other.m_AllocatedSize;
@@ -49,7 +49,7 @@ namespace Spark
 		other.m_DataPointer = nullptr;
 	}
 
-	String::String(const String& other, uint start, uint end) noexcept
+	String::String(const String& other, uint start, uint end) 
 	{
 		SPARK_ASSERT(start <= end);
 
@@ -66,7 +66,7 @@ namespace Spark
 		delete[] m_DataPointer;
 	}
 
-	String& String::operator=(const String& other) noexcept
+	String& String::operator=(const String& other) 
 	{
 		// If we have less memory than required, reallocate
 		Realloc(other.m_UsedMemory);
@@ -78,7 +78,7 @@ namespace Spark
 		return *this;
 	}
 
-	String& String::operator=(String&& other) noexcept
+	String& String::operator=(String&& other) 
 	{
 		delete[] m_DataPointer; // Release our currently held memory
 
@@ -93,7 +93,7 @@ namespace Spark
 		return *this;
 	}
 
-	String String::operator+(Char append) const noexcept
+	String String::operator+(Char append) const 
 	{
 		String temp(m_UsedMemory + 1);
 
@@ -104,7 +104,7 @@ namespace Spark
 		return temp;
 	}
 
-	String String::operator+(const String& append) const noexcept
+	String String::operator+(const String& append) const 
 	{
 		// Allocate a buffer with the size of the strings + 1 extra for the null
 		Char* data = new Char[m_UsedMemory + append.Length()];
@@ -118,7 +118,7 @@ namespace Spark
 		return temp;
 	}
 
-	String String::operator+(const Char* append) const noexcept
+	String String::operator+(const Char* append) const 
 	{
 		uint size = GetCharPointerLength(append);
 
@@ -134,7 +134,7 @@ namespace Spark
 		return temp;
 	}
 
-	String& String::operator+=(Char append) noexcept
+	String& String::operator+=(Char append) 
 	{
 		// Make sure we have space for one more character
 		Realloc(++m_UsedMemory);
@@ -146,7 +146,7 @@ namespace Spark
 		return *this;
 	}
 
-	String& String::operator+=(const String& append) noexcept
+	String& String::operator+=(const String& append) 
 	{
 		uint originalLength = Length();
 
@@ -160,7 +160,7 @@ namespace Spark
 		return *this;
 	}
 
-	String& String::operator+=(const Char* append) noexcept
+	String& String::operator+=(const Char* append) 
 	{
 		uint originalLength = Length();
 		uint size = GetCharPointerLength(append);
@@ -174,14 +174,14 @@ namespace Spark
 		return *this;
 	}
 
-	String& String::operator--() noexcept
+	String& String::operator--() 
 	{
 		m_DataPointer[--m_UsedMemory] = L'\0';
 
 		return *this;
 	}
 
-	String String::operator--(int) noexcept
+	String String::operator--(int) 
 	{
 		String string = *this;
 		m_DataPointer[--m_UsedMemory] = L'\0';
@@ -189,7 +189,7 @@ namespace Spark
 		return string;
 	}
 
-	Char& String::operator[](uint offset) noexcept
+	Char& String::operator[](uint offset) 
 	{
 		SPARK_ASSERT(offset < m_UsedMemory);
 
@@ -201,42 +201,42 @@ namespace Spark
 		return m_DataPointer;
 	}
 
-	String::Iterator String::begin() const noexcept
+	String::Iterator String::begin() const 
 	{
 		return Iterator(m_DataPointer);
 	}
 
-	String::Iterator String::end() const noexcept
+	String::Iterator String::end() const 
 	{
 		return Iterator(m_DataPointer + m_UsedMemory);
 	}
 
-	String::ConstIterator String::cbegin() const noexcept
+	String::ConstIterator String::cbegin() const 
 	{
 		return ConstIterator(m_DataPointer);
 	}
 
-	String::ConstIterator String::cend() const noexcept
+	String::ConstIterator String::cend() const 
 	{
 		return ConstIterator(m_DataPointer + m_UsedMemory);
 	}
 
-	String::ReverseIterator String::rbegin() const noexcept
+	String::ReverseIterator String::rbegin() const 
 	{
 		return ReverseIterator(m_DataPointer + Length());
 	}
 
-	String::ReverseIterator String::rend() const noexcept
+	String::ReverseIterator String::rend() const 
 	{
 		return ReverseIterator(m_DataPointer - 1);
 	}
 
-	String::ConstReverseIterator String::crbegin() const noexcept
+	String::ConstReverseIterator String::crbegin() const 
 	{
 		return ConstReverseIterator(m_DataPointer + Length());
 	}
 
-	String::ConstReverseIterator String::crend() const noexcept
+	String::ConstReverseIterator String::crend() const 
 	{
 		return ConstReverseIterator(m_DataPointer - 1);
 	}
@@ -290,7 +290,7 @@ namespace Spark
 		return m_DataPointer;
 	}
 
-	String::ConstIterator String::Find(Char character, uint occurrence) const noexcept
+	String::ConstIterator String::Find(Char character, uint occurrence) const 
 	{
 		if (occurrence == 0) return cend();
 
@@ -306,7 +306,7 @@ namespace Spark
 		return cend();
 	}
 
-	String::ConstIterator String::FindAt(Char character, Iterator start, uint occurence) const noexcept
+	String::ConstIterator String::FindAt(Char character, Iterator start, uint occurence) const 
 	{
 		if (occurence == 0) return cend();
 
@@ -323,7 +323,7 @@ namespace Spark
 		return cend();
 	}
 
-	String::ConstIterator String::FindAt(Char character, ConstIterator start, uint occurence) const noexcept
+	String::ConstIterator String::FindAt(Char character, ConstIterator start, uint occurence) const 
 	{
 		if (occurence == 0) return cend();
 
@@ -340,7 +340,7 @@ namespace Spark
 		return cend();
 	}
 
-	String::ConstIterator String::FindAt(Char character, ReverseIterator start, uint occurence) const noexcept
+	String::ConstIterator String::FindAt(Char character, ReverseIterator start, uint occurence) const 
 	{
 		if (occurence == 0) return cend();
 
@@ -357,7 +357,7 @@ namespace Spark
 		return cend();
 	}
 
-	String::ConstIterator String::FindAt(Char character, ConstReverseIterator start, uint occurence) const noexcept
+	String::ConstIterator String::FindAt(Char character, ConstReverseIterator start, uint occurence) const 
 	{
 		if (occurence == 0) return cend();
 
@@ -374,12 +374,12 @@ namespace Spark
 		return cend();
 	}
 
-	void String::Insert(Char character, uint index) noexcept
+	void String::Insert(Char character, uint index) 
 	{
 		UNIMPLEMENTED(void);
 	}
 
-	Char String::Erase(uint index) noexcept
+	Char String::Erase(uint index) 
 	{
 		Char temp = m_DataPointer[index];
 
@@ -391,12 +391,12 @@ namespace Spark
 		return temp;
 	}
 
-	String String::Erase(uint start, uint end) noexcept
+	String String::Erase(uint start, uint end) 
 	{
 		return String();
 	}
 
-	String& String::Reverse() noexcept
+	String& String::Reverse() 
 	{
 		for (uint i = 0; i < Length() / 2; ++i)
 		{
@@ -424,21 +424,21 @@ namespace Spark
 		m_DataPointer = newPointer;
 	}
 
-	String::Iterator::Iterator(Char* pointer) noexcept 
+	String::Iterator::Iterator(Char* pointer)  
 		: m_Pointer(pointer)
 	{}
 
-	String::Iterator String::Iterator::operator+(uint offset) noexcept
+	String::Iterator String::Iterator::operator+(uint offset) 
 	{
 		return Iterator(m_Pointer + offset);
 	}
 
-	String::Iterator String::Iterator::operator-(uint offset) noexcept
+	String::Iterator String::Iterator::operator-(uint offset) 
 	{
 		return Iterator(m_Pointer - offset);
 	}
 
-	String::Iterator String::Iterator::operator++(int) noexcept
+	String::Iterator String::Iterator::operator++(int) 
 	{
 
 		auto self = *this;
@@ -446,13 +446,13 @@ namespace Spark
 		return self;
 	}
 
-	String::Iterator& String::Iterator::operator++() noexcept
+	String::Iterator& String::Iterator::operator++() 
 	{
 		++m_Pointer;
 		return *this;
 	}
 
-	String::Iterator String::Iterator::operator--(int) noexcept
+	String::Iterator String::Iterator::operator--(int) 
 	{
 
 		auto self = *this;
@@ -460,7 +460,7 @@ namespace Spark
 		return self;
 	}
 
-	String::Iterator& String::Iterator::operator--() noexcept
+	String::Iterator& String::Iterator::operator--() 
 	{
 
 		--m_Pointer;
@@ -472,51 +472,51 @@ namespace Spark
 		return m_Pointer[offset];
 	}
 
-	Char& String::Iterator::operator*() noexcept
+	Char& String::Iterator::operator*() 
 	{
 		return *m_Pointer;
 	}
 
-	Char* String::Iterator::operator->() noexcept
+	Char* String::Iterator::operator->() 
 	{
 		return m_Pointer;
 	}
 
-	String::ConstIterator::ConstIterator(const Char* pointer) noexcept
+	String::ConstIterator::ConstIterator(const Char* pointer) 
 		: m_Pointer(pointer)
 	{}
 
-	String::ConstIterator String::ConstIterator::operator+(uint offset) noexcept
+	String::ConstIterator String::ConstIterator::operator+(uint offset) 
 	{
 		return ConstIterator(m_Pointer + offset);
 	}
 
-	String::ConstIterator String::ConstIterator::operator-(uint offset) noexcept
+	String::ConstIterator String::ConstIterator::operator-(uint offset) 
 	{
 		return ConstIterator(m_Pointer - offset);
 	}
 
-	String::ConstIterator String::ConstIterator::operator++(int) noexcept
+	String::ConstIterator String::ConstIterator::operator++(int) 
 	{
 		auto self = *this;
 		++m_Pointer;
 		return self;
 	}
 
-	String::ConstIterator& String::ConstIterator::operator++() noexcept
+	String::ConstIterator& String::ConstIterator::operator++() 
 	{
 		++m_Pointer;
 		return *this;
 	}
 
-	String::ConstIterator String::ConstIterator::operator--(int) noexcept
+	String::ConstIterator String::ConstIterator::operator--(int) 
 	{
 		auto self = *this;
 		--m_Pointer;
 		return self;
 	}
 
-	String::ConstIterator& String::ConstIterator::operator--() noexcept
+	String::ConstIterator& String::ConstIterator::operator--() 
 	{
 		--m_Pointer;
 		return *this;
@@ -527,51 +527,51 @@ namespace Spark
 		return m_Pointer[offset];
 	}
 
-	const Char& String::ConstIterator::operator*() noexcept
+	const Char& String::ConstIterator::operator*() 
 	{
 		return *m_Pointer;
 	}
 
-	const Char* String::ConstIterator::operator->() noexcept
+	const Char* String::ConstIterator::operator->() 
 	{
 		return m_Pointer;
 	}
 
-	String::ReverseIterator::ReverseIterator(Char* pointer) noexcept
+	String::ReverseIterator::ReverseIterator(Char* pointer) 
 		: m_Pointer(pointer)
 	{}
 
-	String::ReverseIterator String::ReverseIterator::operator+(uint offset) noexcept
+	String::ReverseIterator String::ReverseIterator::operator+(uint offset) 
 	{
 		return ReverseIterator(m_Pointer - offset);
 	}
 
-	String::ReverseIterator String::ReverseIterator::operator-(uint offset) noexcept
+	String::ReverseIterator String::ReverseIterator::operator-(uint offset) 
 	{
 		return ReverseIterator(m_Pointer + offset);
 	}
 
-	String::ReverseIterator String::ReverseIterator::operator++(int) noexcept
+	String::ReverseIterator String::ReverseIterator::operator++(int) 
 	{
 		auto self = *this;
 		--m_Pointer;
 		return self;
 	}
 
-	String::ReverseIterator& String::ReverseIterator::operator++() noexcept
+	String::ReverseIterator& String::ReverseIterator::operator++() 
 	{
 		--m_Pointer;
 		return *this;
 	}
 
-	String::ReverseIterator String::ReverseIterator::operator--(int) noexcept
+	String::ReverseIterator String::ReverseIterator::operator--(int) 
 	{
 		auto self = *this;
 		++m_Pointer;
 		return self;
 	}
 
-	String::ReverseIterator& String::ReverseIterator::operator--() noexcept
+	String::ReverseIterator& String::ReverseIterator::operator--() 
 	{
 		++m_Pointer;
 		return *this;
@@ -582,51 +582,51 @@ namespace Spark
 		return m_Pointer[offset];
 	}
 
-	Char& String::ReverseIterator::operator*() noexcept
+	Char& String::ReverseIterator::operator*() 
 	{
 		return *m_Pointer;
 	}
 
-	Char* String::ReverseIterator::operator->() noexcept
+	Char* String::ReverseIterator::operator->() 
 	{
 		return m_Pointer;
 	}
 
-	String::ConstReverseIterator::ConstReverseIterator(const Char* pointer) noexcept
+	String::ConstReverseIterator::ConstReverseIterator(const Char* pointer) 
 		: m_Pointer(pointer)
 	{}
 
-	String::ConstReverseIterator String::ConstReverseIterator::operator+(uint offset) noexcept
+	String::ConstReverseIterator String::ConstReverseIterator::operator+(uint offset) 
 	{
 		return ConstReverseIterator(m_Pointer - offset);
 	}
 
-	String::ConstReverseIterator String::ConstReverseIterator::operator-(uint offset) noexcept
+	String::ConstReverseIterator String::ConstReverseIterator::operator-(uint offset) 
 	{
 		return ConstReverseIterator(m_Pointer + offset);
 	}
 
-	String::ConstReverseIterator String::ConstReverseIterator::operator++(int) noexcept
+	String::ConstReverseIterator String::ConstReverseIterator::operator++(int) 
 	{
 		auto self = *this;
 		--m_Pointer;
 		return self;
 	}
 
-	String::ConstReverseIterator& String::ConstReverseIterator::operator++() noexcept
+	String::ConstReverseIterator& String::ConstReverseIterator::operator++() 
 	{
 		--m_Pointer;
 		return *this;
 	}
 
-	String::ConstReverseIterator String::ConstReverseIterator::operator--(int) noexcept
+	String::ConstReverseIterator String::ConstReverseIterator::operator--(int) 
 	{
 		auto self = *this;
 		++m_Pointer;
 		return self;
 	}
 
-	String::ConstReverseIterator& String::ConstReverseIterator::operator--() noexcept
+	String::ConstReverseIterator& String::ConstReverseIterator::operator--() 
 	{
 		++m_Pointer;
 		return *this;
@@ -637,12 +637,12 @@ namespace Spark
 		return m_Pointer[offset];
 	}
 
-	const Char& String::ConstReverseIterator::operator*() noexcept
+	const Char& String::ConstReverseIterator::operator*() 
 	{
 		return *m_Pointer;
 	}
 
-	const Char* String::ConstReverseIterator::operator->() noexcept
+	const Char* String::ConstReverseIterator::operator->() 
 	{
 		return m_Pointer;
 	}
@@ -652,21 +652,21 @@ namespace Spark
 		return m_InternalString;
 	}
 
-	StringStream& StringStream::operator<<(Char character) noexcept
+	StringStream& StringStream::operator<<(Char character) 
 	{
 		m_InternalString += character;
 
 		return *this;
 	}
 
-	StringStream& StringStream::operator<<(const String& string) noexcept
+	StringStream& StringStream::operator<<(const String& string) 
 	{
 		m_InternalString += string;
 
 		return *this;
 	}
 
-	StringStream& StringStream::operator<<(int integer) noexcept
+	StringStream& StringStream::operator<<(int integer) 
 	{
 		int i = 0, n = integer;
 		while (n != 0)
@@ -685,12 +685,12 @@ namespace Spark
 		return *this;
 	}
 
-	StringStream& StringStream::operator<<(float decimal) noexcept
+	StringStream& StringStream::operator<<(float decimal) 
 	{
 		return *this;
 	}
 
-	StringStream& StringStream::operator<<(double decimal) noexcept
+	StringStream& StringStream::operator<<(double decimal) 
 	{
 		return *this;
 	}
@@ -700,42 +700,42 @@ namespace Spark
 		return String(cstr) + string;
 	}
 
-	bool operator==(const String::Iterator& first, const String::Iterator& second) noexcept
+	bool operator==(const String::Iterator& first, const String::Iterator& second) 
 	{
 		return first.m_Pointer == second.m_Pointer;
 	}
 
-	bool operator!=(const String::Iterator& first, const String::Iterator& second) noexcept
+	bool operator!=(const String::Iterator& first, const String::Iterator& second) 
 	{
 		return !(first == second);
 	}
 
-	bool operator==(const String::ConstIterator& first, const String::ConstIterator& second) noexcept
+	bool operator==(const String::ConstIterator& first, const String::ConstIterator& second) 
 	{
 		return first.m_Pointer == second.m_Pointer;
 	}
 
-	bool operator!=(const String::ConstIterator& first, const String::ConstIterator& second) noexcept
+	bool operator!=(const String::ConstIterator& first, const String::ConstIterator& second) 
 	{
 		return !(first == second);
 	}
 
-	bool operator==(const String::ReverseIterator& first, const String::ReverseIterator& second) noexcept
+	bool operator==(const String::ReverseIterator& first, const String::ReverseIterator& second) 
 	{
 		return first.m_Pointer == second.m_Pointer;
 	}
 
-	bool operator!=(const String::ReverseIterator& first, const String::ReverseIterator& second) noexcept
+	bool operator!=(const String::ReverseIterator& first, const String::ReverseIterator& second) 
 	{
 		return !(first == second);
 	}
 
-	bool operator==(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second) noexcept
+	bool operator==(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second) 
 	{
 		return first.m_Pointer == second.m_Pointer;
 	}
 
-	bool operator!=(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second) noexcept
+	bool operator!=(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second) 
 	{
 		return !(first == second);
 	}

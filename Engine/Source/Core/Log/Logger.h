@@ -13,7 +13,7 @@ namespace Spark
 		template<LogLevel T, typename ...Args>
 		static void DoLog(LogCategory<T>* category, LogLevel level, const String& format, Args... args);
 
-		static void PushSink(ILogSink* sink) noexcept;
+		static void PushSink(ILogSink* sink);
 
 	private:
 		static Array<ILogSink*> m_RegisteredSinks;
@@ -42,4 +42,4 @@ namespace Spark
 }
 
 #define SPARK_LOG(Category, Level, Text, ...) \
-Spark::Logger::DoLog(&Category, LogLevel::##Level, Text, __VA_ARGS__)
+Spark::Logger::DoLog(&Category, LogLevel::Level, Text, __VA_ARGS__)

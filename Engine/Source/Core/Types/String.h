@@ -19,54 +19,54 @@ namespace Spark
 
 	public:
 		// Constructs a default string with space for 10 characters
-		String() noexcept;
+		String();
 		// Constructs a string with space for size characters + 1 for the terminating null
-		String(uint size) noexcept;
+		String(uint size);
 		// Constructs a string from a STRING()ified const char*
-		String(const Char* charArray) noexcept;
+		String(const Char* charArray);
 		// Copy constructor
-		String(const String& other) noexcept;
+		String(const String& other);
 		// Move constructor
-		String(String&& other) noexcept;
+		String(String&& other);
 		// Generates a substring from the given indices (both inclusive)
-		String(const String& other, uint start, uint end) noexcept;
+		String(const String& other, uint start, uint end);
 
 		~String();
 
 		// Copy and move assignment operators
-		String& operator=(const String& other) noexcept;
-		String& operator=(String&& other) noexcept;
+		String& operator=(const String& other);
+		String& operator=(String&& other);
 
 		// Append operators
-		String operator+(Char append) const noexcept;
-		String operator+(const String& append) const noexcept;
-		String operator+(const Char* append) const noexcept;
+		String operator+(Char append) const ;
+		String operator+(const String& append) const;
+		String operator+(const Char* append) const;
 
 		// Removes the last character (not the terminating null!)
-		String& operator--() noexcept; // Prefix
-		String operator--(int) noexcept; // Postfix
+		String& operator--(); // Prefix
+		String operator--(int); // Postfix
 
 		// Append and assign operators
-		String& operator+=(Char append) noexcept;
-		String& operator+=(const String& append) noexcept;
-		String& operator+=(const Char* append) noexcept;
+		String& operator+=(Char append) ;
+		String& operator+=(const String& append);
+		String& operator+=(const Char* append);
 
 		// Get the character at the index
-		Char& operator[](uint offset) noexcept;
+		Char& operator[](uint offset);
 
 		// Explicitly convert a string to a const Char* (static_cast<const Char*>), can use GetCharPointer() as well
 		explicit operator const Char*() const;
 
 		// Iterators
-		Iterator begin() const noexcept;
-		Iterator end() const noexcept;
-		ConstIterator cbegin() const noexcept;
-		ConstIterator cend() const noexcept;
+		Iterator begin() const;
+		Iterator end() const;
+		ConstIterator cbegin() const;
+		ConstIterator cend() const;
 
-		ReverseIterator rbegin() const noexcept;
-		ReverseIterator rend() const noexcept;
-		ConstReverseIterator crbegin() const noexcept;
-		ConstReverseIterator crend() const noexcept;
+		ReverseIterator rbegin() const;
+		ReverseIterator rend() const;
+		ConstReverseIterator crbegin() const;
+		ConstReverseIterator crend() const;
 
 		// Does not include the terminating null character
 		uint Length() const;
@@ -92,55 +92,55 @@ namespace Spark
 		Char* GetDataPointer();
 
 		// Finds the specified occurrence of the character and returns a constant iterator to it. Defaults to the first occurrence
-		ConstIterator Find(Char character, uint occurence = 1) const noexcept;
+		ConstIterator Find(Char character, uint occurence = 1) const;
 		// Finds the specified occurence of the string and returns a constant iterator to the first character of it. Defaults to the first occurence
-		ConstIterator Find(const String& string, uint occurence = 1) const noexcept;
+		ConstIterator Find(const String& string, uint occurence = 1) const;
 
 		// Finds the character occurrence, starting the search at the iterator given. Defaults to the first occurence
-		ConstIterator FindAt(Char character, Iterator start, uint occurence = 1) const noexcept;
-		ConstIterator FindAt(Char character, ConstIterator start, uint occurence = 1) const noexcept;
+		ConstIterator FindAt(Char character, Iterator start, uint occurence = 1) const;
+		ConstIterator FindAt(Char character, ConstIterator start, uint occurence = 1) const;
 		// Finds the character occurrence, starting the backwards search at the iterator given. Defaults to the first occurence
-		ConstIterator FindAt(Char character, ReverseIterator start, uint occurence = 1) const noexcept;
-		ConstIterator FindAt(Char character, ConstReverseIterator start, uint occurence = 1) const noexcept;
+		ConstIterator FindAt(Char character, ReverseIterator start, uint occurence = 1) const;
+		ConstIterator FindAt(Char character, ConstReverseIterator start, uint occurence = 1) const;
 
 		// Finds the string occurence, starting the search at the given iterator. No reverse iterator version exists
-		ConstIterator FindAt(const String& character, Iterator start, uint occurence = 1) const noexcept;
-		ConstIterator FindAt(const String& character, ConstIterator start, uint occurence = 1) const noexcept;
+		ConstIterator FindAt(const String& character, Iterator start, uint occurence = 1) const;
+		ConstIterator FindAt(const String& character, ConstIterator start, uint occurence = 1) const;
 
 		// Inserts the given character at the iterator position
-		void Insert(Char character, Iterator iterator) noexcept;
-		void Insert(Char character, ConstIterator iterator) noexcept;
-		void Insert(Char character, ReverseIterator iterator) noexcept;
-		void Insert(Char character, ConstReverseIterator iterator) noexcept;
+		void Insert(Char character, Iterator iterator);
+		void Insert(Char character, ConstIterator iterator);
+		void Insert(Char character, ReverseIterator iterator);
+		void Insert(Char character, ConstReverseIterator iterator);
 		// Inserts the given character at the index
-		void Insert(Char character, uint index) noexcept;
+		void Insert(Char character, uint index) ;
 
 		// Inserts the given string at the iterator position
-		void Insert(String character, Iterator iterator) noexcept;
-		void Insert(String character, ConstIterator iterator) noexcept;
-		void Insert(String character, ReverseIterator iterator) noexcept;
-		void Insert(String character, ConstReverseIterator iterator) noexcept;
+		void Insert(String character, Iterator iterator);
+		void Insert(String character, ConstIterator iterator);
+		void Insert(String character, ReverseIterator iterator);
+		void Insert(String character, ConstReverseIterator iterator);
 		// Inserts the given string at the index
-		void Insert(String character, uint index) noexcept;
+		void Insert(String character, uint index);
 
 		// Erases the character at the iterator position and returns it
-		Char Erase(Iterator iterator) noexcept;
-		Char Erase(ConstIterator iterator) noexcept;
-		Char Erase(ReverseIterator iterator) noexcept;
-		Char Erase(ConstReverseIterator iterator) noexcept;
+		Char Erase(Iterator iterator);
+		Char Erase(ConstIterator iterator);
+		Char Erase(ReverseIterator iterator);
+		Char Erase(ConstReverseIterator iterator);
 		// Erases the character at the index and returns it
-		Char Erase(uint index) noexcept;
+		Char Erase(uint index) ;
 
 		// Erases the substring between the two iterators (both inclusive), and returns the erased string
-		String Erase(Iterator start, Iterator end) noexcept;
-		String Erase(ConstIterator start, ConstIterator end) noexcept;
-		String Erase(ReverseIterator start, ReverseIterator end) noexcept;
-		String Erase(ConstReverseIterator start, ConstReverseIterator end) noexcept;
+		String Erase(Iterator start, Iterator end);
+		String Erase(ConstIterator start, ConstIterator end);
+		String Erase(ReverseIterator start, ReverseIterator end);
+		String Erase(ConstReverseIterator start, ConstReverseIterator end);
 		// Erases the substring between the two indices (both inclusive), and returns the erased string
-		String Erase(uint start, uint end) noexcept;
+		String Erase(uint start, uint end);
 
 		// Reverses the order of the entire string
-		String& Reverse() noexcept;
+		String& Reverse();
 
 	private:
 		// Ensure the string has enough space for sizeRequired characters (including terminating null), and reallocate if required
@@ -156,24 +156,24 @@ namespace Spark
 		class Iterator
 		{
 		public:
-			Iterator(Char* pointer) noexcept;
+			Iterator(Char* pointer);
 
-			Iterator operator+(uint offset) noexcept;
+			Iterator operator+(uint offset);
 
-			Iterator operator-(uint offset) noexcept;
+			Iterator operator-(uint offset);
 
-			Iterator& operator++() noexcept;
-			Iterator operator++(int) noexcept;
-			Iterator& operator--() noexcept;
-			Iterator operator--(int) noexcept;
+			Iterator& operator++();
+			Iterator operator++(int);
+			Iterator& operator--();
+			Iterator operator--(int);
 
 			Char& operator[](uint offset);
 
-			Char& operator*() noexcept;
-			Char* operator->() noexcept;
+			Char& operator*();
+			Char* operator->();
 
-			friend bool operator==(const Iterator& first, const Iterator& second) noexcept;
-			friend bool operator!=(const Iterator& first, const Iterator& second) noexcept;
+			friend bool operator==(const Iterator& first, const Iterator& second);
+			friend bool operator!=(const Iterator& first, const Iterator& second);
 
 		private:
 			Char* m_Pointer;
@@ -182,24 +182,24 @@ namespace Spark
 		class ConstIterator
 		{
 		public:
-			ConstIterator(const Char* pointer) noexcept;
+			ConstIterator(const Char* pointer);
 
-			ConstIterator operator+(uint offset) noexcept;
+			ConstIterator operator+(uint offset);
 
-			ConstIterator operator-(uint offset) noexcept;
+			ConstIterator operator-(uint offset);
 
-			ConstIterator& operator++() noexcept;
-			ConstIterator operator++(int) noexcept;
-			ConstIterator& operator--() noexcept;
-			ConstIterator operator--(int) noexcept;
+			ConstIterator& operator++();
+			ConstIterator operator++(int);
+			ConstIterator& operator--();
+			ConstIterator operator--(int);
 
 			const Char& operator[](uint offset);
 
-			const Char& operator*() noexcept;
-			const Char* operator->() noexcept;
+			const Char& operator*();
+			const Char* operator->();
 
-			friend bool operator==(const ConstIterator& first, const ConstIterator& second) noexcept;
-			friend bool operator!=(const ConstIterator& first, const ConstIterator& second) noexcept;
+			friend bool operator==(const ConstIterator& first, const ConstIterator& second);
+			friend bool operator!=(const ConstIterator& first, const ConstIterator& second);
 
 		private:
 			const Char* m_Pointer;
@@ -208,24 +208,24 @@ namespace Spark
 		class ReverseIterator
 		{
 		public:
-			ReverseIterator(Char* pointer) noexcept;
+			ReverseIterator(Char* pointer);
 
-			ReverseIterator operator+(uint offset) noexcept;
+			ReverseIterator operator+(uint offset);
 
-			ReverseIterator operator-(uint offset) noexcept;
+			ReverseIterator operator-(uint offset);
 
-			ReverseIterator& operator++() noexcept;
-			ReverseIterator operator++(int) noexcept;
-			ReverseIterator& operator--() noexcept;
-			ReverseIterator operator--(int) noexcept;
+			ReverseIterator& operator++();
+			ReverseIterator operator++(int);
+			ReverseIterator& operator--();
+			ReverseIterator operator--(int);
 
 			Char& operator[](uint offset);
 
-			Char& operator*() noexcept;
-			Char* operator->() noexcept;
+			Char& operator*();
+			Char* operator->();
 
-			friend bool operator==(const ReverseIterator& first, const ReverseIterator& second) noexcept;
-			friend bool operator!=(const ReverseIterator& first, const ReverseIterator& second) noexcept;
+			friend bool operator==(const ReverseIterator& first, const ReverseIterator& second);
+			friend bool operator!=(const ReverseIterator& first, const ReverseIterator& second);
 
 		private:
 			Char* m_Pointer;
@@ -234,24 +234,24 @@ namespace Spark
 		class ConstReverseIterator
 		{
 		public:
-			ConstReverseIterator(const Char* pointer) noexcept;
+			ConstReverseIterator(const Char* pointer);
 
-			ConstReverseIterator operator+(uint offset) noexcept;
+			ConstReverseIterator operator+(uint offset);
 
-			ConstReverseIterator operator-(uint offset) noexcept;
+			ConstReverseIterator operator-(uint offset);
 
-			ConstReverseIterator& operator++() noexcept;
-			ConstReverseIterator operator++(int) noexcept;
-			ConstReverseIterator& operator--() noexcept;
-			ConstReverseIterator operator--(int) noexcept;
+			ConstReverseIterator& operator++();
+			ConstReverseIterator operator++(int);
+			ConstReverseIterator& operator--();
+			ConstReverseIterator operator--(int);
 
 			const Char& operator[](uint offset);
 
-			const Char& operator*() noexcept;
-			const Char* operator->() noexcept;
+			const Char& operator*();
+			const Char* operator->();
 
-			friend bool operator==(const ConstReverseIterator& first, const ConstReverseIterator& second) noexcept;
-			friend bool operator!=(const ConstReverseIterator& first, const ConstReverseIterator& second) noexcept;
+			friend bool operator==(const ConstReverseIterator& first, const ConstReverseIterator& second);
+			friend bool operator!=(const ConstReverseIterator& first, const ConstReverseIterator& second);
 
 		private:
 			const Char* m_Pointer;
@@ -260,17 +260,17 @@ namespace Spark
 
 	String operator+(const Char* cstr, const String& string);
 
-	bool operator==(const String::Iterator& first, const String::Iterator& second) noexcept;
-	bool operator!=(const String::Iterator& first, const String::Iterator& second) noexcept;
+	bool operator==(const String::Iterator& first, const String::Iterator& second);
+	bool operator!=(const String::Iterator& first, const String::Iterator& second);
 
-	bool operator==(const String::ConstIterator& first, const String::ConstIterator& second) noexcept;
-	bool operator!=(const String::ConstIterator& first, const String::ConstIterator& second) noexcept;
+	bool operator==(const String::ConstIterator& first, const String::ConstIterator& second);
+	bool operator!=(const String::ConstIterator& first, const String::ConstIterator& second);
 
-	bool operator==(const String::ReverseIterator& first, const String::ReverseIterator& second) noexcept;
-	bool operator!=(const String::ReverseIterator& first, const String::ReverseIterator& second) noexcept;
+	bool operator==(const String::ReverseIterator& first, const String::ReverseIterator& second);
+	bool operator!=(const String::ReverseIterator& first, const String::ReverseIterator& second);
 
-	bool operator==(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second) noexcept;
-	bool operator!=(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second) noexcept;
+	bool operator==(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second);
+	bool operator!=(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second);
 
 	class StringStream
 	{
@@ -279,12 +279,12 @@ namespace Spark
 
 		const String& GetString();
 
-		StringStream& operator<<(Char character) noexcept;
-		StringStream& operator<<(const String& string) noexcept;
+		StringStream& operator<<(Char character);
+		StringStream& operator<<(const String& string);
 
-		StringStream& operator<<(int integer) noexcept;
-		StringStream& operator<<(float decimal) noexcept;
-		StringStream& operator<<(double decimal) noexcept;
+		StringStream& operator<<(int integer);
+		StringStream& operator<<(float decimal);
+		StringStream& operator<<(double decimal);
 
 	private:
 		String m_InternalString;

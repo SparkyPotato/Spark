@@ -2,7 +2,7 @@
 
 namespace Spark
 {
-	String DateTime::ToString() const noexcept
+	String DateTime::ToString() const 
 	{
 		return String();
 	}
