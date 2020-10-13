@@ -15,7 +15,7 @@ namespace Spark
 		Memory() = delete;
 		~Memory() = delete;
 
-		static void Init();
+		static void Initialize();
 		static void Shutdown();
 
 		static void* AllocSize(size_t size);

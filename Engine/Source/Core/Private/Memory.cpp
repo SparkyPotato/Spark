@@ -6,7 +6,7 @@ namespace Spark
 
 	Memory* Memory::s_Memory = nullptr;
 
-	void Memory::Init()
+	void Memory::Initialize()
 	{
 		if (s_Memory) return;
 

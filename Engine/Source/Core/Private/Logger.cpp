@@ -1,5 +1,7 @@
 #include "Core/Log/Logger.h"
 
+#include "Runtime/RunLoop/RunLoop.h"
+
 namespace Spark
 {
 	Array<ILogSink*> Logger::m_RegisteredSinks;
@@ -22,26 +24,31 @@ namespace Spark
 		return String();
 	}
 
-	void Logger::Init()
+	void Logger::Initialize()
 	{
 	#ifdef IS_DEBUG
 		PushSink(new DebugSink);
 	#endif
 
-	#ifdef IS_CONSOLE
+		PushSink(new FileSink);
 		PushSink(new ConsoleSink);
-	#endif
 	}
 
 	void Logger::Shutdown()
 	{
-		for (auto sink : m_RegisteredSinks)
+		while (m_RegisteredSinks.Size() != 0)
 		{
-			delete sink;
+			delete m_RegisteredSinks[0];
+			m_RegisteredSinks.Erase(0);
 		}
 	}
 
-	void Logger::PushSink(ILogSink* sink) 
+	void Logger::HandleFatal()
+	{
+		GRunLoop.ForceQuit();
+	}
+
+	void Logger::PushSink(ILogSink* sink)
 	{
 		m_RegisteredSinks.Add(sink);
 	}
@@ -89,5 +96,15 @@ namespace Spark
 			wprintf(CL_DARKRED STRING("%s\n") CL_RESET, log.FormattedMessage.GetCharPointer());
 			break;
 		}
+	}
+
+	FileSink::FileSink()
+	{
+		fopen_s(&m_File, "Log.txt", "w");
+	}
+
+	void FileSink::PushLog(const Log& log)
+	{
+		fwprintf_s(m_File, STRING("%s\n"), log.FormattedMessage.GetCharPointer());
 	}
 }

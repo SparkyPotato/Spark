@@ -21,4 +21,15 @@ namespace Spark
 	public:
 		void PushLog(const Log& log) override;
 	};
+
+	class FileSink : public ILogSink
+	{
+	public:
+		FileSink();
+
+		void PushLog(const Log& log) override;
+
+	private:
+		FILE* m_File;
+	};
 }

@@ -5,8 +5,9 @@ project "Spark"
 	
 	characterset "Unicode"
 	
-	targetdir ("../Binaries/%{cfg.buildcfg}/Spark")
-	objdir ("../Intermediate/%{cfg.buildcfg}/Spark")
+	targetdir "../Binaries/%{cfg.buildcfg}/Spark"
+	objdir "../Intermediate/%{cfg.buildcfg}/Spark"
+	debugdir "../Binaries/%{cfg.buildcfg}/Spark"
 	
 	pchheader "SparkPCH.h"
 	pchsource "PCH/SparkPCH.cpp"

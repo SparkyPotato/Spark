@@ -11,7 +11,6 @@
 		</Expand>
 	</Type>
 	
-	
 	<Type Name="Spark::Array&lt;*&gt;">
 		<DisplayString Condition="m_CreatedObjects == 0">Empty</DisplayString>
 		<DisplayString Condition="m_CreatedObjects &gt; 0">Size = {m_CreatedObjects}</DisplayString>

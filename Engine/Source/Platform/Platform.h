@@ -63,7 +63,9 @@ namespace Spark
 
 namespace Platform
 {
-	DateTime GetSystemTime() ;
-	void DebugOutput(const String& string) ;
+	DateTime GetSystemTime();
+	void DebugOutput(const String& string);
+
+	void ShowMessageBox(const String& title, const String& message);
 }
 }

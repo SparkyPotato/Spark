@@ -7,11 +7,13 @@ namespace Spark
 	class Logger
 	{
 	public:
-		static void Init();
+		static void Initialize();
 		static void Shutdown();
 
 		template<LogLevel T, typename ...Args>
 		static void DoLog(LogCategory<T>* category, LogLevel level, const String& format, Args... args);
+
+		static void HandleFatal();
 
 		static void PushSink(ILogSink* sink);
 
@@ -38,8 +40,13 @@ namespace Spark
 		{
 			sink->PushLog(log);
 		}
+
+		if (level == LogLevel::Fatal)
+		{
+			HandleFatal();
+		}
 	}
 }
 
 #define SPARK_LOG(Category, Level, Text, ...) \
-Spark::Logger::DoLog(&Category, LogLevel::Level, Text, __VA_ARGS__)
+Spark::Logger::DoLog(&Category, Spark::LogLevel::Level, Text, __VA_ARGS__)

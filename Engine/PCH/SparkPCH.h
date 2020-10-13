@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <initializer_list>
+#include <new>
+
 #include "Platform/Platform.h"
 
 #include "Core/Memory/Memory.h"

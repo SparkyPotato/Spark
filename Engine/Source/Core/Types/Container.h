@@ -1,5 +1,4 @@
 #pragma once
-#include <initializer_list>
 
 namespace Spark
 {
@@ -48,6 +47,9 @@ namespace Spark
 		// Copies the object into the end of the Array
 		Type& Add(const Type& object);
 
+		// Erases the object at the index and returns a reference
+		void Erase(uint index);
+
 		// Returns the number of objects in the Array
 		uint Size();
 		// Returns the total current capacity of the Array
@@ -70,12 +72,12 @@ namespace Spark
 
 			Iterator operator+(uint offset) 
 			{
-				return Iterator(m_Pointer + offset, m_Owner);
+				return Iterator(m_Pointer + offset);
 			}
 
 			Iterator operator-(uint offset) 
 			{
-				return Iterator(m_Pointer - offset, m_Owner);
+				return Iterator(m_Pointer - offset);
 			}
 
 			Iterator& operator++() 
@@ -85,7 +87,7 @@ namespace Spark
 			}
 			Iterator operator++(int) 
 			{
-				Iterator temp(m_Pointer, m_Owner);
+				Iterator temp(m_Pointer);
 				m_Pointer++;
 				return temp;
 			}
@@ -96,7 +98,7 @@ namespace Spark
 			}
 			Iterator operator--(int) 
 			{
-				Iterator temp(m_Pointer, m_Owner);
+				Iterator temp(m_Pointer);
 				m_Pointer--;
 				return temp;
 			}
@@ -246,6 +248,17 @@ namespace Spark
 		++m_CreatedObjects;
 
 		return *(m_DataPointer + m_CreatedObjects - 1);
+	}
+
+	template<typename Type>
+	void Array<Type>::Erase(uint index)
+	{
+		m_DataPointer[index].~Type();
+		for (uint i = index; i < m_CreatedObjects; i++)
+		{
+			memcpy(m_DataPointer + i, m_DataPointer + i + 1, sizeof(Type));
+		}
+		m_CreatedObjects--;
 	}
 
 	template<typename Type>

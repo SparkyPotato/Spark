@@ -25,5 +25,10 @@ namespace Platform
 	{
 		OutputDebugStringW(string.GetCharPointer());
 	}
+
+	void ShowMessageBox(const String& title, const String& message)
+	{
+		MessageBoxW(nullptr, message.GetCharPointer(), title.GetCharPointer(), MB_OK);
+	}
 }
 }
