@@ -7,7 +7,7 @@ namespace Spark
 		Class() = default;
 
 		Class(const String& name, bool isAbstract)
-			: Name(name), IsAbstract(IsAbstract)
+			: Name(name), IsAbstract(isAbstract)
 		{}
 
 		String Name;

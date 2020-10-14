@@ -41,6 +41,7 @@ namespace Spark
 	void ClassManager::RegisterClass(const String& name, const String& parent, bool isAbstract)
 	{
 		auto node = SearchNode(parent, &m_ObjectNode);
+
 		if (!node)
 		{
 			SPARK_LOG(LogClassManager, Error, STRING("Parent class '%s' of class '%s' not found!"), parent.GetCharPointer(), name.GetCharPointer());
@@ -61,10 +62,9 @@ namespace Spark
 
 		for (auto& classNode : node->children)
 		{
-			if (classNode.node.Name == className) return &classNode;
-
 			return SearchNode(className, &classNode);
 		}
+
 		return nullptr;
 	}
 }

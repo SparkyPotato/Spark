@@ -25,12 +25,12 @@ namespace Spark
 				return;
 			}
 
-			Module* module = m_Modules.Add(new T);
+			auto module = m_Modules.Add(Create<Module, T>());
 			module->RegisterObjects();
 		}
 
 	private:
-		Array<Module*> m_Modules;
+		Array<ObjPtr<Module>> m_Modules;
 	};
 
 	extern ModuleManager* GModuleManager;

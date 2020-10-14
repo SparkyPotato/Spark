@@ -2,6 +2,8 @@
 
 namespace Spark
 {
+	class Object;
+
 	struct MemoryStatistics
 	{
 		size_t CurrentAllocation = 0;
@@ -21,6 +23,12 @@ namespace Spark
 		static void Dealloc(void* pointer);
 
 		static const MemoryStatistics& GetStats();
+
+		struct Object
+		{
+			Spark::Object* AllocatedObject = nullptr;
+			uint RefCount = 0;
+		};
 
 	private:
 		MemoryStatistics m_Stats;

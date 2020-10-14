@@ -13,11 +13,7 @@ namespace Spark
 
 	ModuleManager::~ModuleManager()
 	{
-		while (m_Modules.Size() != 0)
-		{
-			delete m_Modules[0];
-			m_Modules.Erase(0);
-		}
+		
 	}
 
 	void ModuleManager::Initialize()
