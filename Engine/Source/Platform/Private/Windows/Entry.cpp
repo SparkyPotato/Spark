@@ -11,20 +11,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	Logger::Initialize();
 	SPARK_LOG(LogEntry, Trace, STRING("Logger initialized"));
 
-	// Initialize the memory manager and put everything in a scope so that everything is deleted before the manager is shut down
-	Memory::Initialize(); 
-	SPARK_LOG(LogEntry, Trace, STRING("Memory manager initialized"));
-	{
+	Memory::Initialize();
 
-		SetSignalHandler(); // Set the signal handler for console interrupts
+	SetSignalHandler(); // Set the signal handler for console interrupts
 
-		SPARK_LOG(LogEntry, Trace, STRING("Starting Run Loop"));
-		GRunLoop.Start();
-		
-	}
+	SPARK_LOG(LogEntry, Trace, STRING("Starting Run Loop"));
+	GRunLoop.Start();
+	
+	Memory::Shutdown();
 
-	Memory::Shutdown(); // Shut the memory manager down
-	SPARK_LOG(LogEntry, Trace, STRING("Memory manager shut down"));
 	SPARK_LOG(LogEntry, Trace, STRING("Exiting..."));
 	Logger::Shutdown();
 

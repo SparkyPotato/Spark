@@ -37,6 +37,8 @@ namespace Spark
 		String& operator=(const String& other);
 		String& operator=(String&& other);
 
+		bool operator==(const String& other) const;
+
 		// Append operators
 		String operator+(Char append) const ;
 		String operator+(const String& append) const;

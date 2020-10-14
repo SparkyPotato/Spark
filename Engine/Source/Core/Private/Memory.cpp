@@ -4,38 +4,36 @@ namespace Spark
 {
 	DEFINE_LOG_CATEGORY_FILE(LogMemory, Verbose);
 
-	Memory* Memory::s_Memory = nullptr;
+	Memory* GMemory;
+
+	Memory::Memory()
+	{
+		
+	}
 
 	void Memory::Initialize()
 	{
-		if (s_Memory) return;
-
-		// We use malloc and free here because new relies on the memory manager, which cannot itself rely on new!
-		s_Memory = reinterpret_cast<Memory*>(malloc(sizeof(Memory)));
-		memset(s_Memory, 0, sizeof(Memory));
+		GMemory = new Memory();
 	}
 
 	void Memory::Shutdown()
 	{
-		if (!s_Memory) return;
+		auto stats = GMemory->m_Stats;
+		delete GMemory;
+		GMemory = nullptr;
 
-		auto temp = s_Memory;
-		s_Memory = nullptr;
-
-		if (temp->m_Stats.CurrentAllocation > 0)
+		if (stats.CurrentAllocation > 0)
 		{
 			SPARK_LOG(LogMemory, Warning, STRING("Memory leak detected!"));
-			SPARK_LOG(LogMemory, Warning, STRING("Heap allocation on shutdown: %d bytes"), temp->m_Stats.CurrentAllocation);
-			SPARK_LOG(LogMemory, Warning, STRING("Total allocations: %d"), temp->m_Stats.AllocationCount);
-			SPARK_LOG(LogMemory, Warning, STRING("Total deallocations: %d"), temp->m_Stats.DeallocationCount);
+			SPARK_LOG(LogMemory, Warning, STRING("Heap allocation on shutdown: %d bytes"), stats.CurrentAllocation);
+			SPARK_LOG(LogMemory, Warning, STRING("Total allocations: %d"), stats.AllocationCount);
+			SPARK_LOG(LogMemory, Warning, STRING("Total deallocations: %d"), stats.DeallocationCount);
 		}
 		else
 		{
-			SPARK_LOG(LogMemory, Verbose, STRING("Total heap allocations: %d"), temp->m_Stats.AllocationCount);
-			SPARK_LOG(LogMemory, Verbose, STRING("Total heap deallocations: %d"), temp->m_Stats.DeallocationCount);
+			SPARK_LOG(LogMemory, Verbose, STRING("Total heap allocations: %d"), stats.AllocationCount);
+			SPARK_LOG(LogMemory, Verbose, STRING("Total heap deallocations: %d"), stats.DeallocationCount);
 		}
-
-		free(temp);
 	}
 
 	void* Memory::AllocSize(size_t size)
@@ -44,10 +42,10 @@ namespace Spark
 		pointer[0] = size;
 
 		#ifdef IS_DEBUG
-		if (s_Memory)
+		if (GMemory)
 		{
-			s_Memory->m_Stats.CurrentAllocation += size;
-			s_Memory->m_Stats.AllocationCount++;
+			GMemory->m_Stats.CurrentAllocation += size;
+			GMemory->m_Stats.AllocationCount++;
 		}
 		#endif
 
@@ -61,10 +59,10 @@ namespace Spark
 			auto ptr = reinterpret_cast<size_t*>(pointer);
 
 			#ifdef IS_DEBUG
-			if (s_Memory)
+			if (GMemory)
 			{
-				s_Memory->m_Stats.CurrentAllocation -= ptr[-1];
-				s_Memory->m_Stats.DeallocationCount++;
+				GMemory->m_Stats.CurrentAllocation -= ptr[-1];
+				GMemory->m_Stats.DeallocationCount++;
 			}
 			#endif
 
@@ -74,7 +72,7 @@ namespace Spark
 
 	const MemoryStatistics& Memory::GetStats()
 	{
-		return s_Memory->m_Stats;
+		return GMemory->m_Stats;
 	}
 }
 

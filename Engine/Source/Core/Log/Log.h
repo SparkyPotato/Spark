@@ -14,15 +14,15 @@ namespace Spark
 		Fatal = 7
 	};
 
-	String LogLevelToString(LogLevel level);
+	const String&LogLevelToString(LogLevel level);
 
 	struct Log
 	{
-		Log(const String& catName, LogLevel level, const String& message, const DateTime& time)
+		Log(const String& catName, LogLevel level, String&& message, const DateTime& time)
 			: CategoryName(catName), Level(level), FormattedMessage(message), Time(time)
 		{}
 
-		String CategoryName;
+		const String& CategoryName;
 		LogLevel Level;
 		String FormattedMessage;
 		DateTime Time;

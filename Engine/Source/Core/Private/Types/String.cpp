@@ -66,7 +66,7 @@ namespace Spark
 		delete[] m_DataPointer;
 	}
 
-	String& String::operator=(const String& other) 
+	String& String::operator=(const String& other)
 	{
 		// If we have less memory than required, reallocate
 		Realloc(other.m_UsedMemory);
@@ -93,7 +93,19 @@ namespace Spark
 		return *this;
 	}
 
-	String String::operator+(Char append) const 
+	bool String::operator==(const String& other) const
+	{
+		if (m_UsedMemory != other.m_UsedMemory) return false;
+
+		if (memcmp(m_DataPointer, other.m_DataPointer, m_UsedMemory * sizeof(Char)) == 0)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	String String::operator+(Char append) const
 	{
 		String temp(m_UsedMemory + 1);
 
@@ -421,7 +433,7 @@ namespace Spark
 		memcpy(newPointer, m_DataPointer, m_UsedMemory * sizeof(Char));
 		delete[] m_DataPointer;
 
-		m_DataPointer = newPointer;
+		m_DataPointer = reinterpret_cast<Char*>(newPointer);
 	}
 
 	String::Iterator::Iterator(Char* pointer)  

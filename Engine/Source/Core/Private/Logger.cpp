@@ -7,21 +7,30 @@ namespace Spark
 	Array<ILogSink*> Logger::m_RegisteredSinks;
 	String Logger::m_FormatString = STRING("[%02d:%02d:%02d:%03d] %s (%s): ");
 
-	String LogLevelToString(LogLevel level)
+	const String& LogLevelToString(LogLevel level)
 	{
+		static const String verbose = STRING("Verbose");
+		static const String trace = STRING("Trace");
+		static const String log = STRING("Log");
+		static const String info = STRING("Info");
+		static const String debug = STRING("Debug");
+		static const String warn = STRING("Warning");
+		static const String error = STRING("Error");
+		static const String fatal = STRING("Fatal");
+
 		switch (level)
 		{
-		case LogLevel::Verbose: return STRING("Verbose");
-		case LogLevel::Trace: return STRING("Trace");
-		case LogLevel::Log: return STRING("Log");
-		case LogLevel::Info: return STRING("Info");
-		case LogLevel::Debug: return STRING("Debug");
-		case LogLevel::Warning: return STRING("Warning");
-		case LogLevel::Error: return STRING("Error");
-		case LogLevel::Fatal: return STRING("Fatal");
+		case LogLevel::Verbose: return verbose;
+		case LogLevel::Trace: return trace;
+		case LogLevel::Log: return log;
+		case LogLevel::Info: return info;
+		case LogLevel::Debug: return debug;
+		case LogLevel::Warning: return warn;
+		case LogLevel::Error: return error;
+		case LogLevel::Fatal: return fatal;
 		}
 
-		return String();
+		return log;
 	}
 
 	void Logger::Initialize()
@@ -55,7 +64,7 @@ namespace Spark
 
 	void DebugSink::PushLog(const Log& log)
 	{
-		Platform::DebugOutput(log.FormattedMessage + STRING("\n"));
+		Platform::DebugOutput(log.FormattedMessage + STRING('\n'));
 	}
 
 	#define CL_DARKRED STRING("\x1b[31m")

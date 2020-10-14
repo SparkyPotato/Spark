@@ -29,12 +29,20 @@ namespace Spark
 
 		DateTime now = DateTime::Now();
 
-		String temp = Formatter::Format(m_FormatString + format,
-			now.Hour, now.Minute, now.Second, now.Millisecond, category->GetCategoryName().GetCharPointer(), 
-			LogLevelToString(level).GetCharPointer(), args...
+		Log log
+		(
+			category->GetCategoryName(), 
+			level, 
+			Formatter::Format
+			(
+				m_FormatString + format,
+				now.Hour, now.Minute, now.Second, now.Millisecond, 
+				category->GetCategoryName().GetCharPointer(),
+				LogLevelToString(level).GetCharPointer(), 
+				args...
+			),
+			now
 		);
-
-		Log log(category->GetCategoryName(), level, temp, now);
 
 		for (auto sink : m_RegisteredSinks)
 		{

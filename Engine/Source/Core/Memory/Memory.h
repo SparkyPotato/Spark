@@ -12,8 +12,7 @@ namespace Spark
 	class Memory
 	{
 	public:
-		Memory() = delete;
-		~Memory() = delete;
+		Memory();
 
 		static void Initialize();
 		static void Shutdown();
@@ -24,8 +23,8 @@ namespace Spark
 		static const MemoryStatistics& GetStats();
 
 	private:
-		static Memory* s_Memory;
-
 		MemoryStatistics m_Stats;
 	};
+
+	extern Memory* GMemory;
 }

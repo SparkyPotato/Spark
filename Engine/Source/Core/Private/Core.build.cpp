@@ -2,9 +2,13 @@
 
 #include "Memory.cpp"
 
-#include "String.cpp"
-#include "Container.cpp"
-#include "Time.cpp"
-#include "Math.cpp"
+#include "Types/Pointer.cpp"
+#include "Types/String.cpp"
+#include "Types/Container.cpp"
+#include "Types/Time.cpp"
+#include "Types/Math.cpp"
 
 #include "Logger.cpp"
+
+#include "Object/Object.cpp"
+#include "Object/ClassManager.cpp"

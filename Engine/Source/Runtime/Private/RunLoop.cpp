@@ -1,10 +1,12 @@
 #include "Runtime/RunLoop/RunLoop.h"
 
+#include "Module/ModuleManager.h"
+
 namespace Spark
 {
 	RunLoop GRunLoop;
 
-	DEFINE_LOG_CATEGORY_FILE(LogRunLoop, Trace);
+	DEFINE_LOG_CATEGORY_FILE(LogRunLoop, Verbose);
 
 	RunLoop::RunLoop()
 		: m_IsRunning(true)
@@ -20,12 +22,18 @@ namespace Spark
 			return;
 		}
 
+		ClassManager::Initialize();
+		ModuleManager::Initialize();
+
 		SPARK_LOG(LogRunLoop, Trace, STRING("Started Run Loop"));
 
 		while (m_IsRunning)
 		{
 
 		}
+
+		ModuleManager::Shutdown();
+		ClassManager::Shutdown();
 
 		SPARK_LOG(LogRunLoop, Trace, STRING("Ended Run Loop"));
 	}
@@ -34,8 +42,9 @@ namespace Spark
 	{
 		SPARK_LOG(LogRunLoop, Warning, STRING("Force Quit, Cleaning up"));
 
-		Memory::Shutdown(); // Shut the memory manager down
-		SPARK_LOG(LogRunLoop, Trace, STRING("Memory manager shut down"));
+		ClassManager::Shutdown();
+
+		Memory::Shutdown();
 
 		SPARK_LOG(LogRunLoop, Trace, STRING("Exiting..."));
 		Logger::Shutdown();
