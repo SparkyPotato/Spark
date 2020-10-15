@@ -6,9 +6,11 @@ namespace Spark
 
 	ModuleManager* GModuleManager = nullptr;
 
+	extern void AddEngineModules();
+
 	ModuleManager::ModuleManager()
 	{
-
+		
 	}
 
 	ModuleManager::~ModuleManager()
@@ -25,6 +27,8 @@ namespace Spark
 		}
 
 		GModuleManager = new ModuleManager;
+
+		AddEngineModules();
 	}
 
 	void ModuleManager::Shutdown()

@@ -11,16 +11,22 @@ namespace Spark
 			: Name(name), IsAbstract(isAbstract)
 		{}
 
-		ArrayPtr<Class> Parent;
-		Array<Class> Children;
-
 		String Name;
+		Array<Class> Children;
 		bool IsAbstract = false;
+		ArrayPtr<Class> Parent;
+
+		static bool IsSubclass(const Class& derived, const Class& base);
+		
+		bool IsSubclassOf(const Class& base) const;
+
+		template<class T>
+		bool IsSubclassOf() const { return IsSubclass(*this, T::GetStaticClass()); }
 
 	private:
 		friend class ClassManager;
 
-		Class& AddChild(String name, bool isAbstract);
+		Class& AddChild(const String& name, bool isAbstract);
 	};
 
 	bool operator==(const Class& first, const Class& second);
@@ -41,32 +47,26 @@ namespace Spark
 	private:
 		ArrayPtr<Class> SearchNode(const String& className, Class* node);
 
-		Class m_ParentNode;
+		Array<Class> m_ParentNodes;
 	};
 
 	extern ClassManager* GClassManager;
+
+	template<class To, class From>
+	To* Cast(From* cast)
+	{
+		if (To::GetStaticClass().IsSubclassOf<From>() || From::GetStaticClass().IsSubclassOf<To>())
+		{
+			return reinterpret_cast<To*>(cast);
+		}
+
+		return nullptr;
+	}
 }
 
-#define REGISTER_CLASS(name, parent) \
-private: \
-inline static const String m_ClassName = STRING(#name); \
-inline static const String m_ParentName = STRING(#parent); \
-public: \
-const Class& GetClass() override \
-{ \
-	static ArrayPtr<Class> classNode; \
-	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
-	return *classNode; \
-} \
-static const Class& GetStaticClass() \
-{ \
-	static ArrayPtr<Class> classNode; \
-	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
-	return *classNode; \
-} \
-static void RegisterClass() { GClassManager->RegisterClass(m_ClassName, m_ParentName, false); }
+#define REGISTER_CLASS(name, parent) REGISTER_CLASS_FULL(name, parent, false)
 
-#define REGISTER_CLASS_ABS(name, parent) \
+#define REGISTER_CLASS_FULL(name, parent, isAbstract) \
 private: \
 inline static const String m_ClassName = STRING(#name); \
 inline static const String m_ParentName = STRING(#parent); \
@@ -83,4 +83,4 @@ static const Class& GetStaticClass() \
 	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
 	return *classNode; \
 } \
-static void RegisterClass() { GClassManager->RegisterClass(m_ClassName, m_ParentName, true); }
+static void RegisterClass() { GClassManager->RegisterClass(m_ClassName, m_ParentName, isAbstract); }

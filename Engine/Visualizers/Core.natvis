@@ -22,5 +22,18 @@
 			</ArrayItems>
 		</Expand>
 	</Type>
+
+	<Type Name="Spark::ArrayPtr&lt;*&gt;">
+		<DisplayString Condition="m_Array == nullptr">nullptr</DisplayString>
+		<DisplayString>{(*m_Array)[m_ObjectIndex]}</DisplayString>
+	</Type>
+
+	<Type Name="Spark::ObjPtr&lt;*&gt;">
+		<DisplayString Condition="m_Object == nullptr">nullptr</DisplayString>
+		<DisplayString>{m_Object}</DisplayString>
+		<Expand>
+			<Item Name="References">m_SharedRef-&gt;RefCount</Item>
+		</Expand>
+	</Type>
 	
 </AutoVisualizer>

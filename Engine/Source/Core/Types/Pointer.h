@@ -40,7 +40,27 @@ namespace Spark
 			return *m_Object;
 		}
 
+		const Obj& operator*() const
+		{
+			return *m_Object;
+		}
+
 		Obj* operator->()
+		{
+			return m_Object;
+		}
+
+		const Obj* operator->() const
+		{
+			return m_Object;
+		}
+
+		Obj* Get()
+		{
+			return m_Object;
+		}
+
+		const Obj* Get() const
 		{
 			return m_Object;
 		}
@@ -72,7 +92,7 @@ namespace Spark
 	{
 		ObjPtr<Cast> temp;
 		temp.m_SharedRef = new Memory::SharedRef;
-		temp.m_SharedRef->AllocatedObject = temp.m_Object = new Type();
+		temp.m_SharedRef->AllocatedObject = temp.m_Object = Spark::Cast<Cast>(new Type());
 		temp.m_SharedRef->RefCount = 1;
 
 		return temp;
@@ -93,12 +113,32 @@ namespace Spark
 			return &(*m_Array)[m_ObjectIndex];
 		}
 
+		const Type* operator->() const
+		{
+			return &(*m_Array)[m_ObjectIndex];
+		}
+
 		Type& operator*()
 		{
 			return (*m_Array)[m_ObjectIndex];
 		}
 
-		operator bool()
+		const Type& operator*() const
+		{
+			return (*m_Array)[m_ObjectIndex];
+		}
+
+		Type* Get()
+		{
+			return &(*m_Array)[m_ObjectIndex];
+		}
+
+		const Type* Get() const
+		{
+			return &(*m_Array)[m_ObjectIndex];
+		}
+
+		operator bool() const
 		{
 			return m_Array;
 		}

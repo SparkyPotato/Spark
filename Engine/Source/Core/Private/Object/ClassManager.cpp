@@ -10,8 +10,9 @@ namespace Spark
 
 	ClassManager::ClassManager()
 	{
-		auto& obj = m_ParentNode.Children.Emplace(STRING("Object"), true);
-		obj.Parent = ArrayPtr<Class>(&m_ParentNode.Children, 0);
+		m_ParentNodes.Emplace();
+		auto& obj = m_ParentNodes[0].Children.Emplace(STRING("Object"), true);
+		obj.Parent = ArrayPtr<Class>(&m_ParentNodes, 0);
 	}
 
 	void ClassManager::Initialize()
@@ -35,12 +36,12 @@ namespace Spark
 
 	ArrayPtr<Class> ClassManager::GetClass(const String& name)
 	{
-		return SearchNode(name, &m_ParentNode);
+		return SearchNode(name, &m_ParentNodes[0]);
 	}
 
 	void ClassManager::RegisterClass(const String& name, const String& parent, bool isAbstract)
 	{
-		auto node = SearchNode(parent, &m_ParentNode);
+		auto node = SearchNode(parent, &m_ParentNodes[0]);
 
 		if (!node)
 		{
@@ -53,7 +54,7 @@ namespace Spark
 
 	Class& ClassManager::GetBase()
 	{
-		return m_ParentNode.Children[0];
+		return m_ParentNodes[0].Children[0];
 	}
 
 	ArrayPtr<Class> ClassManager::SearchNode(const String& className, Class* node)
@@ -71,21 +72,36 @@ namespace Spark
 		return ArrayPtr<Class>();
 	}
 
-	Class& Class::AddChild(String name, bool isAbstract)
+	Class& Class::AddChild(const String& name, bool isAbstract)
 	{
 		auto& c = Children.Emplace(name, isAbstract);
 
 		if (this->Parent)
 		{
-			uint index = 0;
-			for (; index < this->Parent->Children.Size(); index++)
-			{
-				if (this->Parent->Children[index].Name == this->Name) break;
-			}
+			uint index = this->Parent->Children.Find(*this);
 
 			c.Parent = ArrayPtr<Class>(&this->Parent->Children, index);
 		}
 
 		return c;
+	}
+
+	bool Class::IsSubclass(const Class& derived, const Class& base)
+	{
+		const Class* d = &derived;
+
+		while (auto p = d->Parent)
+		{
+			if (*p == base) return true;
+
+			d = d->Parent.Get();
+		}
+
+		return false;
+	}
+
+	bool Class::IsSubclassOf(const Class& base) const
+	{
+		return IsSubclass(*this, base);
 	}
 }

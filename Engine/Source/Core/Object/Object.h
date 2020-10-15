@@ -6,7 +6,7 @@ namespace Spark
 
 	/*
 		Base class of all Engine Objects.
-		Must be derived from and use the macro REGSITER_CLASS(name, parent) with the name of the class
+		Must be derived from and use the macro REGISTER_CLASS(name, parent) with the name of the class
 		and its parent.
 	*/
 	class Object
@@ -14,5 +14,8 @@ namespace Spark
 	public:
 		virtual const Class& GetClass();
 		static const Class& GetStaticClass();
+
+	protected:
+		using Super = Object;
 	};
 }

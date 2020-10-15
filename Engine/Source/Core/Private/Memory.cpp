@@ -1,4 +1,5 @@
 #include "Core/Memory/Memory.h"
+#include "Core/Types/Container.h"
 
 namespace Spark
 {
@@ -9,6 +10,22 @@ namespace Spark
 	Memory::Memory()
 	{
 		
+	}
+
+	Memory::~Memory()
+	{
+		if (m_SharedRefs.Size() > 0)
+		{
+			SPARK_LOG(LogMemory, Warning, STRING("%d object/s not deleted!"), m_SharedRefs.Size());
+		}
+
+		while (m_SharedRefs.Size() != 0)
+		{
+			SPARK_LOG(LogMemory, Warning, STRING("Deleting object with %d references"), m_SharedRefs[0]->RefCount);
+
+			delete m_SharedRefs[0]->AllocatedObject;
+			delete m_SharedRefs[0];
+		}
 	}
 
 	void Memory::Initialize()
@@ -73,6 +90,16 @@ namespace Spark
 	const MemoryStatistics& Memory::GetStats()
 	{
 		return GMemory->m_Stats;
+	}
+
+	Memory::SharedRef::SharedRef()
+	{
+		GMemory->m_SharedRefs.Add(this);
+	}
+
+	Memory::SharedRef::~SharedRef()
+	{
+		GMemory->m_SharedRefs.Erase(GMemory->m_SharedRefs.Find(this));
 	}
 }
 

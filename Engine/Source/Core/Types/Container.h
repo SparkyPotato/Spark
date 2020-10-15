@@ -163,17 +163,6 @@ namespace Spark
 	};
 
 	template<typename Type>
-	uint Array<Type>::Find(const Type& object)
-	{
-		for (uint i = 0; i < m_CreatedObjects; i++)
-		{
-			if (m_DataPointer[i] == object) return i;
-		}
-
-		return -1;
-	}
-
-	template<typename Type>
 	Array<Type>::Array() 
 	{
 		Realloc(2); // Actually allocates for 3 objects
@@ -232,6 +221,30 @@ namespace Spark
 	}
 
 	template<typename Type>
+	Array<Type>& Array<Type>::operator=(Array<Type>&& other)
+	{
+		m_DataPointer = other.m_DataPointer;
+		m_CreatedObjects = other.m_CreatedObjects;
+		m_AllocatedSpace = other.m_AllocatedSpace;
+
+		other.m_DataPointer = nullptr;
+	}
+
+	template<typename Type>
+	Array<Type>& Array<Type>::operator=(const Array<Type>& other)
+	{
+		~Array<Type>();
+
+		Realloc(other.m_CreatedObjects);
+		m_CreatedObjects = other.m_CreatedObjects;
+
+		for (uint i = 0; i < m_CreatedObjects; i++)
+		{
+			new (m_DataPointer + i) Type(other.m_DataPointer[i]);
+		}
+	}
+
+	template<typename Type>
 	Type& Array<Type>::operator[](uint index) 
 	{
 		SPARK_ASSERT(index < m_CreatedObjects);
@@ -272,6 +285,17 @@ namespace Spark
 			memcpy(m_DataPointer + i, m_DataPointer + i + 1, sizeof(Type));
 		}
 		m_CreatedObjects--;
+	}
+
+	template<typename Type>
+	uint Array<Type>::Find(const Type& object)
+	{
+		for (uint i = 0; i < m_CreatedObjects; i++)
+		{
+			if (m_DataPointer[i] == object) return i;
+		}
+
+		return -1;
 	}
 
 	template<typename Type>

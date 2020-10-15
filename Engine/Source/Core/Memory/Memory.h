@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/Types/Container.h"
 
 namespace Spark
 {
@@ -15,6 +16,7 @@ namespace Spark
 	{
 	public:
 		Memory();
+		~Memory();
 
 		static void Initialize();
 		static void Shutdown();
@@ -26,12 +28,17 @@ namespace Spark
 
 		struct SharedRef
 		{
+			SharedRef();
+
+			~SharedRef();
+
 			Object* AllocatedObject = nullptr;
 			uint RefCount = 0;
 		};
 
 	private:
 		MemoryStatistics m_Stats;
+		Array<SharedRef*> m_SharedRefs;
 	};
 
 	extern Memory* GMemory;
