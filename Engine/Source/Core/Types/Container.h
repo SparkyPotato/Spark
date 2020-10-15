@@ -55,6 +55,8 @@ namespace Spark
 		// Returns the total current capacity of the Array
 		uint Capacity();
 
+		uint Find(const Type& object);
+
 	private:
 		void Realloc(uint requiredObjects) ;
 
@@ -159,6 +161,17 @@ namespace Spark
 			const Type* m_Pointer;
 		};
 	};
+
+	template<typename Type>
+	uint Array<Type>::Find(const Type& object)
+	{
+		for (uint i = 0; i < m_CreatedObjects; i++)
+		{
+			if (m_DataPointer[i] == object) return i;
+		}
+
+		return -1;
+	}
 
 	template<typename Type>
 	Array<Type>::Array() 

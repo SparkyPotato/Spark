@@ -14,7 +14,7 @@ namespace Spark
 		bool IsAbstract;
 	};
 
-	class ClassManager;
+	bool operator==(const Class& first, const Class& second);
 
 	/*
 		Base class of all Engine Objects.
@@ -24,7 +24,7 @@ namespace Spark
 	class Object
 	{
 	public:
-		virtual const Class* GetClass();
-		static const Class* GetStaticClass();
+		virtual const Class& GetClass();
+		static const Class& GetStaticClass();
 	};
 }

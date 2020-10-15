@@ -10,8 +10,9 @@ namespace Spark
 
 	ClassManager::ClassManager()
 	{
-		m_ObjectNode.node = Class(STRING("Object"), true);
-		m_ObjectNode.parent = nullptr;
+		auto& obj = m_ParentNode.children.Emplace();
+		obj.node = Class(STRING("Object"), true);
+		obj.parent = ArrayPtr<ClassNode>(&m_ParentNode.children, 0);
 	}
 
 	void ClassManager::Initialize()
@@ -33,14 +34,14 @@ namespace Spark
 		GClassManager = nullptr;
 	}
 
-	Class* ClassManager::GetClass(const String& name)
+	ArrayPtr<ClassNode> ClassManager::GetClass(const String& name)
 	{
-		return &SearchNode(name, &m_ObjectNode)->node;
+		return SearchNode(name, &m_ParentNode);
 	}
 
 	void ClassManager::RegisterClass(const String& name, const String& parent, bool isAbstract)
 	{
-		auto node = SearchNode(parent, &m_ObjectNode);
+		auto node = SearchNode(parent, &m_ParentNode);
 
 		if (!node)
 		{
@@ -51,20 +52,23 @@ namespace Spark
 		node->AddChild(Class(name, isAbstract));
 	}
 
-	Class* ClassManager::GetBase()
+	Class& ClassManager::GetBase()
 	{
-		return &m_ObjectNode.node;
+		return m_ParentNode.children[0].node;
 	}
 
-	ClassNode* ClassManager::SearchNode(const String& className, ClassNode* node)
+	ArrayPtr<ClassNode> ClassManager::SearchNode(const String& className, ClassNode* node)
 	{
-		if (node->node.Name == className) return node;
-
-		for (auto& classNode : node->children)
+		for (uint i = 0; i < node->children.Size(); i++)
 		{
-			return SearchNode(className, &classNode);
+			if (node->children[i].node.Name == className)
+			{
+				return ArrayPtr<ClassNode>(&node->children, i);
+			}
+
+			return SearchNode(className, &node->children[i]);
 		}
 
-		return nullptr;
+		return ArrayPtr<ClassNode>();
 	}
 }

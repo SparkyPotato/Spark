@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Object/Object.h"
+#include "Core/Types/Pointer.h"
 
 namespace Spark
 {
@@ -7,16 +8,28 @@ namespace Spark
 	{
 		ClassNode() = default;
 
-		ClassNode* parent;
+		ArrayPtr<ClassNode> parent;
 
 		Class node;
 		Array<ClassNode> children;
 
-		void AddChild(const Class& c)
+		ClassNode& AddChild(const Class& c)
 		{
 			auto& cn = children.Emplace();
 			cn.node = c;
-			cn.parent = this;
+			
+			if (this->parent)
+			{
+				uint index = 0;
+				for (; index < this->parent->children.Size(); index++)
+				{
+					if (this->parent->children[index].node == this->node) break;
+				}
+
+				cn.parent = ArrayPtr<ClassNode>(&this->parent->children, index);
+			}
+
+			return cn;
 		}
 	};
 
@@ -28,15 +41,15 @@ namespace Spark
 		static void Initialize();
 		static void Shutdown();
 
-		Class* GetClass(const String& name);
+		ArrayPtr<ClassNode> GetClass(const String& name);
 		void RegisterClass(const String& name, const String& parent, bool isAbstract);
 
-		Class* GetBase();
+		Class& GetBase();
 
 	private:
-		ClassNode* SearchNode(const String& className, ClassNode* node);
+		ArrayPtr<ClassNode> SearchNode(const String& className, ClassNode* node);
 
-		ClassNode m_ObjectNode;
+		ClassNode m_ParentNode;
 	};
 
 	extern ClassManager* GClassManager;
@@ -47,8 +60,18 @@ private: \
 inline static const String m_ClassName = STRING(#name); \
 inline static const String m_ParentName = STRING(#parent); \
 public: \
-const Class* GetClass() override { return GClassManager->GetClass(m_ClassName); } \
-static const Class* GetStaticClass() { return GClassManager->GetClass(m_ClassName); } \
+const Class& GetClass() override \
+{ \
+	static ArrayPtr<ClassNode> classNode; \
+	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
+	return classNode->node; \
+} \
+static const Class& GetStaticClass() \
+{ \
+	static ArrayPtr<ClassNode> classNode; \
+	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
+	return classNode->node; \
+} \
 static void RegisterClass() { GClassManager->RegisterClass(m_ClassName, m_ParentName, false); }
 
 #define REGISTER_CLASS_ABS(name, parent) \
@@ -56,6 +79,16 @@ private: \
 inline static const String m_ClassName = STRING(#name); \
 inline static const String m_ParentName = STRING(#parent); \
 public: \
-const Class* GetClass() override { return GClassManager->GetClass(m_ClassName); } \
-static const Class* GetStaticClass() { return GClassManager->GetClass(m_ClassName); } \
+const Class& GetClass() override \
+{ \
+	static ArrayPtr<ClassNode> classNode; \
+	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
+	return classNode->node; \
+} \
+static const Class& GetStaticClass() \
+{ \
+	static ArrayPtr<ClassNode> classNode; \
+	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
+	return classNode->node; \
+} \
 static void RegisterClass() { GClassManager->RegisterClass(m_ClassName, m_ParentName, true); }

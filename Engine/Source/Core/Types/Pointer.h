@@ -79,4 +79,39 @@ namespace Spark
 
 		return temp;
 	}
+
+	template<typename Type>
+	class ArrayPtr
+	{
+	public:
+		ArrayPtr() = default;
+
+		ArrayPtr(Array<Type>* array, uint index)
+			: m_Array(array), m_ObjectIndex(index)
+		{}
+
+		Type* operator->()
+		{
+			return &(*m_Array)[m_ObjectIndex];
+		}
+
+		Type& operator*()
+		{
+			if (m_IsArray)
+			{
+				return (*m_Array)[m_ObjectIndex];
+			}
+
+			return *m_Storage.ptr;
+		}
+
+		operator bool()
+		{
+			return m_Array;
+		}
+
+	private:
+		Array<Type>* m_Array = nullptr;
+		uint m_ObjectIndex = 0;
+	};
 }

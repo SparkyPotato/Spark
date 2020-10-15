@@ -306,7 +306,7 @@ namespace Spark
 	{
 		if (occurrence == 0) return cend();
 
-		for (const auto& c : *this)
+		for (auto c : *this)
 		{
 			if (c == character)
 			{

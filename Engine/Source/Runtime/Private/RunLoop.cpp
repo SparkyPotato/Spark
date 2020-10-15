@@ -29,7 +29,7 @@ namespace Spark
 
 		while (m_IsRunning)
 		{
-
+			
 		}
 
 		ModuleManager::Shutdown();
