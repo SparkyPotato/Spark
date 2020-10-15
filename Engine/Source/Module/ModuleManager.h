@@ -19,9 +19,9 @@ namespace Spark
 		{
 			T::RegisterClass();
 
-			if (T::GetStaticClass()->IsAbstract)
+			if (T::GetStaticClass().IsAbstract)
 			{
-				SPARK_LOG(LogModuleManager, Error, STRING("Cannot instantiate abstract module '%s'!"), T::GetStaticClass()->Name.GetCharPointer());
+				SPARK_LOG(LogModuleManager, Error, STRING("Cannot instantiate abstract module '%s'!"), T::GetStaticClass().Name.GetCharPointer());
 				return;
 			}
 

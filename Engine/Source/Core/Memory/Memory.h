@@ -24,9 +24,9 @@ namespace Spark
 
 		static const MemoryStatistics& GetStats();
 
-		struct Object
+		struct SharedRef
 		{
-			Spark::Object* AllocatedObject = nullptr;
+			Object* AllocatedObject = nullptr;
 			uint RefCount = 0;
 		};
 

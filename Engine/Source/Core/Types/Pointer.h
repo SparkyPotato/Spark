@@ -53,16 +53,14 @@ namespace Spark
 
 	private:
 		Obj* m_Object;
-		Memory::Object* m_SharedRef;
+		Memory::SharedRef* m_SharedRef;
 	};
 
 	template<class Type>
 	ObjPtr<Type> Create()
 	{
-		static_assert(Type::GetStaticClass(), "Template needs to be an Object!");
-
 		ObjPtr<Type> temp;
-		temp.m_SharedRef = new Memory::Object;
+		temp.m_SharedRef = new Memory::SharedRef;
 		temp.m_SharedRef->AllocatedObject = temp.m_Object = new Type();
 		temp.m_SharedRef->RefCount = 1;
 
@@ -73,7 +71,7 @@ namespace Spark
 	ObjPtr<Cast> Create()
 	{
 		ObjPtr<Cast> temp;
-		temp.m_SharedRef = new Memory::Object;
+		temp.m_SharedRef = new Memory::SharedRef;
 		temp.m_SharedRef->AllocatedObject = temp.m_Object = new Type();
 		temp.m_SharedRef->RefCount = 1;
 
@@ -97,12 +95,7 @@ namespace Spark
 
 		Type& operator*()
 		{
-			if (m_IsArray)
-			{
-				return (*m_Array)[m_ObjectIndex];
-			}
-
-			return *m_Storage.ptr;
+			return (*m_Array)[m_ObjectIndex];
 		}
 
 		operator bool()

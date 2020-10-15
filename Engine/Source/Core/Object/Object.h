@@ -2,19 +2,7 @@
 
 namespace Spark
 {
-	struct Class
-	{
-		Class() = default;
-
-		Class(const String& name, bool isAbstract)
-			: Name(name), IsAbstract(isAbstract)
-		{}
-
-		String Name;
-		bool IsAbstract;
-	};
-
-	bool operator==(const Class& first, const Class& second);
+	struct Class;
 
 	/*
 		Base class of all Engine Objects.
