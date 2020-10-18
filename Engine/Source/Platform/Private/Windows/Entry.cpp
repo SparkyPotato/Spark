@@ -14,6 +14,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	SetSignalHandler(); // Set the signal handler for console interrupts
 
+	String a = "meow";
+	a[100];
+
 	GRunLoop.Start(); // Start the Engine Run Loop, where everything actually happens
 	
 	Memory::Shutdown(); // Shutdown memory manager and report memory stats on exit

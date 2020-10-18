@@ -214,7 +214,7 @@ namespace Spark
 	template<typename Type>
 	Type& Array<Type>::operator[](uint index) 
 	{
-		SPARK_ASSERT(index < m_CreatedObjects);
+		SPARK_ASSERT(index < m_CreatedObjects, STRING("Out of index range!"));
 
 		return m_DataPointer[index];
 	}

@@ -30,6 +30,21 @@ namespace Spark
 		memcpy(m_DataPointer, charArray, m_UsedMemory * sizeof(Char));
 	}
 
+	String::String(const char* charArray)
+	{
+		Char* temp = Platform::ToUnicode(charArray);
+
+		uint arraySize = GetCharPointerLength(temp);
+
+		Realloc(arraySize);
+		m_UsedMemory = arraySize;
+
+		// Copy over data
+		memcpy(m_DataPointer, temp, m_UsedMemory * sizeof(Char));
+
+		delete temp;
+	}
+
 	String::String(const String& other) 
 	{
 		// Allocate memory
@@ -53,7 +68,7 @@ namespace Spark
 
 	String::String(const String& other, uint start, uint end) 
 	{
-		SPARK_ASSERT(start <= end);
+		SPARK_ASSERT(start <= end, STRING("end > start!"));
 
 		Realloc(end - start + 2);
 		m_UsedMemory = end - start + 2;
@@ -205,7 +220,7 @@ namespace Spark
 
 	Char& String::operator[](uint offset) 
 	{
-		SPARK_ASSERT(offset < m_UsedMemory);
+		SPARK_ASSERT(offset < m_UsedMemory, STRING("Out of index range!"));
 
 		return m_DataPointer[offset];
 	}

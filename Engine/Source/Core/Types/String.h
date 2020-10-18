@@ -6,7 +6,8 @@ namespace Spark
 {
 	/*
 		Dynamic, heap-allocated Unicode-encoded string. Use the STRING(x) macro to convert to Unicode.
-		For example, String str(STRING("Hello")) will work, but String str("Hello") will not.
+		For example, String str(STRING("Hello")) will work, but String str("Hello") will have to convert from ASCII to Unicode.
+		It will also not support any non-ASCII characters
 	*/
 	class String
 	{
@@ -26,6 +27,9 @@ namespace Spark
 		String(uint size);
 		// Constructs a string from a STRING()ified const char*
 		String(const Char* charArray);
+		// Constructs a string from a const char*, by converting into unicode
+		String(const char* charArray);
+
 		String(const String& other);
 		String(String&& other);
 		// Generates a substring from the given indices (both inclusive)

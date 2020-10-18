@@ -2,6 +2,8 @@
 
 #include "SparkPCH.h"
 
+#include "Assert.cpp"
+
 #include "Memory.cpp"
 
 #include "Types/Pointer.cpp"

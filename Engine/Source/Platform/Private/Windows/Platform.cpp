@@ -32,5 +32,15 @@ namespace Platform
 	{
 		MessageBoxW(nullptr, message.GetCharPointer(), title.GetCharPointer(), MB_OK);
 	}
+
+	Char* ToUnicode(const char* ascii)
+	{
+		auto size = MultiByteToWideChar(CP_UTF8, 0, ascii, -1, nullptr, 0);
+
+		auto temp = new Char[size];
+		MultiByteToWideChar(CP_UTF8, 0, ascii, -1, temp, size);
+
+		return temp;
+	}
 }
 }
