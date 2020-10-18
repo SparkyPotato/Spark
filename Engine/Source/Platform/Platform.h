@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 
 #ifdef _WIN32

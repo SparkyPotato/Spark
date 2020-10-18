@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #include "Core/Object/ClassManager.h"
 
 #include "Module/Module.h"
@@ -10,6 +12,7 @@ namespace Spark
 
 	ClassManager::ClassManager()
 	{
+		// Create the base Object node
 		m_ParentNodes.Emplace();
 		auto& obj = m_ParentNodes[0].Children.Emplace(STRING("Object"), true);
 		obj.Parent = ArrayPtr<Class>(&m_ParentNodes, 0);
@@ -25,13 +28,17 @@ namespace Spark
 
 		GClassManager = new ClassManager;
 
-		Module::RegisterClass();
+		SPARK_LOG(LogClassManager, Trace, STRING("Initialized Class Manager"));
+
+		Module::RegisterClass(); // Register the Engine Module class
 	}
 
 	void ClassManager::Shutdown()
 	{
 		delete GClassManager;
 		GClassManager = nullptr;
+
+		SPARK_LOG(LogClassManager, Trace, STRING("Shutdown Class Manager"));
 	}
 
 	ArrayPtr<Class> ClassManager::GetClass(const String& name)
@@ -50,6 +57,8 @@ namespace Spark
 		}
 
 		node->AddChild(name, isAbstract);
+
+		SPARK_LOG(LogClassManager, Verbose, STRING("Registered class '%s' deriving from '%s'"), name.GetCharPointer(), parent.GetCharPointer());
 	}
 
 	Class& ClassManager::GetBase()
@@ -90,6 +99,7 @@ namespace Spark
 	{
 		const Class* d = &derived;
 
+		// Climb up the class tree checking if the parent exists
 		while (auto p = d->Parent)
 		{
 			if (*p == base) return true;

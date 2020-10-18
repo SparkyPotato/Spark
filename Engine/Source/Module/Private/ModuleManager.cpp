@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #include "Module/ModuleManager.h"
 
 namespace Spark
@@ -28,6 +30,8 @@ namespace Spark
 
 		GModuleManager = new ModuleManager;
 
+		SPARK_LOG(LogModuleManager, Trace, STRING("Initialized Module Manager"));
+
 		AddEngineModules();
 	}
 
@@ -35,6 +39,7 @@ namespace Spark
 	{
 		delete GModuleManager;
 		GModuleManager = nullptr;
-	}
 
+		SPARK_LOG(LogModuleManager, Trace, STRING("Shutdown Module Manager"));
+	}
 }

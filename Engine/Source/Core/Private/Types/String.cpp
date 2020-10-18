@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #include "Core/Types/String.h"
 
 namespace Spark
@@ -93,11 +95,11 @@ namespace Spark
 		return *this;
 	}
 
-	bool String::operator==(const String& other) const
+	bool operator==(const String& first, const String& second)
 	{
-		if (m_UsedMemory != other.m_UsedMemory) return false;
+		if (first.m_UsedMemory != second.m_UsedMemory) return false;
 
-		if (memcmp(m_DataPointer, other.m_DataPointer, m_UsedMemory * sizeof(Char)) == 0)
+		if (memcmp(first.m_DataPointer, second.m_DataPointer, first.m_UsedMemory * sizeof(Char)) == 0)
 		{
 			return true;
 		}

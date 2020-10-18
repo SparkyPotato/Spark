@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 
 namespace Spark
@@ -71,6 +73,12 @@ namespace Spark
 		template<class Cast, class Type>
 		friend ObjPtr<Cast> Create();
 
+		template<class To, class From>
+		friend ObjPtr<To> Cast(ObjPtr<From> cast);
+
+		template<class To, class From>
+		friend ObjPtr<To> UnsafeCast(ObjPtr<From> cast);
+
 	private:
 		Obj* m_Object;
 		Memory::SharedRef* m_SharedRef;
@@ -90,12 +98,20 @@ namespace Spark
 	template<class Cast, class Type>
 	ObjPtr<Cast> Create()
 	{
-		ObjPtr<Cast> temp;
-		temp.m_SharedRef = new Memory::SharedRef;
-		temp.m_SharedRef->AllocatedObject = temp.m_Object = Spark::Cast<Cast>(new Type());
-		temp.m_SharedRef->RefCount = 1;
+		if (Cast::GetClass().IsSubclassOf<Type>() || Type::GetClass().IsSubclassOf<Cast>())
+		{
+			ObjPtr<Cast> temp;
 
-		return temp;
+			temp.m_SharedRef = new Memory::SharedRef;
+			temp.m_SharedRef->AllocatedObject = temp.m_Object = reinterpret_cast<Cast*>(new Type);
+			temp.m_SharedRef->RefCount = 1;
+
+			return temp;
+		}
+		else
+		{
+			return ObjPtr<Cast>();
+		}
 	}
 
 	template<typename Type>

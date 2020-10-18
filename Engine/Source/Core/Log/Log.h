@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 
 namespace Spark
@@ -11,7 +13,7 @@ namespace Spark
 		Debug = 4,
 		Warning = 5,
 		Error = 6,
-		Fatal = 7
+		Fatal = 7 // Causes the Engine to force quit immediately if logged
 	};
 
 	const String&LogLevelToString(LogLevel level);
@@ -22,10 +24,10 @@ namespace Spark
 			: CategoryName(catName), Level(level), FormattedMessage(message), Time(time)
 		{}
 
-		const String& CategoryName;
-		LogLevel Level;
-		String FormattedMessage;
-		DateTime Time;
+		const String& CategoryName; // Name of Category
+		LogLevel Level; // Log Level
+		String FormattedMessage; // Entire formatted message which just needs to be output
+		DateTime Time; // Time of log
 	};
 
 	template<LogLevel LeastLevel>
@@ -36,9 +38,7 @@ namespace Spark
 			: m_CategoryName(Name)
 		{}
 
-		inline bool ShouldLog(LogLevel level) { return level >= LeastLevel; }
-
-		const String& GetCategoryName() const { return m_CategoryName; }
+		inline const String& GetCategoryName() const { return m_CategoryName; }
 
 	private:
 		String m_CategoryName;

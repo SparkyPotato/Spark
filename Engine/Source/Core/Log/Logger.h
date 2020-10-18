@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 #include "Core/Log/Log.h"
 #include "Core/Log/Sinks.h"
@@ -7,7 +9,6 @@ namespace Spark
 	class Logger
 	{
 	public:
-		static void Initialize();
 		static void Shutdown();
 
 		template<LogLevel T, typename ...Args>
@@ -15,7 +16,12 @@ namespace Spark
 
 		static void HandleFatal();
 
-		static void PushSink(ILogSink* sink);
+		// Push a custom log sink into the logger
+		template<typename T>
+		static void PushSink()
+		{
+			m_RegisteredSinks.Add(new T);
+		}
 
 	private:
 		static Array<ILogSink*> m_RegisteredSinks;
@@ -25,7 +31,7 @@ namespace Spark
 	template<LogLevel T, typename ...Args>
 	void Logger::DoLog(LogCategory<T>* category, LogLevel level, const String& format, Args... args)
 	{
-		if (!category->ShouldLog(level)) return;
+		if (level < T) return;
 
 		DateTime now = DateTime::Now();
 

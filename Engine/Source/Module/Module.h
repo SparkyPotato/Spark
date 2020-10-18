@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 
 namespace Spark
@@ -5,7 +7,11 @@ namespace Spark
 	class Module : public Object
 	{
 	public:
-		virtual void RegisterObjects() = 0;
+		virtual ~Module() {}
+
+		virtual void RegisterObjects() {}
+
+		virtual void Start() = 0;
 
 		REGISTER_CLASS_FULL(Module, Object, true);
 

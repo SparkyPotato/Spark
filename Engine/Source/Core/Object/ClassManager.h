@@ -1,6 +1,7 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 #include "Core/Object/Object.h"
-#include "Core/Types/Pointer.h"
 
 namespace Spark
 {
@@ -11,17 +12,17 @@ namespace Spark
 			: Name(name), IsAbstract(isAbstract)
 		{}
 
-		String Name;
-		Array<Class> Children;
+		String Name; // Name of the class
+		Array<Class> Children; // Array of all child classes
 		bool IsAbstract = false;
-		ArrayPtr<Class> Parent;
+		ArrayPtr<Class> Parent; // Pointer to the parent class
 
 		static bool IsSubclass(const Class& derived, const Class& base);
 		
 		bool IsSubclassOf(const Class& base) const;
 
 		template<class T>
-		bool IsSubclassOf() const { return IsSubclass(*this, T::GetStaticClass()); }
+		bool IsSubclassOf() const { return IsSubclass(*this, T::GetClass()); }
 
 	private:
 		friend class ClassManager;
@@ -52,15 +53,33 @@ namespace Spark
 
 	extern ClassManager* GClassManager;
 
+	// Check if the cast is possible, and return a null ObjPtr if not
 	template<class To, class From>
-	To* Cast(From* cast)
+	ObjPtr<To> Cast(ObjPtr<From> cast)
 	{
-		if (To::GetStaticClass().IsSubclassOf<From>() || From::GetStaticClass().IsSubclassOf<To>())
+		if (To::GetClass().IsSubclassOf<From>() || From::GetClass().IsSubclassOf<To>())
 		{
-			return reinterpret_cast<To*>(cast);
+			ObjPtr<To> temp;
+			temp.m_Object = reinterpret_cast<To*>(cast.m_Object);
+			temp.m_SharedRef = cast.m_SharedRef;
+			temp.m_SharedRef->RefCount++;
+
+			return temp;
 		}
 
-		return nullptr;
+		return ObjPtr<To>();
+	}
+
+	// Unsafely cast - only do if you are sure the cast is possible
+	template<class To, class From>
+	ObjPtr<To> UnsafeCast(ObjPtr<From> cast)
+	{
+		ObjPtr<To> temp;
+		temp.m_Object = reinterpret_cast<To*>(cast.m_Object);
+		temp.m_SharedRef = cast.m_SharedRef;
+		temp.m_SharedRef->RefCount++;
+
+		return temp;
 	}
 }
 
@@ -71,13 +90,7 @@ private: \
 inline static const String m_ClassName = STRING(#name); \
 inline static const String m_ParentName = STRING(#parent); \
 public: \
-const Class& GetClass() override \
-{ \
-	static ArrayPtr<Class> classNode; \
-	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
-	return *classNode; \
-} \
-static const Class& GetStaticClass() \
+static const Class& GetClass() \
 { \
 	static ArrayPtr<Class> classNode; \
 	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \

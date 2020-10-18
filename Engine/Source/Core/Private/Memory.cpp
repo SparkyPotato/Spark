@@ -1,5 +1,6 @@
+// Copyright 2020 SparkyPotato
+
 #include "Core/Memory/Memory.h"
-#include "Core/Types/Container.h"
 
 namespace Spark
 {
@@ -19,18 +20,30 @@ namespace Spark
 			SPARK_LOG(LogMemory, Warning, STRING("%d object/s not deleted!"), m_SharedRefs.Size());
 		}
 
-		while (m_SharedRefs.Size() != 0)
+		for (auto object : m_SharedRefs)
 		{
-			SPARK_LOG(LogMemory, Warning, STRING("Deleting object with %d references"), m_SharedRefs[0]->RefCount);
-
-			delete m_SharedRefs[0]->AllocatedObject;
-			delete m_SharedRefs[0];
+			object->AllocatedObject->~Object();
+			SPARK_LOG(LogMemory, Verbose, STRING("Deleting object with %d references"), object->RefCount);
 		}
 	}
 
 	void Memory::Initialize()
 	{
-		GMemory = new Memory();
+		/*
+			Instead of just declaring GMemory = new Memory,
+			we do this because we don't want heap allocations by static objects to be counted,
+			as the memory leak detection is done before static objects are destroyed.
+			We would then have memory leaks all the time, which could not be removed - not very good design!
+		*/
+
+		if (GMemory)
+		{
+			SPARK_LOG(LogMemory, Error, STRING("Memory manager already initialized!"));
+			return;
+		}
+
+		GMemory = new Memory;
+		SPARK_LOG(LogMemory, Trace, STRING("Memory manager initialized"));
 	}
 
 	void Memory::Shutdown()
@@ -55,8 +68,9 @@ namespace Spark
 
 	void* Memory::AllocSize(size_t size)
 	{
+		// Allocate memory + 1 size_t
 		auto pointer = reinterpret_cast<size_t*>(malloc(size + sizeof(size_t)));
-		pointer[0] = size;
+		pointer[0] = size; // Store requested size in the first size_t
 
 		#ifdef IS_DEBUG
 		if (GMemory)
@@ -66,24 +80,25 @@ namespace Spark
 		}
 		#endif
 
-		return &pointer[1];
+		return &pointer[1]; // Return the second size_t, just after the stored size
 	}
 
 	void Memory::Dealloc(void* pointer)
 	{
 		if (pointer)
 		{
-			auto ptr = reinterpret_cast<size_t*>(pointer);
+			auto ptr = reinterpret_cast<size_t*>(pointer); // Cast to a size_t
+			ptr--; // Decrement the pointer to point to the stored size in AllocSize
 
 			#ifdef IS_DEBUG
 			if (GMemory)
 			{
-				GMemory->m_Stats.CurrentAllocation -= ptr[-1];
+				GMemory->m_Stats.CurrentAllocation -= *ptr; // Retrieve the stored size
 				GMemory->m_Stats.DeallocationCount++;
 			}
 			#endif
 
-			free(--ptr);
+			free(ptr); // Free the decremented pointer
 		}
 	}
 

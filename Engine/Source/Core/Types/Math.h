@@ -1,4 +1,7 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
+
 #include <immintrin.h>
 
 namespace Spark

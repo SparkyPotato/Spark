@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 #include "Module/Module.h"
 
@@ -8,6 +10,8 @@ namespace Spark
 	class WindowManager : public Module 
 	{
 	public:
+		void Start() override;
+
 		void RegisterObjects() override;
 
 		REGISTER_CLASS(WindowManager, Module);

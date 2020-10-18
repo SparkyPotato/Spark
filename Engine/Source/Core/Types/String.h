@@ -1,9 +1,11 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 
 namespace Spark
 {
 	/*
-		Dynamic, Heap-allocated Unicode-encoded string. Use the STRING(x) macro to convert to Unicode.
+		Dynamic, heap-allocated Unicode-encoded string. Use the STRING(x) macro to convert to Unicode.
 		For example, String str(STRING("Hello")) will work, but String str("Hello") will not.
 	*/
 	class String
@@ -24,9 +26,7 @@ namespace Spark
 		String(uint size);
 		// Constructs a string from a STRING()ified const char*
 		String(const Char* charArray);
-		// Copy constructor
 		String(const String& other);
-		// Move constructor
 		String(String&& other);
 		// Generates a substring from the given indices (both inclusive)
 		String(const String& other, uint start, uint end);
@@ -37,7 +37,7 @@ namespace Spark
 		String& operator=(const String& other);
 		String& operator=(String&& other);
 
-		bool operator==(const String& other) const;
+		friend bool operator==(const String& first, const String& second);
 
 		// Append operators
 		String operator+(Char append) const ;
@@ -261,6 +261,7 @@ namespace Spark
 	};
 
 	String operator+(const Char* cstr, const String& string);
+	bool operator==(const String& first, const String& second);
 
 	bool operator==(const String::Iterator& first, const String::Iterator& second);
 	bool operator!=(const String::Iterator& first, const String::Iterator& second);

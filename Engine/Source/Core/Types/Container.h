@@ -1,7 +1,12 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
 
 namespace Spark
 {
+	template<typename Type>
+	class ArrayIterator;
+
 	/*
 		Dynamic array.
 		Does not require template type to have default, copy, or move constructors.
@@ -9,12 +14,6 @@ namespace Spark
 	template<typename Type>
 	class Array
 	{
-	public:
-		class Iterator;
-		class ConstIterator;
-		class ReverseIterator;
-		class ConstReverseIterator;
-
 	public:
 		// Default constructor
 		Array();
@@ -37,8 +36,8 @@ namespace Spark
 		Type& operator[](uint index);
 
 		// Iterators
-		Iterator begin() const { return Iterator(m_DataPointer); }
-		Iterator end() const { return Iterator(m_DataPointer + m_CreatedObjects); }
+		ArrayIterator<Type> begin() const { return ArrayIterator(m_DataPointer); }
+		ArrayIterator<Type> end() const { return ArrayIterator(m_DataPointer + m_CreatedObjects); }
 
 		// Construct an object in place at the end of the Array
 		template<typename ...Args>
@@ -63,103 +62,71 @@ namespace Spark
 		Type* m_DataPointer = nullptr;
 		uint m_AllocatedSpace = 0;
 		uint m_CreatedObjects = 0;
+	};
 
+	template<typename Type>
+	class ArrayIterator
+	{
 	public:
-		class Iterator
+		ArrayIterator(Type* pointer)
+			: m_Pointer(pointer)
+		{}
+
+		ArrayIterator operator+(uint offset)
 		{
-		public:
-			Iterator(Type* pointer)
-				: m_Pointer(pointer)
-			{}
+			return ArrayIterator(m_Pointer + offset);
+		}
 
-			Iterator operator+(uint offset) 
-			{
-				return Iterator(m_Pointer + offset);
-			}
-
-			Iterator operator-(uint offset) 
-			{
-				return Iterator(m_Pointer - offset);
-			}
-
-			Iterator& operator++() 
-			{
-				m_Pointer++;
-				return *this;
-			}
-			Iterator operator++(int) 
-			{
-				Iterator temp(m_Pointer);
-				m_Pointer++;
-				return temp;
-			}
-			Iterator& operator--() 
-			{
-				m_Pointer--;
-				return *this;
-			}
-			Iterator operator--(int) 
-			{
-				Iterator temp(m_Pointer);
-				m_Pointer--;
-				return temp;
-			}
-
-			Type& operator[](uint offset)
-			{
-				return m_Pointer[offset];
-			}
-
-			Type& operator*() 
-			{
-				return *m_Pointer;
-			}
-			Type* operator->() 
-			{
-				return m_Pointer;
-			}
-
-			bool operator!=(const Iterator& other) 
-			{
-				return m_Pointer != other.m_Pointer;
-			}
-
-		private:
-			Type* m_Pointer;
-		};
-
-		class ConstIterator
+		ArrayIterator operator-(uint offset)
 		{
-		public:
-			ConstIterator(const Type* pointer)
-				: m_Pointer(pointer)
-			{}
+			return ArrayIterator(m_Pointer - offset);
+		}
 
-		private:
-			const Type* m_Pointer;
-		};
-
-		class ReverseIterator
+		ArrayIterator& operator++()
 		{
-		public:
-			ReverseIterator(Type* pointer)
-				: m_Pointer(pointer)
-			{}
-
-		private:
-			Type* m_Pointer;
-		};
-
-		class ConstReverseIterator
+			m_Pointer++;
+			return *this;
+		}
+		ArrayIterator operator++(int)
 		{
-		public:
-			ConstReverseIterator(const Type* pointer)
-				: m_Pointer(pointer)
-			{}
+			ArrayIterator temp(m_Pointer);
+			m_Pointer++;
+			return temp;
+		}
+		ArrayIterator& operator--()
+		{
+			m_Pointer--;
+			return *this;
+		}
+		ArrayIterator operator--(int)
+		{
+			ArrayIterator temp(m_Pointer);
+			m_Pointer--;
+			return temp;
+		}
 
-		private:
-			const Type* m_Pointer;
-		};
+		Type& operator[](uint offset)
+		{
+			return m_Pointer[offset];
+		}
+
+		Type& operator*()
+		{
+			return *m_Pointer;
+		}
+		Type* operator->()
+		{
+			return m_Pointer;
+		}
+
+		template<typename T>
+		friend bool operator==(ArrayIterator<T> first, ArrayIterator<T> second);
+
+		template<typename T>
+		friend bool operator!=(ArrayIterator<T> first, ArrayIterator<T> second);
+
+	private:
+		Type* m_Pointer;
 	};
 
 	template<typename Type>
@@ -322,5 +289,17 @@ namespace Spark
 		Memory::Dealloc(m_DataPointer);
 
 		m_DataPointer = newPointer;
+	}
+
+	template<typename T>
+	bool operator==(typename ArrayIterator<T> first, typename ArrayIterator<T> second)
+	{
+		return first.m_Pointer == second.m_Pointer;
+	}
+
+	template<typename T>
+	bool operator!=(typename ArrayIterator<T> first, typename ArrayIterator<T> second)
+	{
+		return first.m_Pointer != second.m_Pointer;
 	}
 }

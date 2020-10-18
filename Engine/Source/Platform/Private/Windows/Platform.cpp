@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #include "Platform/Platform.h"
 
 namespace Spark

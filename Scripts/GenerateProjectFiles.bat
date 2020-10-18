@@ -1,3 +1,5 @@
+:: Copyright 2020 SparkyPotato
+
 @echo off
 pushd ..\
 
@@ -12,7 +14,7 @@ if %vsVersion%==2019 (
 	call Dependencies\Premake\premake5.exe vs2019
 ) else (
 	if %vsVersion%==2017 (
-		call Dependencies\Premake\premake5 vs2017
+		call Dependencies\Premake\premake5.exe vs2017
 	) else (
 		echo Only Visual Studio 2017 and 2019 are supported!
 	)

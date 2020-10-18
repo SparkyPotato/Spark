@@ -1,3 +1,5 @@
+-- Copyright 2020 SparkyPotato
+
 project "Spark"
 	language "C++"
 	cppdialect "C++20"
@@ -5,9 +7,9 @@ project "Spark"
 	
 	characterset "Unicode"
 	
-	targetdir "../Binaries/%{cfg.buildcfg}/Spark"
-	objdir "../Intermediate/%{cfg.buildcfg}/Spark"
-	debugdir "../Binaries/%{cfg.buildcfg}/Spark"
+	targetdir "../Binaries/Spark/%{cfg.buildcfg}"
+	objdir "../Intermediate/Spark/%{cfg.buildcfg}"
+	debugdir "../Binaries/Spark/%{cfg.buildcfg}"
 	
 	pchheader "SparkPCH.h"
 	pchsource "PCH/SparkPCH.cpp"

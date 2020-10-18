@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #include "Core/Types/Time.h"
 
 namespace Spark

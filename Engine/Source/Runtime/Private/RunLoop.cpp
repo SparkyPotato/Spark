@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #include "Runtime/RunLoop/RunLoop.h"
 
 #include "Module/ModuleManager.h"
@@ -27,7 +29,7 @@ namespace Spark
 
 		SPARK_LOG(LogRunLoop, Trace, STRING("Started Run Loop"));
 
-		while (m_IsRunning)
+		while (!m_IsRunning)
 		{
 			
 		}
@@ -47,7 +49,6 @@ namespace Spark
 		Memory::Shutdown();
 
 		SPARK_LOG(LogRunLoop, Trace, STRING("Exiting..."));
-		Logger::Shutdown();
 
 		exit(1);
 	}

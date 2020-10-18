@@ -1,14 +1,17 @@
+// Copyright 2020 SparkyPotato
+
 #include "Core/Log/Logger.h"
 
 #include "Runtime/RunLoop/RunLoop.h"
 
 namespace Spark
 {
-	Array<ILogSink*> Logger::m_RegisteredSinks;
+	Array<ILogSink*> Logger::m_RegisteredSinks = { new DebugSink, new ConsoleSink, new FileSink };
 	String Logger::m_FormatString = STRING("[%02d:%02d:%02d:%03d] %s (%s): ");
 
 	const String& LogLevelToString(LogLevel level)
 	{
+		// Prevent creation of temporaries for every single log
 		static const String verbose = STRING("Verbose");
 		static const String trace = STRING("Trace");
 		static const String log = STRING("Log");
@@ -33,16 +36,6 @@ namespace Spark
 		return log;
 	}
 
-	void Logger::Initialize()
-	{
-	#ifdef IS_DEBUG
-		PushSink(new DebugSink);
-	#endif
-
-		PushSink(new FileSink);
-		PushSink(new ConsoleSink);
-	}
-
 	void Logger::Shutdown()
 	{
 		while (m_RegisteredSinks.Size() != 0)
@@ -55,11 +48,6 @@ namespace Spark
 	void Logger::HandleFatal()
 	{
 		GRunLoop.ForceQuit();
-	}
-
-	void Logger::PushSink(ILogSink* sink)
-	{
-		m_RegisteredSinks.Add(sink);
 	}
 
 	void DebugSink::PushLog(const Log& log)
@@ -110,6 +98,11 @@ namespace Spark
 	FileSink::FileSink()
 	{
 		fopen_s(&m_File, "Log.txt", "w");
+	}
+
+	FileSink::~FileSink()
+	{
+		fclose(m_File);
 	}
 
 	void FileSink::PushLog(const Log& log)

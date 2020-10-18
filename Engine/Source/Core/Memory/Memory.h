@@ -1,5 +1,6 @@
+// Copyright 2020 SparkyPotato
+
 #pragma once
-#include "Core/Types/Container.h"
 
 namespace Spark
 {
