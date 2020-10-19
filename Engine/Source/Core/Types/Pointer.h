@@ -23,8 +23,8 @@ namespace Spark
 
 			if (m_SharedRef->RefCount <= 0)
 			{
-				delete m_Object;
-				delete m_SharedRef;
+				sdelete m_Object;
+				sdelete m_SharedRef;
 			}
 		}
 
@@ -88,8 +88,8 @@ namespace Spark
 	ObjPtr<Type> Create()
 	{
 		ObjPtr<Type> temp;
-		temp.m_SharedRef = new Memory::SharedRef;
-		temp.m_SharedRef->AllocatedObject = temp.m_Object = new Type();
+		temp.m_SharedRef = snew Memory::SharedRef;
+		temp.m_SharedRef->AllocatedObject = temp.m_Object = snew Type();
 		temp.m_SharedRef->RefCount = 1;
 
 		return temp;

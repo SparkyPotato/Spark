@@ -26,7 +26,7 @@ namespace Spark
 			return;
 		}
 
-		GClassManager = new ClassManager;
+		GClassManager = snew ClassManager;
 
 		SPARK_LOG(LogClassManager, Trace, STRING("Initialized Class Manager"));
 
@@ -35,7 +35,7 @@ namespace Spark
 
 	void ClassManager::Shutdown()
 	{
-		delete GClassManager;
+		sdelete GClassManager;
 		GClassManager = nullptr;
 
 		SPARK_LOG(LogClassManager, Trace, STRING("Shutdown Class Manager"));

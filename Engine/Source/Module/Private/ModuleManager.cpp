@@ -28,7 +28,7 @@ namespace Spark
 			return;
 		}
 
-		GModuleManager = new ModuleManager;
+		GModuleManager = snew ModuleManager;
 
 		SPARK_LOG(LogModuleManager, Trace, STRING("Initialized Module Manager"));
 
@@ -37,7 +37,7 @@ namespace Spark
 
 	void ModuleManager::Shutdown()
 	{
-		delete GModuleManager;
+		sdelete GModuleManager;
 		GModuleManager = nullptr;
 
 		SPARK_LOG(LogModuleManager, Trace, STRING("Shutdown Module Manager"));

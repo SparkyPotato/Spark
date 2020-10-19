@@ -23,9 +23,9 @@
 #include "Core/Types/Container.h"
 #include "Core/Types/Math.h"
 
-#include "Core/Log/Logger.h"
-
 #include "Core/Memory/Memory.h"
+
+#include "Core/Log/Logger.h"
 
 #include "Core/Types/Pointer.h"
 

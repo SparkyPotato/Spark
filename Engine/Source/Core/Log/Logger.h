@@ -20,7 +20,7 @@ namespace Spark
 		template<typename T>
 		static void PushSink()
 		{
-			m_RegisteredSinks.Add(new T);
+			m_RegisteredSinks.Add(snew T);
 		}
 
 	private:

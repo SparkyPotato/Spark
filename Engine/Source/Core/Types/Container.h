@@ -184,7 +184,7 @@ namespace Spark
 			m_DataPointer[i].~Type();
 		}
 
-		Memory::Dealloc(m_DataPointer);
+		MemFree(m_DataPointer);
 	}
 
 	template<typename Type>
@@ -284,9 +284,9 @@ namespace Spark
 
 		while (m_AllocatedSpace < requiredObjects) (m_AllocatedSpace *= 2) += 1;
 
-		auto newPointer = (Type*) Memory::AllocSize(m_AllocatedSpace * sizeof(Type));
+		auto newPointer = reinterpret_cast<Type*>(MemAlloc(m_AllocatedSpace * sizeof(Type)));
 		memcpy(newPointer, m_DataPointer, m_CreatedObjects * sizeof(Type));
-		Memory::Dealloc(m_DataPointer);
+		MemFree(m_DataPointer);
 
 		m_DataPointer = newPointer;
 	}

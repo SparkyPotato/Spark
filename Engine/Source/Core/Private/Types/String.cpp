@@ -42,7 +42,7 @@ namespace Spark
 		// Copy over data
 		memcpy(m_DataPointer, temp, m_UsedMemory * sizeof(Char));
 
-		delete temp;
+		sdelete temp;
 	}
 
 	String::String(const String& other) 
@@ -80,7 +80,7 @@ namespace Spark
 
 	String::~String()
 	{
-		delete[] m_DataPointer;
+		sdelete m_DataPointer;
 	}
 
 	String& String::operator=(const String& other)
@@ -142,7 +142,7 @@ namespace Spark
 		memcpy(data + Length(), append.m_DataPointer, append.m_UsedMemory * sizeof(Char));
 
 		String temp(data); // Create string, deallocate, and return
-		delete[] data;
+		sdelete data;
 
 		return temp;
 	}
@@ -448,9 +448,9 @@ namespace Spark
 
 		auto newPointer = new Char[m_AllocatedSize];
 		memcpy(newPointer, m_DataPointer, m_UsedMemory * sizeof(Char));
-		delete[] m_DataPointer;
+		sdelete m_DataPointer;
 
-		m_DataPointer = reinterpret_cast<Char*>(newPointer);
+		m_DataPointer = newPointer;
 	}
 
 	String::Iterator::Iterator(Char* pointer)  
@@ -709,7 +709,7 @@ namespace Spark
 
 		m_InternalString += temp;
 
-		delete[] temp;
+		sdelete temp;
 
 		return *this;
 	}

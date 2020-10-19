@@ -6,41 +6,41 @@
 
 namespace Spark
 {
-	Array<ILogSink*> Logger::m_RegisteredSinks = { new DebugSink, new ConsoleSink, new FileSink };
+	Array<ILogSink*> Logger::m_RegisteredSinks = { snew DebugSink, snew ConsoleSink, snew FileSink };
 	String Logger::m_FormatString = STRING("[%02d:%02d:%02d:%03d] %s (%s): ");
+
+	// Prevent creation of temporaries for every single log
+	static const String s_Verbose = STRING("Verbose");
+	static const String s_Trace = STRING("Trace");
+	static const String s_Log = STRING("Log");
+	static const String s_Info = STRING("Info");
+	static const String s_Debug = STRING("Debug");
+	static const String s_Warn = STRING("Warning");
+	static const String s_Error = STRING("Error");
+	static const String s_Fatal = STRING("Fatal");
 
 	const String& LogLevelToString(LogLevel level)
 	{
-		// Prevent creation of temporaries for every single log
-		static const String verbose = STRING("Verbose");
-		static const String trace = STRING("Trace");
-		static const String log = STRING("Log");
-		static const String info = STRING("Info");
-		static const String debug = STRING("Debug");
-		static const String warn = STRING("Warning");
-		static const String error = STRING("Error");
-		static const String fatal = STRING("Fatal");
-
 		switch (level)
 		{
-		case LogLevel::Verbose: return verbose;
-		case LogLevel::Trace: return trace;
-		case LogLevel::Log: return log;
-		case LogLevel::Info: return info;
-		case LogLevel::Debug: return debug;
-		case LogLevel::Warning: return warn;
-		case LogLevel::Error: return error;
-		case LogLevel::Fatal: return fatal;
+		case LogLevel::Verbose: return s_Verbose;
+		case LogLevel::Trace: return s_Trace;
+		case LogLevel::Log: return s_Log;
+		case LogLevel::Info: return s_Info;
+		case LogLevel::Debug: return s_Debug;
+		case LogLevel::Warning: return s_Warn;
+		case LogLevel::Error: return s_Error;
+		case LogLevel::Fatal: return s_Fatal;
 		}
 
-		return log;
+		return s_Log;
 	}
 
 	void Logger::Shutdown()
 	{
 		while (m_RegisteredSinks.Size() != 0)
 		{
-			delete m_RegisteredSinks[0];
+			sdelete m_RegisteredSinks[0];
 			m_RegisteredSinks.Erase(0);
 		}
 	}

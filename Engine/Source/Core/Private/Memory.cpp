@@ -6,11 +6,11 @@ namespace Spark
 {
 	DEFINE_LOG_CATEGORY_FILE(LogMemory, Verbose);
 
-	Memory* GMemory;
+	Memory* Memory::s_Memory = nullptr;
 
 	Memory::Memory()
 	{
-		
+		m_Allocations = reinterpret_cast<Allocation*>(malloc(sizeof(Allocation) * m_AllocationSize));
 	}
 
 	Memory::~Memory()
@@ -25,33 +25,9 @@ namespace Spark
 			object->AllocatedObject->~Object();
 			SPARK_LOG(LogMemory, Verbose, STRING("Deleting object with %d references"), object->RefCount);
 		}
-	}
 
-	void Memory::Initialize()
-	{
-		/*
-			Instead of just declaring GMemory = new Memory,
-			we do this because we don't want heap allocations by static objects to be counted,
-			as the memory leak detection is done before static objects are destroyed.
-			We would then have memory leaks all the time, which could not be removed - not very good design!
-		*/
-
-		if (GMemory)
-		{
-			SPARK_LOG(LogMemory, Error, STRING("Memory manager already initialized!"));
-			return;
-		}
-
-		GMemory = new Memory;
-		SPARK_LOG(LogMemory, Trace, STRING("Memory manager initialized"));
-	}
-
-	void Memory::Shutdown()
-	{
-		auto stats = GMemory->m_Stats;
-		delete GMemory;
-		GMemory = nullptr;
-
+#ifdef IS_DEBUG
+		auto stats = m_Stats;
 		if (stats.CurrentAllocation > 0)
 		{
 			SPARK_LOG(LogMemory, Warning, STRING("Memory leak detected!"));
@@ -64,77 +40,143 @@ namespace Spark
 			SPARK_LOG(LogMemory, Verbose, STRING("Total heap allocations: %d"), stats.AllocationCount);
 			SPARK_LOG(LogMemory, Verbose, STRING("Total heap deallocations: %d"), stats.DeallocationCount);
 		}
+
+		for (uint i = 0; i < m_AllocationHead; i++)
+		{
+			SPARK_LOG(LogMemory, Verbose, STRING("Freeing block with size %d bytes"), m_Allocations[i].Size);
+			free(m_Allocations[i].Pointer);
+		}
+#endif
+
+		free(m_Allocations);
 	}
 
-	void* Memory::AllocSize(size_t size)
+	void Memory::Initialize()
 	{
-		// Allocate memory + 1 size_t
-		auto pointer = reinterpret_cast<size_t*>(malloc(size + sizeof(size_t)));
-		pointer[0] = size; // Store requested size in the first size_t
+		/*
+			Instead of just declaring GMemory = new Memory,
+			we do this because we don't want heap allocations by static objects to be counted,
+			as the memory leak detection is done before static objects are destroyed.
+			We would then have memory leaks all the time, which could not be removed - not very good design!
+		*/
 
-		#ifdef IS_DEBUG
-		if (GMemory)
+		if (s_Memory)
 		{
-			GMemory->m_Stats.CurrentAllocation += size;
-			GMemory->m_Stats.AllocationCount++;
+			SPARK_LOG(LogMemory, Error, STRING("Memory manager already initialized!"));
+			return;
 		}
-		#endif
 
-		return &pointer[1]; // Return the second size_t, just after the stored size
+		s_Memory = snew Memory;
+		SPARK_LOG(LogMemory, Trace, STRING("Memory manager initialized"));
+	}
+
+	void Memory::Shutdown()
+	{
+		SPARK_LOG(LogMemory, Trace, STRING("Shutting down Memory manager"));
+
+		sdelete s_Memory;
+		s_Memory = nullptr;
+
+		SPARK_LOG(LogMemory, Trace, STRING("Memory manager shutdown"));
+	}
+
+	void* Memory::AllocSize(size_t size, const char* file, int line)
+	{
+		auto pointer = malloc(size);
+
+#ifdef IS_DEBUG
+		if (s_Memory)
+		{
+			if (s_Memory->m_AllocationHead >= s_Memory->m_AllocationSize)
+			{
+				s_Memory->m_AllocationSize *= 2;
+				Allocation* temp = s_Memory->m_Allocations;
+
+				s_Memory->m_Allocations = reinterpret_cast<Allocation*>(malloc(sizeof(Allocation) * s_Memory->m_AllocationSize));
+				memcpy(s_Memory->m_Allocations, temp, sizeof(Allocation) * s_Memory->m_AllocationHead);
+
+				free(temp);
+			}
+
+			new(s_Memory->m_Allocations + s_Memory->m_AllocationHead) Allocation(pointer, file, line, size);
+			s_Memory->m_AllocationHead++;
+
+			s_Memory->m_Stats.AllocationCount++;
+			s_Memory->m_Stats.CurrentAllocation += size;
+		}
+#endif
+
+		return pointer;
 	}
 
 	void Memory::Dealloc(void* pointer)
 	{
-		if (pointer)
+#ifdef IS_DEBUG
+		if (s_Memory)
 		{
-			auto ptr = reinterpret_cast<size_t*>(pointer); // Cast to a size_t
-			ptr--; // Decrement the pointer to point to the stored size in AllocSize
+			uint i = 0;
+			bool found = false;
 
-			#ifdef IS_DEBUG
-			if (GMemory)
+			for (; i < s_Memory->m_AllocationHead; i++)
 			{
-				GMemory->m_Stats.CurrentAllocation -= *ptr; // Retrieve the stored size
-				GMemory->m_Stats.DeallocationCount++;
+				if (s_Memory->m_Allocations[i] == pointer) { found = true; break; }
 			}
-			#endif
 
-			free(ptr); // Free the decremented pointer
+			if (found)
+			{
+				s_Memory->m_Stats.CurrentAllocation -= s_Memory->m_Allocations[i].Size;
+				s_Memory->m_Stats.DeallocationCount++;
+				
+				for (; i < s_Memory->m_AllocationHead; i++)
+				{
+					memcpy(s_Memory->m_Allocations + i, s_Memory->m_Allocations + i + 1, sizeof(Allocation));
+				}
+				s_Memory->m_AllocationHead--;
+			}
 		}
+#endif
+
+		free(pointer);
 	}
 
 	const MemoryStatistics& Memory::GetStats()
 	{
-		return GMemory->m_Stats;
+		return s_Memory->m_Stats;
 	}
 
 	Memory::SharedRef::SharedRef()
 	{
-		GMemory->m_SharedRefs.Add(this);
+		s_Memory->m_SharedRefs.Add(this);
 	}
 
 	Memory::SharedRef::~SharedRef()
 	{
-		GMemory->m_SharedRefs.Erase(GMemory->m_SharedRefs.Find(this));
+		s_Memory->m_SharedRefs.Erase(s_Memory->m_SharedRefs.Find(this));
 	}
 }
 
 // Route allocations to the memory manager
 void* operator new(size_t size)
 {
-	return Spark::Memory::AllocSize(size);
+	return Spark::Memory::AllocSize(size, "Illegal new", 0);
 }
 
-void* operator new[](size_t size)
+void* operator new(size_t size, const char* file, int line)
 {
-	return Spark::Memory::AllocSize(size);
+	return Spark::Memory::AllocSize(size, file, line);
 }
 
-void operator delete(void* pointer) noexcept
+void* operator new[](size_t size, const char* file, int line)
+{
+	return Spark::Memory::AllocSize(size, file, line);
+}
+
+void operator delete(void* pointer)
 {
 	Spark::Memory::Dealloc(pointer);
 }
 
-void operator delete[](void* pointer) noexcept
+void operator delete(void* pointer, const char* file, int line)
 {
 	Spark::Memory::Dealloc(pointer);
 }

@@ -66,3 +66,9 @@ namespace Spark
 #endif
 
 #define UNIMPLEMENTED(type) SPARK_ASSERT(false, STRING("Unimplemented function called!")); return (type) 0
+
+#define snew new(__FILE__, __LINE__)
+#define sdelete delete
+
+#define MemAlloc(size) Spark::Memory::AllocSize(size, __FILE__, __LINE__)
+#define MemFree(pointer) Spark::Memory::Dealloc(pointer)

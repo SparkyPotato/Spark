@@ -29,7 +29,7 @@ namespace Spark
 
 		SPARK_LOG(LogRunLoop, Trace, STRING("Started Run Loop"));
 
-		while (!m_IsRunning)
+		while (m_IsRunning)
 		{
 			
 		}
