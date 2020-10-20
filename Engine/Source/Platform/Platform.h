@@ -52,6 +52,8 @@ namespace Spark
 
 	namespace Platform
 	{
+		void RegisterClasses();
+
 		DateTime GetSystemTime();
 		void DebugOutput(const String& string);
 

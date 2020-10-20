@@ -30,3 +30,5 @@
 #include "Core/Types/Pointer.h"
 
 #include "Core/Object/ClassManager.h"
+
+#include "Core/Thread/Mutex.h"

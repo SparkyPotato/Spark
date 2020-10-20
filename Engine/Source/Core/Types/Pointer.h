@@ -19,6 +19,8 @@ namespace Spark
 
 		~ObjPtr()
 		{
+			if (!m_SharedRef) return;
+
 			m_SharedRef->RefCount--;
 
 			if (m_SharedRef->RefCount <= 0)
@@ -30,11 +32,22 @@ namespace Spark
 
 		ObjPtr<Obj>& operator=(const ObjPtr<Obj>& other)
 		{
-			~ObjPtr();
+			if (m_SharedRef)
+			{
+				m_SharedRef->RefCount--;
+
+				if (m_SharedRef->RefCount <= 0)
+				{
+					sdelete m_Object;
+					sdelete m_SharedRef;
+				}
+			}
 
 			m_Object = other.m_Object;
 			m_SharedRef = other.m_SharedRef;
 			m_SharedRef->RefCount++;
+
+			return *this;
 		}
 		
 		Obj& operator*()
@@ -67,6 +80,11 @@ namespace Spark
 			return m_Object;
 		}
 
+		operator bool() const 
+		{
+			return m_Object;
+		}
+
 		template<class Type>
 		friend ObjPtr<Type> Create();
 
@@ -80,13 +98,15 @@ namespace Spark
 		friend ObjPtr<To> UnsafeCast(ObjPtr<From> cast);
 
 	private:
-		Obj* m_Object;
-		Memory::SharedRef* m_SharedRef;
+		Obj* m_Object = nullptr;
+		Memory::SharedRef* m_SharedRef = nullptr;
 	};
 
 	template<class Type>
 	ObjPtr<Type> Create()
 	{
+		if (Type::GetClass().IsAbstract) { return ObjPtr<Type>(); }
+
 		ObjPtr<Type> temp;
 		temp.m_SharedRef = snew Memory::SharedRef;
 		temp.m_SharedRef->AllocatedObject = temp.m_Object = snew Type();
@@ -98,6 +118,8 @@ namespace Spark
 	template<class Cast, class Type>
 	ObjPtr<Cast> Create()
 	{
+		if (Type::GetClass().IsAbstract) { return ObjPtr<Cast>(); }
+
 		if (Cast::GetClass().IsSubclassOf<Type>() || Type::GetClass().IsSubclassOf<Cast>())
 		{
 			ObjPtr<Cast> temp;

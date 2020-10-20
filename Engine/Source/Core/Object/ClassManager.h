@@ -3,6 +3,8 @@
 #pragma once
 #include "Core/Object/Object.h"
 
+DECLARE_LOG_CATEGORY(LogClassManager, Verbose);
+
 namespace Spark
 {
 	struct Class
@@ -41,7 +43,7 @@ namespace Spark
 		static void Shutdown();
 
 		ArrayPtr<Class> GetClass(const String& name);
-		void RegisterClass(const String& name, const String& parent, bool isAbstract);
+		void RegClass(const String& name, const String& parent, bool isAbstract);
 
 		Class& GetBase();
 
@@ -57,6 +59,8 @@ namespace Spark
 	template<class To, class From>
 	ObjPtr<To> Cast(ObjPtr<From> cast)
 	{
+		if (To::GetClass() == From::GetClass()) { return cast; }
+
 		if (To::GetClass().IsSubclassOf<From>() || From::GetClass().IsSubclassOf<To>())
 		{
 			ObjPtr<To> temp;
@@ -81,19 +85,34 @@ namespace Spark
 
 		return temp;
 	}
+
+	template<class T>
+	void AddClass()
+	{
+		T::RegClass();
+	}
 }
 
-#define REGISTER_CLASS(name, parent) REGISTER_CLASS_FULL(name, parent, false)
+#define REGISTER_CLASS(name, parent) REGISTER_CLASS_NORM(name, parent, false)
 
-#define REGISTER_CLASS_FULL(name, parent, isAbstract) \
-private: \
-inline static const String m_ClassName = STRING(#name); \
-inline static const String m_ParentName = STRING(#parent); \
-public: \
-static const Class& GetClass() \
+#define REGISTER_CLASS_NORM(name, parent, isAbstract) \
+REGISTER_CLASS_NO_INS(name, parent, isAbstract) \
+static Spark::ObjPtr<name> Instantiate() \
 { \
-	static ArrayPtr<Class> classNode; \
-	if (!classNode) { classNode = GClassManager->GetClass(m_ClassName); } \
+	if (isAbstract) { SPARK_LOG(LogClassManager, Error, STRING("Trying to instantiate abstract class!")); }\
+	return Create<name>(); \
+}
+
+#define REGISTER_CLASS_NO_INS(name, parent, isAbstract) \
+private: \
+	inline static const Spark::String m_ClassName = STRING(#name); \
+	inline static const Spark::String m_ParentName = STRING(#parent); \
+public: \
+	static const Spark::Class& GetClass() \
+{ \
+	static Spark::ArrayPtr<Class> classNode; \
+	if (!classNode) { if (!(classNode = Spark::GClassManager->GetClass(m_ClassName))) \
+		{ SPARK_LOG(LogClassManager, Fatal, STRING("Class '%s' has not been registered!"), m_ClassName.GetCharPointer()); } } \
 	return *classNode; \
 } \
-static void RegisterClass() { GClassManager->RegisterClass(m_ClassName, m_ParentName, isAbstract); }
+static void RegClass() { Spark::GClassManager->RegClass(m_ClassName, m_ParentName, isAbstract); }

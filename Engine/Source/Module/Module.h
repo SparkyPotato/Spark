@@ -9,11 +9,12 @@ namespace Spark
 	public:
 		virtual ~Module() {}
 
-		virtual void RegisterObjects() {}
+		virtual void RegisterClasses() {}
 
-		virtual void Start() = 0;
+		virtual void Start() {}
+		virtual void MainThreadTick(float mainThreadDeltaTime) {}
 
-		REGISTER_CLASS_FULL(Module, Object, true);
+		REGISTER_CLASS_NORM(Module, Object, true);
 
 	protected:
 		using Super = Module;

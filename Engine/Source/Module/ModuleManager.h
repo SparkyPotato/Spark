@@ -17,10 +17,18 @@ namespace Spark
 		static void Initialize();
 		static void Shutdown();
 
+		void MainThreadTick();
+
 		template<class T>
 		void AddModule()
 		{
-			T::RegisterClass();
+			for (auto& module : m_Modules)
+			{
+				if (Class::IsSubclass(T::GetClass(), module->GetClass()))
+				{
+					SPARK_LOG(LogModuleManager, Error, STRING("Module '%s' already exists (or another variant of it does)!"), T::GetClass().Name.GetCharPointer());
+				}
+			}
 
 			if (!T::GetClass().IsSubclassOf<Module>())
 			{
@@ -28,7 +36,7 @@ namespace Spark
 				return;
 			}
 
-			if (T::GetClass().IsAbstract)
+			if (T::GetClass().IsAbstract && !T::Instantiate())
 			{
 				SPARK_LOG(LogModuleManager, Error, STRING("Cannot instantiate abstract module '%s'!"), T::GetClass().Name.GetCharPointer());
 				return;
@@ -36,9 +44,9 @@ namespace Spark
 
 			SPARK_LOG(LogModuleManager, Verbose, STRING("Adding module '%s'"), T::GetClass().Name.GetCharPointer());
 
-			auto module = m_Modules.Add(UnsafeCast<Module>(Create<T>()));
+			auto module = m_Modules.Add(UnsafeCast<Module>(T::Instantiate()));
 			SPARK_LOG(LogModuleManager, Verbose, STRING("Registering objects"));
-			module->RegisterObjects();
+			module->RegisterClasses();
 			SPARK_LOG(LogModuleManager, Verbose, STRING("Starting"));
 			module->Start();
 			SPARK_LOG(LogModuleManager, Verbose, STRING("Added module '%s'"), T::GetClass().Name.GetCharPointer());
@@ -49,4 +57,10 @@ namespace Spark
 	};
 
 	extern ModuleManager* GModuleManager;
+
+	template<class T>
+	void AddModule()
+	{
+		GModuleManager->AddModule<T>();
+	}
 }

@@ -2,4 +2,4 @@
 
 #include "SparkPCH.h"
 
-#include "WindowManager.cpp"
+#include "IWindowManager.cpp"

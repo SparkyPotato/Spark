@@ -4,11 +4,14 @@
 
 #include "Module/Module.h"
 
+DEFINE_LOG_CATEGORY(LogClassManager);
+
 namespace Spark
 {
-	DEFINE_LOG_CATEGORY_FILE(LogClassManager, Verbose);
-
 	ClassManager* GClassManager = nullptr;
+
+	extern void AddEngineClasses();
+	extern void AddAppClasses();
 
 	ClassManager::ClassManager()
 	{
@@ -28,9 +31,13 @@ namespace Spark
 
 		GClassManager = snew ClassManager;
 
-		SPARK_LOG(LogClassManager, Trace, STRING("Initialized Class Manager"));
+		SPARK_LOG(LogClassManager, Trace, STRING("Registering classes"));
 
-		Module::RegisterClass(); // Register the Engine Module class
+		AddEngineClasses();
+		AddAppClasses();
+		Platform::RegisterClasses();
+
+		SPARK_LOG(LogClassManager, Trace, STRING("Initialized Class Manager"));
 	}
 
 	void ClassManager::Shutdown()
@@ -46,7 +53,7 @@ namespace Spark
 		return SearchNode(name, &m_ParentNodes[0]);
 	}
 
-	void ClassManager::RegisterClass(const String& name, const String& parent, bool isAbstract)
+	void ClassManager::RegClass(const String& name, const String& parent, bool isAbstract)
 	{
 		auto node = SearchNode(parent, &m_ParentNodes[0]);
 
@@ -75,7 +82,8 @@ namespace Spark
 				return ArrayPtr<Class>(&node->Children, i);
 			}
 
-			return SearchNode(className, &node->Children[i]);
+			auto& ptr = SearchNode(className, &node->Children[i]);
+			if (ptr) return ptr;
 		}
 
 		return ArrayPtr<Class>();
@@ -97,6 +105,8 @@ namespace Spark
 
 	bool Class::IsSubclass(const Class& derived, const Class& base)
 	{
+		if (derived == base) { return true; };
+
 		const Class* d = &derived;
 
 		// Climb up the class tree checking if the parent exists
@@ -114,4 +124,11 @@ namespace Spark
 	{
 		return IsSubclass(*this, base);
 	}
+
+#ifdef IS_EDITOR
+	extern void AddAppClasses()
+	{
+		// Add editor-specific classes here
+	}
+#endif
 }

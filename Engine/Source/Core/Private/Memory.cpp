@@ -10,6 +10,7 @@ namespace Spark
 
 	Memory::Memory()
 	{
+		// We don't use MemAlloc for the same reason we don't use Array<>
 		m_Allocations = reinterpret_cast<Allocation*>(malloc(sizeof(Allocation) * m_AllocationSize));
 	}
 
@@ -54,7 +55,7 @@ namespace Spark
 	void Memory::Initialize()
 	{
 		/*
-			Instead of just declaring GMemory = new Memory,
+			Instead of just declaring s_Memory = new Memory,
 			we do this because we don't want heap allocations by static objects to be counted,
 			as the memory leak detection is done before static objects are destroyed.
 			We would then have memory leaks all the time, which could not be removed - not very good design!
@@ -156,11 +157,6 @@ namespace Spark
 }
 
 // Route allocations to the memory manager
-void* operator new(size_t size)
-{
-	return Spark::Memory::AllocSize(size, "Illegal new", 0);
-}
-
 void* operator new(size_t size, const char* file, int line)
 {
 	return Spark::Memory::AllocSize(size, file, line);
@@ -176,7 +172,27 @@ void operator delete(void* pointer)
 	Spark::Memory::Dealloc(pointer);
 }
 
+void operator delete[](void* pointer)
+{
+	Spark::Memory::Dealloc(pointer);
+}
+
+void* operator new(size_t size)
+{
+	return Spark::Memory::AllocSize(size, "Illegal new", 0);
+}
+
+void* operator new[](size_t size)
+{
+	return Spark::Memory::AllocSize(size, "Illegal new", 0);
+}
+
 void operator delete(void* pointer, const char* file, int line)
+{
+	Spark::Memory::Dealloc(pointer);
+}
+
+void operator delete[](void* pointer, const char* file, int line)
 {
 	Spark::Memory::Dealloc(pointer);
 }

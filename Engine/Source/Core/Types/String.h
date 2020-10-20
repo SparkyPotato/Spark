@@ -302,16 +302,15 @@ namespace Spark
 	public:
 		Formatter() = delete; // We don't construct Formatters yet
 
-		// Format the given string using swprintf_s. Defaults to assuming the string is 100 characters long,
-		// but doubles the size every failed attempt and tries to format again
+		// Format the given string using swprintf_s. Defaults to assuming the string is 500 characters long
 		template<typename ...Args>
 		static String Format(const String& format, Args... args)
 		{
-			int i = format.Length() * 2 + 100;
-			String temp(i);
+			constexpr uint BUF_LENGTH = 500;
+
+			Char temp[BUF_LENGTH];
 			
-			uint written = swprintf_s(temp.GetDataPointer(), i, format.GetCharPointer(), args...);
-			temp.m_UsedMemory = written + 1;
+			swprintf_s(temp, BUF_LENGTH, format.GetCharPointer(), args...);
 
 			return temp;
 		}

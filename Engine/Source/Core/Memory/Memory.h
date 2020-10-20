@@ -57,6 +57,13 @@ namespace Spark
 		MemoryStatistics m_Stats;
 		Array<SharedRef*> m_SharedRefs;
 
+		/*
+			Variables for dynamic counting of allocations.
+			We would normally use an Array<> for this, but Array relies on memory allocation functions to reallocate.
+			We then have a problem when the Array is reallocating, and its newly allocated memory is written out of the heap buffer.
+			If we changed the design (of Array) to not update the allocation variables until after the allocation, we would then have infinite recursion,
+			since Realloc would call MemAlloc, which would then cause the Array to Realloc.
+		*/
 		Allocation* m_Allocations = nullptr;
 		uint m_AllocationSize = 100;
 		uint m_AllocationHead = 0;

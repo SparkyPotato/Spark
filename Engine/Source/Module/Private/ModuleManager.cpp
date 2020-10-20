@@ -9,15 +9,16 @@ namespace Spark
 	ModuleManager* GModuleManager = nullptr;
 
 	extern void AddEngineModules();
+	extern void AddAppModules();
 
 	ModuleManager::ModuleManager()
 	{
-		
+
 	}
 
 	ModuleManager::~ModuleManager()
 	{
-		
+
 	}
 
 	void ModuleManager::Initialize()
@@ -30,9 +31,10 @@ namespace Spark
 
 		GModuleManager = snew ModuleManager;
 
-		SPARK_LOG(LogModuleManager, Trace, STRING("Initialized Module Manager"));
-
 		AddEngineModules();
+		AddAppModules();
+
+		SPARK_LOG(LogModuleManager, Trace, STRING("Initialized Module Manager"));
 	}
 
 	void ModuleManager::Shutdown()
@@ -42,4 +44,19 @@ namespace Spark
 
 		SPARK_LOG(LogModuleManager, Trace, STRING("Shutdown Module Manager"));
 	}
+
+	void ModuleManager::MainThreadTick()
+	{
+		for (auto& module : m_Modules)
+		{
+			module->MainThreadTick(0.f);
+		}
+	}
+
+#ifdef IS_EDITOR
+	void AddAppModules()
+	{
+		// Add editor-only modules here
+	}
+#endif
 }
