@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #include "WMutex.h"
 
 namespace Spark

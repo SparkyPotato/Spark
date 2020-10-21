@@ -12,8 +12,9 @@ namespace Platform
 {
 	void RegisterClasses()
 	{
-		AddClass<WMutex>();
 		AddClass<WWindowManager>();
+
+		AddClass<WMutex>();
 	}
 
 	DateTime GetSystemTime()

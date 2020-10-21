@@ -8,9 +8,6 @@ namespace Spark
 
 	ModuleManager* GModuleManager = nullptr;
 
-	extern void AddEngineModules();
-	extern void AddAppModules();
-
 	ModuleManager::ModuleManager()
 	{
 
@@ -31,8 +28,10 @@ namespace Spark
 
 		GModuleManager = snew ModuleManager;
 
-		AddEngineModules();
-		AddAppModules();
+		for (auto& module : Module::GetClass().Children)
+		{
+			GModuleManager->AddModule(module);
+		}
 
 		SPARK_LOG(LogModuleManager, Trace, STRING("Initialized Module Manager"));
 	}
@@ -53,10 +52,21 @@ namespace Spark
 		}
 	}
 
-#ifdef IS_EDITOR
-	void AddAppModules()
+	void ModuleManager::AddModule(const Class& module)
 	{
-		// Add editor-only modules here
+		if (module.IsAbstract && !module.Instantiate())
+		{
+			SPARK_LOG(LogModuleManager, Error, STRING("Cannot instantiate abstract module '%s'!"), module.Name.GetCharPointer());
+			return;
+		}
+
+		SPARK_LOG(LogModuleManager, Verbose, STRING("Adding module '%s'"), module.Name.GetCharPointer());
+
+		auto mod = m_Modules.Add(module.Instantiate<Module>());
+		SPARK_LOG(LogModuleManager, Verbose, STRING("Registering objects"));
+		mod->RegisterClasses();
+		SPARK_LOG(LogModuleManager, Verbose, STRING("Starting"));
+		mod->Start();
+		SPARK_LOG(LogModuleManager, Verbose, STRING("Added module '%s'"), module.Name.GetCharPointer());
 	}
-#endif
 }

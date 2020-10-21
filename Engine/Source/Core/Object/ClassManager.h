@@ -10,14 +10,19 @@ namespace Spark
 	struct Class
 	{
 		Class() = default;
-		Class(const String& name, bool isAbstract)
-			: Name(name), IsAbstract(isAbstract)
+		Class(const String& name, bool isAbstract, ObjPtr<Object>(*instantiate) ())
+			: Name(name), IsAbstract(isAbstract), m_Instantiate(instantiate)
 		{}
 
 		String Name; // Name of the class
 		Array<Class> Children; // Array of all child classes
 		bool IsAbstract = false;
 		ArrayPtr<Class> Parent; // Pointer to the parent class
+
+		inline ObjPtr<Object> Instantiate() const { return m_Instantiate(); }
+
+		template<class T>
+		inline ObjPtr<T> Instantiate() const { return Cast<T>(m_Instantiate()); }
 
 		static bool IsSubclass(const Class& derived, const Class& base);
 		
@@ -29,7 +34,9 @@ namespace Spark
 	private:
 		friend class ClassManager;
 
-		Class& AddChild(const String& name, bool isAbstract);
+		Class& AddChild(const String& name, bool isAbstract, ObjPtr<Object>(*instantiate) ());
+
+		ObjPtr<Object>(*m_Instantiate) ();
 	};
 
 	bool operator==(const Class& first, const Class& second);
@@ -43,7 +50,7 @@ namespace Spark
 		static void Shutdown();
 
 		ArrayPtr<Class> GetClass(const String& name);
-		void RegClass(const String& name, const String& parent, bool isAbstract);
+		void RegClass(const String& name, const String& parent, bool isAbstract, ObjPtr<Object>(*instantiate) ());
 
 		Class& GetBase();
 
@@ -59,8 +66,6 @@ namespace Spark
 	template<class To, class From>
 	ObjPtr<To> Cast(ObjPtr<From> cast)
 	{
-		if (To::GetClass() == From::GetClass()) { return cast; }
-
 		if (To::GetClass().IsSubclassOf<From>() || From::GetClass().IsSubclassOf<To>())
 		{
 			ObjPtr<To> temp;
@@ -72,6 +77,12 @@ namespace Spark
 		}
 
 		return ObjPtr<To>();
+	}
+
+	template<class Both>
+	ObjPtr<Both> Cast(ObjPtr<Both> cast)
+	{
+		return cast;
 	}
 
 	// Unsafely cast - only do if you are sure the cast is possible
@@ -104,6 +115,8 @@ static Spark::ObjPtr<name> Instantiate() \
 }
 
 #define REGISTER_CLASS_NO_INS(name, parent, isAbstract) \
+protected: \
+using Super = parent; \
 private: \
 	inline static const Spark::String m_ClassName = STRING(#name); \
 	inline static const Spark::String m_ParentName = STRING(#parent); \
@@ -115,4 +128,5 @@ public: \
 		{ SPARK_LOG(LogClassManager, Fatal, STRING("Class '%s' has not been registered!"), m_ClassName.GetCharPointer()); } } \
 	return *classNode; \
 } \
-static void RegClass() { Spark::GClassManager->RegClass(m_ClassName, m_ParentName, isAbstract); }
+static void RegClass() { Spark::GClassManager->RegClass(m_ClassName, m_ParentName, isAbstract, &name::InstantiateBase); } \
+static ObjPtr<Object> InstantiateBase() { return UnsafeCast<Object>(Instantiate()); }

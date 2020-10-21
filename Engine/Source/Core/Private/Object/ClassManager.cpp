@@ -17,7 +17,7 @@ namespace Spark
 	{
 		// Create the base Object node
 		m_ParentNodes.Emplace();
-		auto& obj = m_ParentNodes[0].Children.Emplace(STRING("Object"), true);
+		auto& obj = m_ParentNodes[0].Children.Emplace(STRING("Object"), true, nullptr);
 		obj.Parent = ArrayPtr<Class>(&m_ParentNodes, 0);
 	}
 
@@ -53,7 +53,7 @@ namespace Spark
 		return SearchNode(name, &m_ParentNodes[0]);
 	}
 
-	void ClassManager::RegClass(const String& name, const String& parent, bool isAbstract)
+	void ClassManager::RegClass(const String& name, const String& parent, bool isAbstract, ObjPtr<Object>(*instantiate) ())
 	{
 		auto node = SearchNode(parent, &m_ParentNodes[0]);
 
@@ -63,7 +63,7 @@ namespace Spark
 			return;
 		}
 
-		node->AddChild(name, isAbstract);
+		node->AddChild(name, isAbstract, instantiate);
 
 		SPARK_LOG(LogClassManager, Verbose, STRING("Registered class '%s' deriving from '%s'"), name.GetCharPointer(), parent.GetCharPointer());
 	}
@@ -89,9 +89,9 @@ namespace Spark
 		return ArrayPtr<Class>();
 	}
 
-	Class& Class::AddChild(const String& name, bool isAbstract)
+	Class& Class::AddChild(const String& name, bool isAbstract, ObjPtr<Object>(*instantiate) ())
 	{
-		auto& c = Children.Emplace(name, isAbstract);
+		auto& c = Children.Emplace(name, isAbstract, instantiate);
 
 		if (this->Parent)
 		{
@@ -124,11 +124,4 @@ namespace Spark
 	{
 		return IsSubclass(*this, base);
 	}
-
-#ifdef IS_EDITOR
-	extern void AddAppClasses()
-	{
-		// Add editor-specific classes here
-	}
-#endif
 }

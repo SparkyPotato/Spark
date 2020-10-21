@@ -7,6 +7,16 @@ namespace Spark
 {
 	DECLARE_LOG_CATEGORY(LogWindowManager, Verbose);
 
+	struct WindowProperties
+	{
+		String Name;
+
+		struct
+		{
+			uint Width = 0, Height = 0;
+		} Dimensions;
+	};
+
 	class IWindowManager : public Module 
 	{
 	public:

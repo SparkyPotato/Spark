@@ -15,8 +15,5 @@ namespace Spark
 		virtual void MainThreadTick(float mainThreadDeltaTime) {}
 
 		REGISTER_CLASS_NORM(Module, Object, true);
-
-	protected:
-		using Super = Module;
 	};
 }
