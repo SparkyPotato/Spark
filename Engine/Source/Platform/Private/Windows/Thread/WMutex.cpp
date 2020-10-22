@@ -17,7 +17,7 @@ namespace Spark
 
 		if (m_Mutex == nullptr)
 		{
-			SPARK_LOG(LogPlatform, Error, STRING("Failed to create mutex object! Error: {}"), GetLastError());
+			SPARK_LOG(LogPlatform, Error, STRING("Failed to create mutex object! Error: {}"), static_cast<uint32>(GetLastError()));
 		}
 	}
 
@@ -32,7 +32,7 @@ namespace Spark
 
 		if (ret != WAIT_OBJECT_0 && ret != WAIT_ABANDONED)
 		{
-			SPARK_LOG(LogPlatform, Error, STRING("Failed to lock mutex object! Error: {}"), ret);
+			SPARK_LOG(LogPlatform, Error, STRING("Failed to lock mutex object! Error: {}"), static_cast<uint32>(ret));
 		}
 	}
 
@@ -42,7 +42,7 @@ namespace Spark
 
 		if (ret == false)
 		{
-			SPARK_LOG(LogPlatform, Error, STRING("Failed to unlock mutex object! Error: {}"), GetLastError());
+			SPARK_LOG(LogPlatform, Error, STRING("Failed to unlock mutex object! Error: {}"), static_cast<uint32>(GetLastError()));
 		}
 	}
 }

@@ -7,7 +7,7 @@
 namespace Spark
 {
 	Array<ILogSink*> Logger::m_RegisteredSinks = { snew DebugSink, snew ConsoleSink, snew FileSink };
-	String Logger::m_FormatString = STRING("[{:02}:{:02}:{:02}:{:03}] {} ({}): ");
+	String Logger::m_FormatString = STRING("[{:2}:{:2}:{:2}:{:3}] {} ({}): ");
 
 	// Prevent creation of temporaries for every single log
 	static const String s_Verbose = STRING("Verbose");

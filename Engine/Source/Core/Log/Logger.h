@@ -39,14 +39,14 @@ namespace Spark
 		(
 			category->GetCategoryName(), 
 			level, 
-			/* IO::FormatString
+			IO::FormatString
 			(
 				m_FormatString + log,
 				now.Hour, now.Minute, now.Second, now.Millisecond, 
 				category->GetCategoryName(),
 				LogLevelToString(level), 
 				args...
-			), */ String(),
+			),
 			now
 		);
 
