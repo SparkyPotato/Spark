@@ -47,7 +47,7 @@ project "Spark"
 	includedirs
 	{
 		"Source",
-		"PCH"
+		"PCH",
 	}
 	
 	files

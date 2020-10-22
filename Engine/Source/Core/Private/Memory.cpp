@@ -2,6 +2,9 @@
 
 #include "Core/Memory/Memory.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 namespace Spark
 {
 	DEFINE_LOG_CATEGORY_FILE(LogMemory, Verbose);
@@ -18,13 +21,13 @@ namespace Spark
 	{
 		if (m_SharedRefs.Size() > 0)
 		{
-			SPARK_LOG(LogMemory, Warning, STRING("%d object/s not deleted!"), m_SharedRefs.Size());
+			SPARK_LOG(LogMemory, Warning, STRING("{} object/s not deleted!"), m_SharedRefs.Size());
 		}
 
 		for (auto object : m_SharedRefs)
 		{
 			object->AllocatedObject->~Object();
-			SPARK_LOG(LogMemory, Verbose, STRING("Deleting object with %d references"), object->RefCount);
+			SPARK_LOG(LogMemory, Verbose, STRING("Deleting object with {} references"), object->RefCount);
 		}
 
 #ifdef IS_DEBUG
@@ -32,19 +35,19 @@ namespace Spark
 		if (stats.CurrentAllocation > 0)
 		{
 			SPARK_LOG(LogMemory, Warning, STRING("Memory leak detected!"));
-			SPARK_LOG(LogMemory, Warning, STRING("Heap allocation on shutdown: %d bytes"), stats.CurrentAllocation);
-			SPARK_LOG(LogMemory, Warning, STRING("Total allocations: %d"), stats.AllocationCount);
-			SPARK_LOG(LogMemory, Warning, STRING("Total deallocations: %d"), stats.DeallocationCount);
+			SPARK_LOG(LogMemory, Warning, STRING("Heap allocation on shutdown: {} bytes"), stats.CurrentAllocation);
+			SPARK_LOG(LogMemory, Warning, STRING("Total allocations: {}"), stats.AllocationCount);
+			SPARK_LOG(LogMemory, Warning, STRING("Total deallocations: {}"), stats.DeallocationCount);
 		}
 		else
 		{
-			SPARK_LOG(LogMemory, Verbose, STRING("Total heap allocations: %d"), stats.AllocationCount);
-			SPARK_LOG(LogMemory, Verbose, STRING("Total heap deallocations: %d"), stats.DeallocationCount);
+			SPARK_LOG(LogMemory, Verbose, STRING("Total heap allocations: {}"), stats.AllocationCount);
+			SPARK_LOG(LogMemory, Verbose, STRING("Total heap deallocations: {}"), stats.DeallocationCount);
 		}
 
 		for (uint i = 0; i < m_AllocationHead; i++)
 		{
-			SPARK_LOG(LogMemory, Verbose, STRING("Freeing block with size %d bytes"), m_Allocations[i].Size);
+			SPARK_LOG(LogMemory, Verbose, STRING("Freeing block with size {} bytes"), m_Allocations[i].Size);
 			free(m_Allocations[i].Pointer);
 		}
 #endif
@@ -94,7 +97,7 @@ namespace Spark
 				Allocation* temp = s_Memory->m_Allocations;
 
 				s_Memory->m_Allocations = reinterpret_cast<Allocation*>(malloc(sizeof(Allocation) * s_Memory->m_AllocationSize));
-				memcpy(s_Memory->m_Allocations, temp, sizeof(Allocation) * s_Memory->m_AllocationHead);
+				MemCopy(s_Memory->m_Allocations, temp, sizeof(Allocation) * s_Memory->m_AllocationHead);
 
 				free(temp);
 			}
@@ -130,7 +133,7 @@ namespace Spark
 				
 				for (; i < s_Memory->m_AllocationHead; i++)
 				{
-					memcpy(s_Memory->m_Allocations + i, s_Memory->m_Allocations + i + 1, sizeof(Allocation));
+					MemCopy(s_Memory->m_Allocations + i, s_Memory->m_Allocations + i + 1, sizeof(Allocation));
 				}
 				s_Memory->m_AllocationHead--;
 			}
@@ -154,6 +157,17 @@ namespace Spark
 	{
 		s_Memory->m_SharedRefs.Erase(s_Memory->m_SharedRefs.Find(this));
 	}
+
+	void MemCopy(void* destination, const void* source, size_t bytes)
+	{
+		memcpy(destination, source, bytes);
+	}
+
+	int MemCompare(const void* first, const void* second, size_t bytes)
+	{
+		return memcmp(first, second, bytes);
+	}
+
 }
 
 // Route allocations to the memory manager

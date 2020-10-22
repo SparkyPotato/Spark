@@ -125,7 +125,7 @@ public: \
 { \
 	static Spark::ArrayPtr<Class> classNode; \
 	if (!classNode) { if (!(classNode = Spark::GClassManager->GetClass(m_ClassName))) \
-		{ SPARK_LOG(LogClassManager, Fatal, STRING("Class '%s' has not been registered!"), m_ClassName.GetCharPointer()); } } \
+		{ SPARK_LOG(LogClassManager, Fatal, STRING("Class '{}' has not been registered!"), m_ClassName); } } \
 	return *classNode; \
 } \
 static void RegClass() { Spark::GClassManager->RegClass(m_ClassName, m_ParentName, isAbstract, &name::InstantiateBase); } \

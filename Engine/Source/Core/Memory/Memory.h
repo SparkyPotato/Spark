@@ -73,6 +73,9 @@ namespace Spark
 	{
 		return first.Pointer == pointer;
 	}
+
+	void MemCopy(void* destination, const void* source, size_t bytes);
+	int MemCompare(const void* first, const void* second, size_t bytes);
 }
 
 void* operator new(size_t size, const char* file, int line);

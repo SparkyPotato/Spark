@@ -1,3 +1,5 @@
+// Copyright 2020 SparkyPotato
+
 #include "Core/Assert.h"
 
 #include "Core/Types/String.h"
@@ -8,10 +10,10 @@ namespace Spark
 
 	void Assert(String message, int line, String file)
 	{
-		String string = Formatter::Format(STRING("%s\n\nFile: %s\nLine: %d"), message.GetCharPointer(), file.GetCharPointer(), line);
+		String string = IO::FormatString(STRING("{}\n\nFile: {}\nLine: {}"), message, file, line);
 
 		Platform::ShowMessageBox(STRING("Assertion failed"), string);
 
-		SPARK_LOG(LogAssert, Fatal, STRING("%s - Failed assertion at %s : %d"), message.GetCharPointer(), file.GetCharPointer(), line);
+		SPARK_LOG(LogAssert, Fatal, STRING("{} - Failed assertion at {} : {}"), message, file, line);
 	}
 }

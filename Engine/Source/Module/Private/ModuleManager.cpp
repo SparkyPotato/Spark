@@ -52,21 +52,35 @@ namespace Spark
 		}
 	}
 
+	ObjPtr<Module> ModuleManager::GetModule(const Class& module)
+	{
+		for (auto& mod : m_Modules)
+		{
+			if (module.IsSubclassOf(mod->GetClass()))
+			{
+				return mod;
+			}
+		}
+
+		SPARK_LOG(LogModuleManager, Error, STRING("Module '{}' not found!"), module.Name);
+		return ObjPtr<Module>();
+	}
+
 	void ModuleManager::AddModule(const Class& module)
 	{
 		if (module.IsAbstract && !module.Instantiate())
 		{
-			SPARK_LOG(LogModuleManager, Error, STRING("Cannot instantiate abstract module '%s'!"), module.Name.GetCharPointer());
+			SPARK_LOG(LogModuleManager, Error, STRING("Cannot instantiate abstract module '{}'!"), module.Name);
 			return;
 		}
 
-		SPARK_LOG(LogModuleManager, Verbose, STRING("Adding module '%s'"), module.Name.GetCharPointer());
+		SPARK_LOG(LogModuleManager, Verbose, STRING("Adding module '{}'"), module.Name);
 
 		auto mod = m_Modules.Add(module.Instantiate<Module>());
 		SPARK_LOG(LogModuleManager, Verbose, STRING("Registering objects"));
 		mod->RegisterClasses();
 		SPARK_LOG(LogModuleManager, Verbose, STRING("Starting"));
 		mod->Start();
-		SPARK_LOG(LogModuleManager, Verbose, STRING("Added module '%s'"), module.Name.GetCharPointer());
+		SPARK_LOG(LogModuleManager, Verbose, STRING("Added module '{}'"), module.Name);
 	}
 }

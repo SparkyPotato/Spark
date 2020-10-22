@@ -18,8 +18,6 @@ namespace Spark
 		class ReverseIterator;
 		class ConstReverseIterator;
 
-		friend class Formatter;
-
 	public:
 		// Constructs a default string with space for 10 characters
 		String();
@@ -44,7 +42,7 @@ namespace Spark
 		friend bool operator==(const String& first, const String& second);
 
 		// Append operators
-		String operator+(Char append) const ;
+		String operator+(Char append) const;
 		String operator+(const String& append) const;
 		String operator+(const Char* append) const;
 
@@ -53,7 +51,7 @@ namespace Spark
 		String operator--(int); // Postfix
 
 		// Append and assign operators
-		String& operator+=(Char append) ;
+		String& operator+=(Char append);
 		String& operator+=(const String& append);
 		String& operator+=(const Char* append);
 
@@ -61,7 +59,7 @@ namespace Spark
 		Char& operator[](uint offset);
 
 		// Explicitly convert a string to a const Char* (static_cast<const Char*>), can use GetCharPointer() as well
-		explicit operator const Char*() const;
+		explicit operator const Char* () const;
 
 		// Iterators
 		Iterator begin() const;
@@ -119,7 +117,7 @@ namespace Spark
 		void Insert(Char character, ReverseIterator iterator);
 		void Insert(Char character, ConstReverseIterator iterator);
 		// Inserts the given character at the index
-		void Insert(Char character, uint index) ;
+		void Insert(Char character, uint index);
 
 		// Inserts the given string at the iterator position
 		void Insert(String character, Iterator iterator);
@@ -135,7 +133,7 @@ namespace Spark
 		Char Erase(ReverseIterator iterator);
 		Char Erase(ConstReverseIterator iterator);
 		// Erases the character at the index and returns it
-		Char Erase(uint index) ;
+		Char Erase(uint index);
 
 		// Erases the substring between the two iterators (both inclusive), and returns the erased string
 		String Erase(Iterator start, Iterator end);
@@ -278,41 +276,4 @@ namespace Spark
 
 	bool operator==(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second);
 	bool operator!=(const String::ConstReverseIterator& first, const String::ConstReverseIterator& second);
-
-	class StringStream
-	{
-	public:
-		StringStream() = default;
-
-		const String& GetString();
-
-		StringStream& operator<<(Char character);
-		StringStream& operator<<(const String& string);
-
-		StringStream& operator<<(int integer);
-		StringStream& operator<<(float decimal);
-		StringStream& operator<<(double decimal);
-
-	private:
-		String m_InternalString;
-	};
-
-	class Formatter
-	{
-	public:
-		Formatter() = delete; // We don't construct Formatters yet
-
-		// Format the given string using swprintf_s. Defaults to assuming the string is 500 characters long
-		template<typename ...Args>
-		static String Format(const String& format, Args... args)
-		{
-			constexpr uint BUF_LENGTH = 500;
-
-			Char temp[BUF_LENGTH];
-			
-			swprintf_s(temp, BUF_LENGTH, format.GetCharPointer(), args...);
-
-			return temp;
-		}
-	};
 }

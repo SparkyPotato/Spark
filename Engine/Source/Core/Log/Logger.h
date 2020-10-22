@@ -29,30 +29,30 @@ namespace Spark
 	};
 
 	template<LogLevel T, typename ...Args>
-	void Logger::DoLog(LogCategory<T>* category, LogLevel level, const String& format, Args... args)
+	void Logger::DoLog(LogCategory<T>* category, LogLevel level, const String& log, Args... args)
 	{
 		if (level < T) return;
 
 		DateTime now = DateTime::Now();
 
-		Log log
+		Log logStruct
 		(
 			category->GetCategoryName(), 
 			level, 
-			Formatter::Format
+			/* IO::FormatString
 			(
-				m_FormatString + format,
+				m_FormatString + log,
 				now.Hour, now.Minute, now.Second, now.Millisecond, 
-				category->GetCategoryName().GetCharPointer(),
-				LogLevelToString(level).GetCharPointer(), 
+				category->GetCategoryName(),
+				LogLevelToString(level), 
 				args...
-			),
+			), */ String(),
 			now
 		);
 
 		for (auto sink : m_RegisteredSinks)
 		{
-			sink->PushLog(log);
+			sink->PushLog(logStruct);
 		}
 
 		if (level == LogLevel::Fatal)

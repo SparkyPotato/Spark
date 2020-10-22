@@ -1,6 +1,7 @@
 // Copyright 2020 SparkyPotato
 
 #pragma once
+#include <stdint.h>
 
 #include "Core/Assert.h"
 

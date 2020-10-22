@@ -1,7 +1,6 @@
 // Copyright 2020 SparkyPotato
 
 #pragma once
-
 #include "WindowManager/IWindowManager.h"
 
 namespace Spark

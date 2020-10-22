@@ -124,8 +124,8 @@ namespace Spark
 		{
 			ObjPtr<Cast> temp;
 
-			temp.m_SharedRef = new Memory::SharedRef;
-			temp.m_SharedRef->AllocatedObject = temp.m_Object = reinterpret_cast<Cast*>(new Type);
+			temp.m_SharedRef = snew Memory::SharedRef;
+			temp.m_SharedRef->AllocatedObject = temp.m_Object = reinterpret_cast<Cast*>(snew Type);
 			temp.m_SharedRef->RefCount = 1;
 
 			return temp;

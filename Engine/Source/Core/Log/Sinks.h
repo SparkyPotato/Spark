@@ -38,6 +38,6 @@ namespace Spark
 		void PushLog(const Log& log) override;
 
 	private:
-		FILE* m_File;
+		IO::File m_File;
 	};
 }

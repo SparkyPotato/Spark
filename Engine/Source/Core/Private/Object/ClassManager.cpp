@@ -59,13 +59,13 @@ namespace Spark
 
 		if (!node)
 		{
-			SPARK_LOG(LogClassManager, Error, STRING("Parent class '%s' of class '%s' not found!"), parent.GetCharPointer(), name.GetCharPointer());
+			SPARK_LOG(LogClassManager, Error, STRING("Parent class '{}' of class '{}' not found!"), parent, name);
 			return;
 		}
 
 		node->AddChild(name, isAbstract, instantiate);
 
-		SPARK_LOG(LogClassManager, Verbose, STRING("Registered class '%s' deriving from '%s'"), name.GetCharPointer(), parent.GetCharPointer());
+		SPARK_LOG(LogClassManager, Verbose, STRING("Registered class '{}' deriving from '{}'"), name, parent);
 	}
 
 	Class& ClassManager::GetBase()

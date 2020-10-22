@@ -37,6 +37,7 @@ namespace Platform
 	void DebugOutput(const String& string) 
 	{
 		OutputDebugStringW(string.GetCharPointer());
+		OutputDebugStringW(STRING("\n"));
 	}
 
 	void ShowMessageBox(const String& title, const String& message)

@@ -249,7 +249,7 @@ namespace Spark
 		m_DataPointer[index].~Type();
 		for (uint i = index; i < m_CreatedObjects; i++)
 		{
-			memcpy(m_DataPointer + i, m_DataPointer + i + 1, sizeof(Type));
+			MemCopy(m_DataPointer + i, m_DataPointer + i + 1, sizeof(Type));
 		}
 		m_CreatedObjects--;
 	}
@@ -285,7 +285,7 @@ namespace Spark
 		while (m_AllocatedSpace < requiredObjects) (m_AllocatedSpace *= 2) += 1;
 
 		auto newPointer = reinterpret_cast<Type*>(MemAlloc(m_AllocatedSpace * sizeof(Type)));
-		memcpy(newPointer, m_DataPointer, m_CreatedObjects * sizeof(Type));
+		MemCopy(newPointer, m_DataPointer, m_CreatedObjects * sizeof(Type));
 		MemFree(m_DataPointer);
 
 		m_DataPointer = newPointer;

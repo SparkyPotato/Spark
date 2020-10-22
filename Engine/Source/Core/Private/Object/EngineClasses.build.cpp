@@ -15,7 +15,7 @@ namespace Spark
 	}
 
 #ifdef IS_EDITOR
-	extern void AddAppClasses()
+	void AddAppClasses()
 	{
 		// Add editor-specific classes here
 	}

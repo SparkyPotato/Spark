@@ -1,8 +1,7 @@
 // Copyright 2020 SparkyPotato
 
 #include "Core/Types/Math.h"
-
-#include <cmath>
+#include <math.h>
 
 namespace Spark
 {

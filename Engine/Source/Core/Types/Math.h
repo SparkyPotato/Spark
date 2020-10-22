@@ -1,17 +1,16 @@
 // Copyright 2020 SparkyPotato
 
 #pragma once
-
 #include <immintrin.h>
 
 namespace Spark
 {
 	namespace Math
 	{
-		inline uint Absolute(int value);
-		inline float Absolute(float value);
+		uint Absolute(int value);
+		float Absolute(float value);
 
-		inline float SquareRoot(float value);
+		float SquareRoot(float value);
 	}
 
 	/*

@@ -12,6 +12,8 @@
 #include "Types/Time.cpp"
 #include "Types/Math.cpp"
 
+#include "IO/IO.cpp"
+
 #include "Logger.cpp"
 
 #include "Object/Object.cpp"

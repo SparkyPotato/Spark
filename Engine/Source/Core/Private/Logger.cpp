@@ -7,7 +7,7 @@
 namespace Spark
 {
 	Array<ILogSink*> Logger::m_RegisteredSinks = { snew DebugSink, snew ConsoleSink, snew FileSink };
-	String Logger::m_FormatString = STRING("[%02d:%02d:%02d:%03d] %s (%s): ");
+	String Logger::m_FormatString = STRING("[{:02}:{:02}:{:02}:{:03}] {} ({}): ");
 
 	// Prevent creation of temporaries for every single log
 	static const String s_Verbose = STRING("Verbose");
@@ -52,61 +52,56 @@ namespace Spark
 
 	void DebugSink::PushLog(const Log& log)
 	{
-		Platform::DebugOutput(log.FormattedMessage + STRING('\n'));
+		Platform::DebugOutput(log.FormattedMessage);
 	}
-
-	#define CL_DARKRED STRING("\x1b[31m")
-	#define CL_RED STRING("\x1b[91m")
-	#define CL_GREEN STRING("\x1b[92m")
-	#define CL_YELLOW STRING("\x1b[93m")
-	#define CL_MAGENTA STRING("\x1b[95m")
-	#define CL_CYAN STRING("\x1b[96m")
-	#define CL_WHITE STRING("\x1b[97m")
-	#define CL_RESET STRING("\x1b[0m")
 
 	void ConsoleSink::PushLog(const Log& log)
 	{
-		switch (log.Level)
-		{
-		case LogLevel::Verbose:
-			wprintf(STRING("%s\n"), log.FormattedMessage.GetCharPointer());
-			break;
-		case LogLevel::Trace:
-			wprintf(CL_WHITE STRING("%s\n") CL_RESET, log.FormattedMessage.GetCharPointer());
-			break;
-		case LogLevel::Log:
-			wprintf(CL_GREEN STRING("%s\n") CL_RESET, log.FormattedMessage.GetCharPointer());
-			break;
-		case LogLevel::Info:
-			wprintf(CL_CYAN STRING("%s\n") CL_RESET, log.FormattedMessage.GetCharPointer());
-			break;
-		case LogLevel::Debug:
-			wprintf(CL_MAGENTA STRING("%s\n") CL_RESET, log.FormattedMessage.GetCharPointer());
-			break;
-		case LogLevel::Warning:
-			wprintf(CL_YELLOW STRING("%s\n") CL_RESET, log.FormattedMessage.GetCharPointer());
-			break;
-		case LogLevel::Error:
-			wprintf(CL_RED STRING("%s\n") CL_RESET, log.FormattedMessage.GetCharPointer());
-			break;
-		case LogLevel::Fatal:
-			wprintf(CL_DARKRED STRING("%s\n") CL_RESET, log.FormattedMessage.GetCharPointer());
-			break;
-		}
+// 		switch (log.Level)
+// 		{
+// 		case LogLevel::Verbose:
+// 			fmt::print(fg(fmt::color::gray), STRING("{}\n"), log.FormattedMessage);
+// 			break;
+// 		case LogLevel::Trace:
+// 			fmt::print(fg(fmt::color::white), STRING("{}\n"), log.FormattedMessage);
+// 			break;
+// 		case LogLevel::Log:
+// 			fmt::print(fg(fmt::color::green), STRING("{}\n"), log.FormattedMessage);
+// 			break;
+// 		case LogLevel::Info:
+// 			fmt::print(fg(fmt::color::cyan), STRING("{}\n"), log.FormattedMessage);
+// 			break;
+// 		case LogLevel::Debug:
+// 			fmt::print(fg(fmt::color::magenta), STRING("{}\n"), log.FormattedMessage);
+// 			break;
+// 		case LogLevel::Warning:
+// 			fmt::print(fg(fmt::color::yellow), STRING("{}\n"), log.FormattedMessage);
+// 			break;
+// 		case LogLevel::Error:
+// 			fmt::print(fg(fmt::color::red), STRING("{}\n"), log.FormattedMessage);
+// 			break;
+// 		case LogLevel::Fatal:
+// 			fmt::print(fg(fmt::color::dark_red), STRING("{}\n"), log.FormattedMessage);
+// 			break;
+// 		}
+
+		IO::Print(log.FormattedMessage);
+		IO::Print(STRING("\n"));
 	}
 
 	FileSink::FileSink()
 	{
-		fopen_s(&m_File, "Log.txt", "w");
+		m_File = IO::CreateFile(STRING("Log.txt"));
 	}
 
 	FileSink::~FileSink()
 	{
-		fclose(m_File);
+		IO::CloseFile(m_File);
 	}
 
 	void FileSink::PushLog(const Log& log)
 	{
-		fwprintf_s(m_File, STRING("%s\n"), log.FormattedMessage.GetCharPointer());
+ 		IO::Print(m_File, log.FormattedMessage);
+ 		IO::Print(m_File, STRING("\n"));
 	}
 }

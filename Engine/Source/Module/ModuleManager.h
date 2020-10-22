@@ -19,6 +19,10 @@ namespace Spark
 
 		void MainThreadTick();
 
+		template<class T>
+		ObjPtr<T> GetModule() { return UnsafeCast<T>(GetModule(T::GetClass())); }
+
+		ObjPtr<Module> GetModule(const Class& module);
 
 	private:
 		void AddModule(const Class& module);
