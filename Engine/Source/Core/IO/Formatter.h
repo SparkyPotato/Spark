@@ -30,7 +30,7 @@ namespace IO
 		{
 			if (*formatStart == L'{' && *(++formatStart) != L'{')
 			{
-				while (!(*formatStart == L':' || *formatStart== L'}')) { formatStart++; }
+				while (!(*formatStart == L':' || *formatStart == L'}')) { formatStart++; }
 				if (*formatStart == L':') { formatStart++; }
 				auto start = formatStart;
 				while (*formatStart != L'}') { formatStart++; }
@@ -64,13 +64,15 @@ namespace IO
 	template<typename ...Args>
 	void Print(const String& formatString, Args ...args)
 	{
-		
+		String temp = FormatString(formatString, args...);
+		wprintf_s(temp.GetCharPointer());
 	}
 
 	template<typename ...Args>
 	void Print(File file, const String& formatString, Args ...args)
 	{
-		
+		String temp = FormatString(formatString, args...);
+		fwprintf_s(file, temp.GetCharPointer());
 	}
 
 	template<>
@@ -92,12 +94,13 @@ namespace IO
 		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd)
 		{
 			auto start = parseEnd - 1;
-			auto end = parseBegin;
+			auto end = parseBegin - 1;
 
 			uint multiplier = 1;
 			while (start != end)
 			{
 				minDigits += multiplier * ((*start) - L'0');
+				multiplier *= 10;
 
 				start--;
 			}
@@ -179,7 +182,7 @@ namespace IO
 		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) 
 		{
 			auto start = parseEnd - 1;
-			auto end = parseBegin;
+			auto end = parseBegin - 1;
 
 			uint multiplier = 1;
 			while (start != end)
