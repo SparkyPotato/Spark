@@ -28,9 +28,10 @@ namespace IO
 	{
 		while (formatStart != formatString.end())
 		{
-			if (*formatStart == L'{')
+			if (*formatStart == L'{' && *(++formatStart) != L'{')
 			{
-				formatStart++;
+				while (!(*formatStart == L':' || *formatStart== L'}')) { formatStart++; }
+				if (*formatStart == L':') { formatStart++; }
 				auto start = formatStart;
 				while (*formatStart != L'}') { formatStart++; }
 
@@ -93,8 +94,6 @@ namespace IO
 			auto start = parseEnd - 1;
 			auto end = parseBegin;
 
-			if (*parseBegin != L':') return;
-
 			uint multiplier = 1;
 			while (start != end)
 			{
@@ -120,7 +119,9 @@ namespace IO
 			}
 
 			i--;
-			minDigits--;
+			if (minDigits == 0) { minDigits = i; }
+			else { minDigits--; }
+
 			while (minDigits != -1)
 			{
 				if (minDigits == i)
@@ -175,12 +176,61 @@ namespace IO
 	struct Formatter<int64>
 	{
 	public:
-		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) {}
+		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) 
+		{
+			auto start = parseEnd - 1;
+			auto end = parseBegin;
+
+			uint multiplier = 1;
+			while (start != end)
+			{
+				minDigits += multiplier * ((*start) - L'0');
+
+				start--;
+			}
+		}
 
 		void Format(int64 value, String& outputString)
 		{
+			if (value == 0) { outputString += L'0'; return; }
+			if (value < 0)
+			{
+				outputString += L'-';
+			}
 
+			Char temp[22];
+
+			uint i = 0;
+			while (value != 0)
+			{
+				uint mod = value % 10;
+				value /= 10;
+				temp[i] = mod + L'0';
+				i++;
+			}
+
+			i--;
+			if (minDigits == 0) { minDigits = i; }
+			else { minDigits--; }
+
+			while (minDigits != -1)
+			{
+				if (minDigits == i)
+				{
+					outputString += temp[i];
+					i--;
+					minDigits--;
+				}
+				else
+				{
+					outputString += L'0';
+					minDigits--;
+				}
+			}
 		}
+
+	private:
+		uint minDigits = 0;
 	};
 
 	template<>

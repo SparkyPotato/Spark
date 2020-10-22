@@ -469,7 +469,6 @@ namespace Spark
 
 	String::Iterator String::Iterator::operator++(int) 
 	{
-
 		auto self = *this;
 		++m_Pointer;
 		return self;
