@@ -8,7 +8,7 @@ namespace Spark
 {
 	void AddEngineClasses()
 	{
-		AddClass<Module>();
+		AddClass<IModule>();
 		AddClass<IWindowManager>();
 
 		AddClass<IMutex>();

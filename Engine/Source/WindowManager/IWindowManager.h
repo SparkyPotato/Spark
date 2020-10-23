@@ -17,12 +17,12 @@ namespace Spark
 		} Dimensions;
 	};
 
-	class IWindowManager : public Module 
+	class IWindowManager : public IModule 
 	{
 	public:
 		void RegisterClasses() override;
 
-		REGISTER_CLASS_NO_INS(IWindowManager, Module, true);
+		REGISTER_CLASS_NO_INS(IWindowManager, IModule, true);
 		static ObjPtr<IWindowManager> Instantiate();
 	};
 }

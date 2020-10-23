@@ -26,15 +26,17 @@ project "Spark"
 		kind "WindowedApp"
 		defines "IS_EDITOR"
 		
-	filter "configurations:*Console*"
-		kind "ConsoleApp"
-		defines "IS_CONSOLE"
-		
 	filter "configurations:*Release*"
 		optimize "speed"
 		symbols "off"
 		runtime "Release"
 		defines "IS_RELEASE"
+		
+	filter "configurations:*Development*"
+		optimize "speed"
+		symbols "off"
+		runtime "Release"
+		defines "IS_DEBUG"
 		
 	filter "configurations:*Debug*"
 		optimize "off"

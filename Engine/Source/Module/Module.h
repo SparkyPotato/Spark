@@ -4,16 +4,16 @@
 
 namespace Spark
 {
-	class Module : public Object
+	class IModule : public Object
 	{
 	public:
-		virtual ~Module() {}
+		virtual ~IModule() {}
 
 		virtual void RegisterClasses() {}
 
 		virtual void Start() {}
 		virtual void MainThreadTick(float mainThreadDeltaTime) {}
 
-		REGISTER_CLASS_NORM(Module, Object, true);
+		REGISTER_CLASS_NORM(IModule, Object, true);
 	};
 }

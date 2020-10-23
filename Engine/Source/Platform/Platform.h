@@ -73,5 +73,5 @@ namespace Spark
 #define snew new(__FILE__, __LINE__)
 #define sdelete delete
 
-#define MemAlloc(size) Spark::Memory::AllocSize(size, __FILE__, __LINE__)
+#define MemAlloc(size) Spark::Memory::Alloc(size, __FILE__, __LINE__)
 #define MemFree(pointer) Spark::Memory::Dealloc(pointer)

@@ -22,12 +22,12 @@ namespace Spark
 		template<class T>
 		ObjPtr<T> GetModule() { return UnsafeCast<T>(GetModule(T::GetClass())); }
 
-		ObjPtr<Module> GetModule(const Class& module);
+		ObjPtr<IModule> GetModule(const Class& module);
 
 	private:
 		void AddModule(const Class& module);
 
-		Array<ObjPtr<Module>> m_Modules;
+		Array<ObjPtr<IModule>> m_Modules;
 	};
 
 	extern ModuleManager* GModuleManager;

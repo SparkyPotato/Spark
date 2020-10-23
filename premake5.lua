@@ -6,10 +6,10 @@ workspace "Spark"
 	{
 		"Debug Lib",
 		"Debug Editor",
-		"Debug Editor Console",
+		"Development Lib",
+		"Development Editor",
 		"Release Lib",
 		"Release Editor",
-		"Release Editor Console"
 	}
 	
 	flags "FatalWarnings"

@@ -27,15 +27,11 @@ namespace Spark
 		ClassManager::Initialize();
 		ModuleManager::Initialize();
 
-		m_RunMutex = IMutex::Instantiate();
-
 		SPARK_LOG(LogRunLoop, Trace, STRING("Started Run Loop"));
 
 		while (m_IsRunning)
 		{
-			m_RunMutex->Lock();
 			GModuleManager->MainThreadTick();
-			m_RunMutex->Unlock();
 		}
 
 		ModuleManager::Shutdown();
@@ -48,16 +44,11 @@ namespace Spark
 	{
 		SPARK_LOG(LogRunLoop, Warning, STRING("Force Quit, Cleaning up"));
 
-		m_RunMutex->Lock();
-
-		m_IsRunning = false;
-
 		ClassManager::Shutdown();
 
 		Memory::Shutdown();
 
 		SPARK_LOG(LogRunLoop, Trace, STRING("Exiting..."));
-
 		exit(1);
 	}
 }

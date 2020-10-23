@@ -24,7 +24,7 @@ namespace IO
 	void FormatIntoString(String& formatInto, const String& formatString, String::Iterator& formatStart);
 
 	template<typename T, typename ...Args>
-	void FormatIntoString(String& formatInto, const String& formatString, String::Iterator& formatStart, const T& arg, Args ...args)
+	void FormatIntoString(String& formatInto, const String& formatString, String::Iterator& formatStart, const T& arg, const Args& ...args)
 	{
 		while (formatStart != formatString.end())
 		{
@@ -62,14 +62,14 @@ namespace IO
 	}
 
 	template<typename ...Args>
-	void Print(const String& formatString, Args ...args)
+	void Print(const String& formatString, const Args& ...args)
 	{
 		String temp = FormatString(formatString, args...);
 		wprintf_s(temp.GetCharPointer());
 	}
 
 	template<typename ...Args>
-	void Print(File file, const String& formatString, Args ...args)
+	void Print(File file, const String& formatString, const Args& ...args)
 	{
 		String temp = FormatString(formatString, args...);
 		fwprintf_s(file, temp.GetCharPointer());
@@ -78,7 +78,6 @@ namespace IO
 	template<>
 	struct Formatter<String>
 	{
-	public:
 		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) {}
 
 		void Format(const String& value, String& outputString)
@@ -90,7 +89,6 @@ namespace IO
 	template<>
 	struct Formatter<uint64>
 	{
-	public:
 		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd)
 		{
 			auto start = parseEnd - 1;
@@ -148,7 +146,6 @@ namespace IO
 	template<>
 	struct Formatter<uint8> : Formatter<uint64>
 	{
-	public:
 		void Format(uint8 value, String& outputString)
 		{
 			Formatter<uint64>::Format(static_cast<uint64>(value), outputString);
@@ -158,7 +155,6 @@ namespace IO
 	template<>
 	struct Formatter<uint16> : Formatter<uint64>
 	{
-	public:
 		void Format(uint16 value, String& outputString)
 		{
 			Formatter<uint64>::Format(static_cast<uint64>(value), outputString);
@@ -168,7 +164,6 @@ namespace IO
 	template<>
 	struct Formatter<uint32> : Formatter<uint64>
 	{
-	public:
 		void Format(uint32 value, String& outputString)
 		{
 			Formatter<uint64>::Format(static_cast<uint64>(value), outputString);
@@ -178,7 +173,6 @@ namespace IO
 	template<>
 	struct Formatter<int64>
 	{
-	public:
 		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) 
 		{
 			auto start = parseEnd - 1;
@@ -239,9 +233,6 @@ namespace IO
 	template<>
 	struct Formatter<int8> : Formatter<int64>
 	{
-	public:
-		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) {}
-
 		void Format(int8 value, String& outputString)
 		{
 			Formatter<int64>::Format(static_cast<int64>(value), outputString);
@@ -251,9 +242,6 @@ namespace IO
 	template<>
 	struct Formatter<int16> : Formatter<int64>
 	{
-	public:
-		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) {}
-
 		void Format(int16 value, String& outputString)
 		{
 			Formatter<int64>::Format(static_cast<int64>(value), outputString);
@@ -263,9 +251,6 @@ namespace IO
 	template<>
 	struct Formatter<int32> : Formatter<int64>
 	{
-	public:
-		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) {}
-
 		void Format(int32 value, String& outputString)
 		{
 			Formatter<int64>::Format(static_cast<int64>(value), outputString);

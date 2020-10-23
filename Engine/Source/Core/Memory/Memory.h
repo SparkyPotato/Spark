@@ -5,6 +5,7 @@
 namespace Spark
 {
 	class Object;
+	struct RawAllocator;
 
 	struct MemoryStatistics
 	{
@@ -22,7 +23,7 @@ namespace Spark
 		static void Initialize();
 		static void Shutdown();
 
-		static void* AllocSize(size_t size, const char* file, int line);
+		static void* Alloc(size_t size, const char* file, int line);
 		static void Dealloc(void* pointer);
 
 		static const MemoryStatistics& GetStats();
@@ -44,6 +45,14 @@ namespace Spark
 				: Pointer(ptr), File(file), Line(line), Size(size)
 			{}
 
+			~Allocation()
+			{
+				s_Memory->m_Stats.DeallocationCount++;
+				s_Memory->m_Stats.CurrentAllocation -= Size;
+
+				free(Pointer);
+			}
+
 			void* Pointer;
 			const char* File;
 			int Line;
@@ -56,17 +65,7 @@ namespace Spark
 
 		MemoryStatistics m_Stats;
 		Array<SharedRef*> m_SharedRefs;
-
-		/*
-			Variables for dynamic counting of allocations.
-			We would normally use an Array<> for this, but Array relies on memory allocation functions to reallocate.
-			We then have a problem when the Array is reallocating, and its newly allocated memory is written out of the heap buffer.
-			If we changed the design (of Array) to not update the allocation variables until after the allocation, we would then have infinite recursion,
-			since Realloc would call MemAlloc, which would then cause the Array to Realloc.
-		*/
-		Allocation* m_Allocations = nullptr;
-		uint m_AllocationSize = 100;
-		uint m_AllocationHead = 0;
+		Array<Allocation, RawAllocator> m_Allocations;
 	};
 
 	inline bool operator==(const Memory::Allocation& first, void* pointer)
@@ -81,3 +80,4 @@ namespace Spark
 void* operator new(size_t size, const char* file, int line);
 void* operator new[](size_t size, const char* file, int line);
 void operator delete(void* pointer, const char* file, int line);
+void operator delete[](void* pointer, const char* file, int line);

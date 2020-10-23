@@ -14,6 +14,7 @@
 #include "Core/Types/Math.h"
 
 #include "Core/Memory/Memory.h"
+#include "Core/Memory/Allocator.h"
 
 #include "Core/IO/IO.h"
 #include "Core/IO/Formatter.h"

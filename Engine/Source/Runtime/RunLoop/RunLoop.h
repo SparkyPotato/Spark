@@ -15,8 +15,6 @@ namespace Spark
 
 	private:
 		bool m_IsRunning;
-
-		ObjPtr<IMutex> m_RunMutex;
 	};
 
 	extern RunLoop GRunLoop;

@@ -6,7 +6,7 @@
 
 namespace Spark
 {
-	Array<ILogSink*> Logger::m_RegisteredSinks = { snew DebugSink, snew ConsoleSink, snew FileSink };
+	Array<ILogSink*> Logger::m_RegisteredSinks = { snew DebugSink, snew FileSink };
 	String Logger::m_FormatString = STRING("[{:2}:{:2}:{:2}:{:3}] {} ({}): ");
 
 	// Prevent creation of temporaries for every single log
@@ -53,40 +53,6 @@ namespace Spark
 	void DebugSink::PushLog(const Log& log)
 	{
 		Platform::DebugOutput(log.FormattedMessage);
-	}
-
-	void ConsoleSink::PushLog(const Log& log)
-	{
-// 		switch (log.Level)
-// 		{
-// 		case LogLevel::Verbose:
-// 			fmt::print(fg(fmt::color::gray), STRING("{}\n"), log.FormattedMessage);
-// 			break;
-// 		case LogLevel::Trace:
-// 			fmt::print(fg(fmt::color::white), STRING("{}\n"), log.FormattedMessage);
-// 			break;
-// 		case LogLevel::Log:
-// 			fmt::print(fg(fmt::color::green), STRING("{}\n"), log.FormattedMessage);
-// 			break;
-// 		case LogLevel::Info:
-// 			fmt::print(fg(fmt::color::cyan), STRING("{}\n"), log.FormattedMessage);
-// 			break;
-// 		case LogLevel::Debug:
-// 			fmt::print(fg(fmt::color::magenta), STRING("{}\n"), log.FormattedMessage);
-// 			break;
-// 		case LogLevel::Warning:
-// 			fmt::print(fg(fmt::color::yellow), STRING("{}\n"), log.FormattedMessage);
-// 			break;
-// 		case LogLevel::Error:
-// 			fmt::print(fg(fmt::color::red), STRING("{}\n"), log.FormattedMessage);
-// 			break;
-// 		case LogLevel::Fatal:
-// 			fmt::print(fg(fmt::color::dark_red), STRING("{}\n"), log.FormattedMessage);
-// 			break;
-// 		}
-
-		IO::Print(log.FormattedMessage);
-		IO::Print(STRING("\n"));
 	}
 
 	FileSink::FileSink()

@@ -28,7 +28,7 @@ namespace Spark
 
 		GModuleManager = snew ModuleManager;
 
-		for (auto& module : Module::GetClass().Children)
+		for (auto& module : IModule::GetClass().Children)
 		{
 			GModuleManager->AddModule(module);
 		}
@@ -52,7 +52,7 @@ namespace Spark
 		}
 	}
 
-	ObjPtr<Module> ModuleManager::GetModule(const Class& module)
+	ObjPtr<IModule> ModuleManager::GetModule(const Class& module)
 	{
 		for (auto& mod : m_Modules)
 		{
@@ -63,7 +63,7 @@ namespace Spark
 		}
 
 		SPARK_LOG(LogModuleManager, Error, STRING("Module '{}' not found!"), module.Name);
-		return ObjPtr<Module>();
+		return ObjPtr<IModule>();
 	}
 
 	void ModuleManager::AddModule(const Class& module)
@@ -76,7 +76,7 @@ namespace Spark
 
 		SPARK_LOG(LogModuleManager, Verbose, STRING("Adding module '{}'"), module.Name);
 
-		auto mod = m_Modules.Add(module.Instantiate<Module>());
+		auto mod = m_Modules.Add(module.Instantiate<IModule>());
 		SPARK_LOG(LogModuleManager, Verbose, STRING("Registering objects"));
 		mod->RegisterClasses();
 		SPARK_LOG(LogModuleManager, Verbose, STRING("Starting"));
