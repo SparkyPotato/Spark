@@ -4,8 +4,6 @@
 
 #include "WindowManager/WWindowManager.h"
 
-#include "Thread/WMutex.h"
-
 namespace Spark
 {
 namespace Platform
@@ -13,8 +11,6 @@ namespace Platform
 	void RegisterClasses()
 	{
 		AddClass<WWindowManager>();
-
-		AddClass<WMutex>();
 	}
 
 	DateTime GetSystemTime()

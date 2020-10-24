@@ -12,6 +12,6 @@
 #include "Entry.cpp"
 
 #include "WindowManager/WWindowManager.cpp"
-#include "Thread/WMutex.cpp"
+#include "Thread/Mutex.cpp"
 
 #endif 

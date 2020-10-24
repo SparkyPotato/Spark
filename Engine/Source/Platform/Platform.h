@@ -62,6 +62,21 @@ namespace Spark
 
 		Char* ToUnicode(const char* ascii);
 	}
+
+#ifdef ON_WINDOWS
+	class Mutex
+	{
+	public:
+		Mutex();
+		~Mutex();
+
+		void Lock();
+		void Unlock();
+
+	private:
+		void* m_Handle;
+	};
+#endif
 }
 
 #ifdef ON_WINDOWS

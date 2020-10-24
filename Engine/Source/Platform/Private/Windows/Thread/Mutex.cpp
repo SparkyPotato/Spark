@@ -1,34 +1,27 @@
 // Copyright 2020 SparkyPotato
 
-#include "WMutex.h"
-
 namespace Spark
 {
 	DEFINE_LOG_CATEGORY_FILE(LogPlatform, Verbose);
 
-	ObjPtr<IMutex> IMutex::Instantiate()
+	Mutex::Mutex()
 	{
-		return Create<IMutex, WMutex>();
-	}
+		m_Handle = CreateMutex(nullptr, false, nullptr);
 
-	WMutex::WMutex()
-	{
-		m_Mutex = CreateMutex(nullptr, false, nullptr);
-
-		if (m_Mutex == nullptr)
+		if (m_Handle == nullptr)
 		{
 			SPARK_LOG(LogPlatform, Error, STRING("Failed to create mutex object! Error: {}"), static_cast<uint32>(GetLastError()));
 		}
 	}
 
-	WMutex::~WMutex()
+	Mutex::~Mutex()
 	{
-		CloseHandle(m_Mutex);
+		CloseHandle(m_Handle);
 	}
 
-	void WMutex::Lock()
+	void Mutex::Lock()
 	{
-		DWORD ret = WaitForSingleObject(m_Mutex, INFINITE);
+		DWORD ret = WaitForSingleObject(m_Handle, INFINITE);
 
 		if (ret != WAIT_OBJECT_0 && ret != WAIT_ABANDONED)
 		{
@@ -36,9 +29,9 @@ namespace Spark
 		}
 	}
 
-	void WMutex::Unlock()
+	void Mutex::Unlock()
 	{
-		bool ret = ReleaseMutex(m_Mutex);
+		bool ret = ReleaseMutex(m_Handle);
 
 		if (ret == false)
 		{

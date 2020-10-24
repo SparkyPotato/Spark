@@ -21,7 +21,7 @@ namespace Spark
 	struct Log
 	{
 		Log(const String& catName, LogLevel level, String&& message, const DateTime& time)
-			: CategoryName(catName), Level(level), FormattedMessage(message), Time(time)
+			: CategoryName(catName), Level(level), FormattedMessage(static_cast<String&&>(message)), Time(time)
 		{}
 
 		const String& CategoryName; // Name of Category

@@ -10,8 +10,6 @@ namespace Spark
 	{
 		AddClass<IModule>();
 		AddClass<IWindowManager>();
-
-		AddClass<IMutex>();
 	}
 
 #ifdef IS_EDITOR
