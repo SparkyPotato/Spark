@@ -7,6 +7,9 @@ namespace Spark
 	class Object;
 	struct RawAllocator;
 
+	template<typename Type, typename Alloc = HeapAllocator>
+	class ArrayPtr;
+
 	struct MemoryStatistics
 	{
 		size_t CurrentAllocation = 0;
@@ -30,13 +33,14 @@ namespace Spark
 
 		struct SharedRef
 		{
-			SharedRef();
-
 			~SharedRef();
 
 			Object* AllocatedObject = nullptr;
 			uint RefCount = 0;
 		};
+
+		static ArrayPtr<SharedRef, RawAllocator> AddSharedRef();
+		static void RemoveSharedRef(ArrayPtr<SharedRef, RawAllocator> pointer);
 
 	private:
 		struct Allocation
@@ -64,13 +68,18 @@ namespace Spark
 		static Memory* s_Memory;
 
 		MemoryStatistics m_Stats;
-		Array<SharedRef*> m_SharedRefs;
+		Array<SharedRef, RawAllocator> m_SharedRefs;
 		Array<Allocation, RawAllocator> m_Allocations;
 	};
 
 	inline bool operator==(const Memory::Allocation& first, void* pointer)
 	{
 		return first.Pointer == pointer;
+	}
+
+	inline bool operator==(const Memory::SharedRef& first, const Memory::SharedRef& second)
+	{
+		return first.AllocatedObject == second.AllocatedObject;
 	}
 
 	void MemCopy(void* destination, const void* source, size_t bytes);

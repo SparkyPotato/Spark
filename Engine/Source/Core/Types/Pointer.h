@@ -12,7 +12,6 @@ namespace Spark
 
 		ObjPtr(const ObjPtr<Obj>& other)
 		{
-			m_Object = other.m_Object;
 			m_SharedRef = other.m_SharedRef;
 			m_SharedRef->RefCount++;
 		}
@@ -25,8 +24,7 @@ namespace Spark
 
 			if (m_SharedRef->RefCount <= 0)
 			{
-				sdelete m_Object;
-				sdelete m_SharedRef;
+				Memory::RemoveSharedRef(m_SharedRef);
 			}
 		}
 
@@ -35,15 +33,13 @@ namespace Spark
 			if (m_SharedRef)
 			{
 				m_SharedRef->RefCount--;
-
-				if (m_SharedRef->RefCount <= 0)
-				{
-					sdelete m_Object;
-					sdelete m_SharedRef;
-				}
 			}
 
-			m_Object = other.m_Object;
+			if (m_SharedRef->RefCount <= 0)
+			{
+				Memory::RemoveSharedRef(m_SharedRef);
+			}
+
 			m_SharedRef = other.m_SharedRef;
 			m_SharedRef->RefCount++;
 
@@ -52,37 +48,37 @@ namespace Spark
 		
 		Obj& operator*()
 		{
-			return *m_Object;
+			return *(reinterpret_cast<Obj*>(m_SharedRef->AllocatedObject));
 		}
 
 		const Obj& operator*() const
 		{
-			return *m_Object;
+			return *(reinterpret_cast<Obj*>(m_SharedRef->AllocatedObject));
 		}
 
 		Obj* operator->()
 		{
-			return m_Object;
+			return reinterpret_cast<Obj*>(m_SharedRef->AllocatedObject);
 		}
 
 		const Obj* operator->() const
 		{
-			return m_Object;
+			return reinterpret_cast<Obj*>(m_SharedRef->AllocatedObject);
 		}
 
 		Obj* Get()
 		{
-			return m_Object;
+			return reinterpret_cast<Obj*>(m_SharedRef->AllocatedObject);
 		}
 
 		const Obj* Get() const
 		{
-			return m_Object;
+			return reinterpret_cast<Obj*>(m_SharedRef->AllocatedObject);
 		}
 
 		operator bool() const 
 		{
-			return m_Object;
+			return m_SharedRef;
 		}
 
 		template<class Type>
@@ -98,8 +94,7 @@ namespace Spark
 		friend ObjPtr<To> UnsafeCast(ObjPtr<From> cast);
 
 	private:
-		Obj* m_Object = nullptr;
-		Memory::SharedRef* m_SharedRef = nullptr;
+		ArrayPtr<Memory::SharedRef, RawAllocator> m_SharedRef;
 	};
 
 	template<class Type>
@@ -108,8 +103,8 @@ namespace Spark
 		if (Type::GetClass().IsAbstract) { return ObjPtr<Type>(); }
 
 		ObjPtr<Type> temp;
-		temp.m_SharedRef = snew Memory::SharedRef;
-		temp.m_SharedRef->AllocatedObject = temp.m_Object = snew Type();
+		temp.m_SharedRef = Memory::AddSharedRef();
+		temp.m_SharedRef->AllocatedObject = snew Type();
 		temp.m_SharedRef->RefCount = 1;
 
 		return temp;
@@ -124,8 +119,8 @@ namespace Spark
 		{
 			ObjPtr<Cast> temp;
 
-			temp.m_SharedRef = snew Memory::SharedRef;
-			temp.m_SharedRef->AllocatedObject = temp.m_Object = reinterpret_cast<Cast*>(snew Type);
+			temp.m_SharedRef = Memory::AddSharedRef();
+			temp.m_SharedRef->AllocatedObject = reinterpret_cast<Cast*>(snew Type);
 			temp.m_SharedRef->RefCount = 1;
 
 			return temp;
@@ -136,15 +131,28 @@ namespace Spark
 		}
 	}
 
-	template<typename Type>
+	template<typename Type, typename Alloc>
 	class ArrayPtr
 	{
 	public:
 		ArrayPtr() = default;
 
-		ArrayPtr(Array<Type>* array, uint index)
+		ArrayPtr(Array<Type, Alloc>* array, uint index)
 			: m_Array(array), m_ObjectIndex(index)
-		{}
+		{
+			if (m_Array) m_Array->RegisterPointer(this);
+		}
+
+		ArrayPtr(const ArrayPtr<Type, Alloc>& other)
+			: m_Array(other.m_Array), m_ObjectIndex(other.m_ObjectIndex)
+		{
+			if (m_Array) m_Array->RegisterPointer(this);
+		}
+
+		~ArrayPtr()
+		{
+			if (m_Array) m_Array->DeregisterPointer(this);
+		}
 
 		Type* operator->()
 		{
@@ -181,8 +189,29 @@ namespace Spark
 			return m_Array;
 		}
 
+		template<typename Type, typename Alloc>
+		friend bool operator==(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second);
+
+		template<typename Type, typename Alloc>
+		friend bool operator!=(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second);
+
 	private:
-		Array<Type>* m_Array = nullptr;
+		template<typename Type, typename Allocator = HeapAllocator>
+		friend class Array;
+
+		Array<Type, Alloc>* m_Array = nullptr;
 		uint m_ObjectIndex = 0;
 	};
+
+	template<typename Type, typename Alloc>
+	bool operator==(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second)
+	{
+		return (first.m_Array == second.m_Array) && (first.m_ObjectIndex == second.m_ObjectIndex);
+	}
+
+	template<typename Type, typename Alloc>
+	bool operator!=(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second)
+	{
+		return !(first == second);
+	}
 }

@@ -8,6 +8,9 @@ namespace Spark
 	class ArrayIterator;
 	struct HeapAllocator;
 
+	template<typename Type, typename Alloc>
+	class ArrayPtr;
+
 	/*
 		Dynamic array.
 		Does not require template type to have default, copy, or move constructors.
@@ -141,6 +144,11 @@ namespace Spark
 			new (m_DataPointer + position) Type(object);
 			++m_CreatedObjects;
 
+			for (uint i = 0; i < m_RegisteredCount; i++)
+			{
+				if (m_RegisteredPointers[i]->m_ObjectIndex >= index) m_RegisteredPointers[i]->m_ObjectIndex++;
+			}
+
 			return *(m_DataPointer + position);
 		}
 
@@ -153,6 +161,12 @@ namespace Spark
 				MemCopy(m_DataPointer + i, m_DataPointer + i + 1, sizeof(Type));
 			}
 			m_CreatedObjects--;
+
+			for (uint i = 0; i < m_RegisteredCount; i++)
+			{
+				if (m_RegisteredPointers[i]->m_ObjectIndex > index) m_RegisteredPointers[i]->m_ObjectIndex--;
+				if (m_RegisteredPointers[i]->m_ObjectIndex == index) m_RegisteredPointers[i]->m_Array = nullptr;
+			}
 		}
 
 		template<typename T>
@@ -178,6 +192,9 @@ namespace Spark
 		}
 
 	private:
+		template<typename Type, typename Alloc>
+		friend class ArrayPtr;
+
 		void Realloc(uint requiredObjects)
 		{
 			if (m_AllocatedSpace >= requiredObjects) return;
@@ -191,9 +208,47 @@ namespace Spark
 			m_DataPointer = newPointer;
 		}
 
+		void RegisterPointer(ArrayPtr<Type, Allocator>* pointer)
+		{
+			if (m_RegisteredCapacity <= m_RegisteredCount)
+			{
+				m_RegisteredCapacity *= 2;
+				m_RegisteredCapacity += 1;
+
+				auto ptr = m_RegisteredPointers;
+				m_RegisteredPointers = reinterpret_cast<ArrayPtr<Type, Allocator>**>(Allocator::Allocate(m_RegisteredCapacity * sizeof(ArrayPtr<Type, Allocator>*)));
+
+				MemCopy(m_RegisteredPointers, ptr, m_RegisteredCount * sizeof(ArrayPtr<Type, Allocator>*));
+				Allocator::Deallocate(ptr);
+			}
+
+			m_RegisteredPointers[m_RegisteredCount] = pointer;
+			m_RegisteredCount++;
+		}
+
+		void DeregisterPointer(ArrayPtr<Type, Allocator>* pointer)
+		{
+			for (uint i = 0; i < m_RegisteredCount; i++)
+			{
+				if (m_RegisteredPointers[i] == pointer)
+				{
+					for (; i < m_RegisteredCount - 1; i++)
+					{
+						m_RegisteredPointers[i] = m_RegisteredPointers[i + 1];
+					}
+					m_RegisteredCount--;
+					break;
+				}
+			}
+		}
+
 		Type* m_DataPointer = nullptr;
 		uint m_AllocatedSpace = 0;
 		uint m_CreatedObjects = 0;
+
+		ArrayPtr<Type, Allocator>** m_RegisteredPointers = nullptr;
+		uint m_RegisteredCount = 0;
+		uint m_RegisteredCapacity = 0;
 	};
 
 	template<typename Type>

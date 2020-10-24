@@ -24,12 +24,6 @@ namespace Spark
 			SPARK_LOG(LogMemory, Warning, STRING("{} object/s not deleted!"), m_SharedRefs.Size());
 		}
 
-		for (auto object : m_SharedRefs)
-		{
-			object->AllocatedObject->~Object();
-			SPARK_LOG(LogMemory, Verbose, STRING("Deleting object with {} references"), object->RefCount);
-		}
-
 #ifdef IS_DEBUG
 		auto stats = m_Stats;
 		if (stats.CurrentAllocation > 0)
@@ -108,19 +102,21 @@ namespace Spark
 #endif
 	}
 
-	const MemoryStatistics& Memory::GetStats()
+	ArrayPtr<Memory::SharedRef, RawAllocator> Memory::AddSharedRef()
 	{
-		return s_Memory->m_Stats;
+		s_Memory->m_SharedRefs.Emplace();
+		return ArrayPtr<Memory::SharedRef, RawAllocator>(&s_Memory->m_SharedRefs, s_Memory->m_SharedRefs.Size() - 1);
 	}
 
-	Memory::SharedRef::SharedRef()
+	void Memory::RemoveSharedRef(ArrayPtr<SharedRef, RawAllocator> pointer)
 	{
-		s_Memory->m_SharedRefs.Add(this);
+		uint i = s_Memory->m_SharedRefs.Find(*pointer);
+		s_Memory->m_SharedRefs.Erase(i);
 	}
 
 	Memory::SharedRef::~SharedRef()
 	{
-		s_Memory->m_SharedRefs.Erase(s_Memory->m_SharedRefs.Find(this));
+		sdelete AllocatedObject;
 	}
 
 	void MemCopy(void* destination, const void* source, size_t bytes)

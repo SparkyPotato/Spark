@@ -69,7 +69,6 @@ namespace Spark
 		if (To::GetClass().IsSubclassOf<From>() || From::GetClass().IsSubclassOf<To>())
 		{
 			ObjPtr<To> temp;
-			temp.m_Object = reinterpret_cast<To*>(cast.m_Object);
 			temp.m_SharedRef = cast.m_SharedRef;
 			temp.m_SharedRef->RefCount++;
 
@@ -90,7 +89,6 @@ namespace Spark
 	ObjPtr<To> UnsafeCast(ObjPtr<From> cast)
 	{
 		ObjPtr<To> temp;
-		temp.m_Object = reinterpret_cast<To*>(cast.m_Object);
 		temp.m_SharedRef = cast.m_SharedRef;
 		temp.m_SharedRef->RefCount++;
 
