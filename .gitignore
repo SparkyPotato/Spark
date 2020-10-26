@@ -9,3 +9,8 @@ Dependencies
 # Builds
 Binaries
 Intermediate
+
+# Mac files
+*.DS_Store
+*.xcodeproj
+*.xcworkspace

@@ -13,6 +13,9 @@ project "Spark"
 	
 	pchheader "SparkPCH.h"
 	pchsource "PCH/SparkPCH.cpp"
+ 
+    filter "system:macosx"
+        pchheader "PCH/SparkPCH.h"
 	
 	filter "system:windows"
 		systemversion "latest"

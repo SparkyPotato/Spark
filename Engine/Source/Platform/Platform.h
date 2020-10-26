@@ -17,8 +17,6 @@
 
 namespace Spark
 {
-#ifdef ON_WINDOWS
-
 	using Char = wchar_t;
 
 	using uint = uint32_t;
@@ -45,8 +43,6 @@ namespace Spark
 	using fint64 = int_fast64_t;
 
 	using byte = uint8;
-
-#endif
 
 	struct DateTime;
 	class String;
@@ -79,9 +75,7 @@ namespace Spark
 #endif
 }
 
-#ifdef ON_WINDOWS
-	#define STRING(x) L ## x
-#endif
+#define STRING(x) L ## x
 
 #define UNIMPLEMENTED(type) SPARK_ASSERT(false, STRING("Unimplemented function called!")); return (type) 0
 
