@@ -1,0 +1,16 @@
+# All dependencies are grabbed and compiled in the setup script
+Dependencies
+
+# Visual Studio files
+*.vs
+*.sln
+*.vcxproj*
+
+# Builds
+Binaries
+Intermediate
+
+# Mac files
+*.DS_Store
+*.xcodeproj
+*.xcworkspace
