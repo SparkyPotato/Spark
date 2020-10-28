@@ -12,6 +12,16 @@ namespace Spark
 
 	Memory* Memory::s_Memory = nullptr;
 
+	void MemCopy(void* destination, const void* source, size_t bytes)
+	{
+		memcpy(destination, source, bytes);
+	}
+
+	int MemCompare(const void* first, const void* second, size_t bytes)
+	{
+		return memcmp(first, second, bytes);
+	}
+
 	Memory::Memory()
 	{
 		
@@ -119,16 +129,6 @@ namespace Spark
 		sdelete AllocatedObject;
 	}
 
-	void MemCopy(void* destination, const void* source, size_t bytes)
-	{
-		memcpy(destination, source, bytes);
-	}
-
-	int MemCompare(const void* first, const void* second, size_t bytes)
-	{
-		return memcmp(first, second, bytes);
-	}
-
 	Array<Char*, RawAllocator> StringAllocator::m_Allocations;
 	Char* StringAllocator::m_StringBuffer;
 	size_t StringAllocator::m_Size;
@@ -145,12 +145,12 @@ void* operator new[](size_t size, const char* file, int line)
 	return Spark::Memory::Alloc(size, file, line);
 }
 
-void operator delete(void* pointer)
+void operator delete(void* pointer) noexcept
 {
 	Spark::Memory::Dealloc(pointer);
 }
 
-void operator delete[](void* pointer)
+void operator delete[](void* pointer) noexcept
 {
 	Spark::Memory::Dealloc(pointer);
 }

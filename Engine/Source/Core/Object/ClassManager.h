@@ -66,7 +66,7 @@ namespace Spark
 	template<class To, class From>
 	ObjPtr<To> Cast(ObjPtr<From> cast)
 	{
-		if (To::GetClass().IsSubclassOf<From>() || From::GetClass().IsSubclassOf<To>())
+		if (To::GetClass().template IsSubclassOf<From>() || From::GetClass().template IsSubclassOf<To>())
 		{
 			ObjPtr<To> temp;
 			temp.m_SharedRef = cast.m_SharedRef;

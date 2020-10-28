@@ -11,13 +11,22 @@
 	#else
 		#error "Spark is 64-bit only!"
 	#endif
+#elif defined (__APPLE__) || defined (__MACH__)
+    #include <TargetConditionals.h>
+    #if TARGET_OS_MAC == 1
+        #define ON_MAC
+    #endif
 #else
-	#error "Windows is the only supported platform!"
+	#error Platform not supported!
 #endif
 
 namespace Spark
 {
+#ifdef ON_WINDOWS
 	using Char = wchar_t;
+#elif defined (ON_MAC)
+	using Char = char8_t;
+#endif
 
 	using uint = uint32_t;
 	using uint8 = uint8_t;
@@ -55,8 +64,12 @@ namespace Spark
 		void DebugOutput(const String& string);
 
 		void ShowMessageBox(const String& title, const String& message);
+	
+		void Print(const String& string);
 
+#ifdef ON_WINDOWS
 		Char* ToUnicode(const char* ascii);
+#endif
 	}
 
 #ifdef ON_WINDOWS
@@ -75,7 +88,11 @@ namespace Spark
 #endif
 }
 
-#define STRING(x) L ## x
+#ifdef ON_WINDOWS
+	#define STRING(x) L ## x
+#elif defined (ON_MAC)
+	#define STRING(x) u8 ## x
+#endif
 
 #define UNIMPLEMENTED(type) SPARK_ASSERT(false, STRING("Unimplemented function called!")); return (type) 0
 

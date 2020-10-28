@@ -82,7 +82,7 @@ namespace Spark
 				return ArrayPtr<Class>(&node->Children, i);
 			}
 
-			auto& ptr = SearchNode(className, &node->Children[i]);
+			const auto& ptr = SearchNode(className, &node->Children[i]);
 			if (ptr) return ptr;
 		}
 

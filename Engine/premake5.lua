@@ -21,13 +21,13 @@ project "Spark"
 		systemversion "latest"
 		entrypoint "wWinMainCRTStartup"
 		
-	filter "configurations:*Lib*"
-		kind "StaticLib"
-		defines "IS_LIB"
-	
 	filter "configurations:*Editor*"
 		kind "WindowedApp"
 		defines "IS_EDITOR"
+		
+	filter "configurations:*Lib*"
+		kind "StaticLib"
+		defines "IS_LIB"
 		
 	filter "configurations:*Release*"
 		optimize "speed"

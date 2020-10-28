@@ -4,6 +4,78 @@
 
 namespace Spark
 {
+	template<typename Type, typename Alloc>
+	class ArrayPtr
+	{
+	public:
+		ArrayPtr() = default;
+	
+		ArrayPtr(Array<Type, Alloc>* array, uint index)
+		: m_Array(array), m_ObjectIndex(index)
+		{
+			if (m_Array) m_Array->RegisterPointer(this);
+		}
+	
+		ArrayPtr(const ArrayPtr<Type, Alloc>& other)
+		: m_Array(other.m_Array), m_ObjectIndex(other.m_ObjectIndex)
+		{
+			if (m_Array) m_Array->RegisterPointer(this);
+		}
+	
+		~ArrayPtr()
+		{
+			if (m_Array) m_Array->DeregisterPointer(this);
+		}
+	
+		Type* operator->()
+		{
+			return &(*m_Array)[m_ObjectIndex];
+		}
+	
+		const Type* operator->() const
+		{
+			return &(*m_Array)[m_ObjectIndex];
+		}
+	
+		Type& operator*()
+		{
+			return (*m_Array)[m_ObjectIndex];
+		}
+	
+		const Type& operator*() const
+		{
+			return (*m_Array)[m_ObjectIndex];
+		}
+	
+		Type* Get()
+		{
+			return &(*m_Array)[m_ObjectIndex];
+		}
+	
+		const Type* Get() const
+		{
+			return &(*m_Array)[m_ObjectIndex];
+		}
+	
+		operator bool() const
+		{
+			return m_Array;
+		}
+	
+		template<typename T, typename A>
+		friend bool operator==(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second);
+	
+		template<typename T, typename A>
+		friend bool operator!=(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second);
+	
+	private:
+		template<typename T, typename Allocator>
+		friend class Array;
+	
+		Array<Type, Alloc>* m_Array = nullptr;
+		uint m_ObjectIndex = 0;
+	};
+
 	template<typename Obj>
 	class ObjPtr
 	{
@@ -115,7 +187,7 @@ namespace Spark
 	{
 		if (Type::GetClass().IsAbstract) { return ObjPtr<Cast>(); }
 
-		if (Cast::GetClass().IsSubclassOf<Type>() || Type::GetClass().IsSubclassOf<Cast>())
+		if (Cast::GetClass().template IsSubclassOf<Type>() || Type::GetClass().template IsSubclassOf<Cast>())
 		{
 			ObjPtr<Cast> temp;
 
@@ -130,78 +202,6 @@ namespace Spark
 			return ObjPtr<Cast>();
 		}
 	}
-
-	template<typename Type, typename Alloc>
-	class ArrayPtr
-	{
-	public:
-		ArrayPtr() = default;
-
-		ArrayPtr(Array<Type, Alloc>* array, uint index)
-			: m_Array(array), m_ObjectIndex(index)
-		{
-			if (m_Array) m_Array->RegisterPointer(this);
-		}
-
-		ArrayPtr(const ArrayPtr<Type, Alloc>& other)
-			: m_Array(other.m_Array), m_ObjectIndex(other.m_ObjectIndex)
-		{
-			if (m_Array) m_Array->RegisterPointer(this);
-		}
-
-		~ArrayPtr()
-		{
-			if (m_Array) m_Array->DeregisterPointer(this);
-		}
-
-		Type* operator->()
-		{
-			return &(*m_Array)[m_ObjectIndex];
-		}
-
-		const Type* operator->() const
-		{
-			return &(*m_Array)[m_ObjectIndex];
-		}
-
-		Type& operator*()
-		{
-			return (*m_Array)[m_ObjectIndex];
-		}
-
-		const Type& operator*() const
-		{
-			return (*m_Array)[m_ObjectIndex];
-		}
-
-		Type* Get()
-		{
-			return &(*m_Array)[m_ObjectIndex];
-		}
-
-		const Type* Get() const
-		{
-			return &(*m_Array)[m_ObjectIndex];
-		}
-
-		operator bool() const
-		{
-			return m_Array;
-		}
-
-		template<typename Type, typename Alloc>
-		friend bool operator==(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second);
-
-		template<typename Type, typename Alloc>
-		friend bool operator!=(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second);
-
-	private:
-		template<typename Type, typename Allocator = HeapAllocator>
-		friend class Array;
-
-		Array<Type, Alloc>* m_Array = nullptr;
-		uint m_ObjectIndex = 0;
-	};
 
 	template<typename Type, typename Alloc>
 	bool operator==(ArrayPtr<Type, Alloc> first, ArrayPtr<Type, Alloc> second)

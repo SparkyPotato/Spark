@@ -13,18 +13,18 @@ namespace IO
 	public:
 		Formatter()
 		{
-			static_assert(false, "Need to specialize formatter for type T!");
+			
 		}
 
-		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) {}
+		void Parse(const String& string, StringIterator parseBegin, StringIterator parseEnd) {}
 
 		void Format(const T& value, String& outputString) {}
 	};
 
-	void FormatIntoString(String& formatInto, const String& formatString, String::Iterator& formatStart);
+	void FormatIntoString(String& formatInto, const String& formatString, StringIterator& formatStart);
 
 	template<typename T, typename ...Args>
-	void FormatIntoString(String& formatInto, const String& formatString, String::Iterator& formatStart, const T& arg, const Args& ...args)
+	void FormatIntoString(String& formatInto, const String& formatString, StringIterator& formatStart, const T& arg, const Args&... args)
 	{
 		while (formatStart != formatString.end())
 		{
@@ -56,7 +56,8 @@ namespace IO
 	String FormatString(const String& formatString, const Args& ...args)
 	{
 		String temp;
-		FormatIntoString(temp, formatString, formatString.begin(), args...);
+		StringIterator begin = temp.begin();
+		FormatIntoString(temp, formatString, begin, args...);
 
 		return temp;
 	}
@@ -65,20 +66,13 @@ namespace IO
 	void Print(const String& formatString, const Args& ...args)
 	{
 		String temp = FormatString(formatString, args...);
-		wprintf_s(temp.GetCharPointer());
-	}
-
-	template<typename ...Args>
-	void Print(File file, const String& formatString, const Args& ...args)
-	{
-		String temp = FormatString(formatString, args...);
-		fwprintf_s(file, temp.GetCharPointer());
+		Platform::Print(temp);
 	}
 
 	template<>
 	struct Formatter<String>
 	{
-		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) {}
+		void Parse(const String& string, StringIterator parseBegin, StringIterator parseEnd) {}
 
 		void Format(const String& value, String& outputString)
 		{
@@ -89,7 +83,7 @@ namespace IO
 	template<>
 	struct Formatter<uint64>
 	{
-		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd)
+		void Parse(const String& string, StringIterator parseBegin, StringIterator parseEnd)
 		{
 			auto start = parseEnd - 1;
 			auto end = parseBegin - 1;
@@ -173,7 +167,7 @@ namespace IO
 	template<>
 	struct Formatter<int64>
 	{
-		void Parse(const String& string, String::Iterator parseBegin, String::Iterator parseEnd) 
+		void Parse(const String& string, StringIterator parseBegin, StringIterator parseEnd)
 		{
 			auto start = parseEnd - 1;
 			auto end = parseBegin - 1;

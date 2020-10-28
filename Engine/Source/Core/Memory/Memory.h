@@ -63,7 +63,7 @@ namespace Spark
 			size_t Size;
 		};
 
-		friend bool operator==(const Memory::Allocation& first, void* pointer);
+		friend bool operator==(const Memory::Allocation& alloc, void* pointer);
 
 		static Memory* s_Memory;
 
@@ -81,9 +81,6 @@ namespace Spark
 	{
 		return first.AllocatedObject == second.AllocatedObject;
 	}
-
-	void MemCopy(void* destination, const void* source, size_t bytes);
-	int MemCompare(const void* first, const void* second, size_t bytes);
 }
 
 void* operator new(size_t size, const char* file, int line);

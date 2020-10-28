@@ -5,6 +5,7 @@
 namespace Spark
 {
 	struct StringAllocator;
+	class StringIterator;
 
 	/*
 		Dynamic, heap-allocated Unicode-encoded string. Use the STRING(x) macro to convert to Unicode.
@@ -14,10 +15,6 @@ namespace Spark
 	class String
 	{
 	public:
-		// Iterator forward declarations
-		class Iterator;
-
-	public:
 		// Constructs a default string with space for 10 characters
 		String();
 		// Constructs a string with space for size characters + 1 for the terminating null
@@ -26,8 +23,6 @@ namespace Spark
 		String(const Char* charArray);
 		// Constructs a string from a STRING()ified const char*
 		String(Char*& charArray);
-		// Constructs a string from a const char*, by converting into unicode
-		String(const char* charArray);
 
 		String(const String& other);
 		String(String&& other);
@@ -63,8 +58,8 @@ namespace Spark
 		explicit operator const Char* () const;
 
 		// Iterators
-		Iterator begin() const;
-		Iterator end() const;
+		StringIterator begin() const;
+		StringIterator end() const;
 
 		// Does not include the terminating null character
 		uint Length() const;
@@ -107,38 +102,37 @@ namespace Spark
 		uint m_UsedMemory = 0;
 		// Total allocated memory
 		uint m_AllocatedSize = 0;
-
-	public:
-		class Iterator
-		{
-		public:
-			Iterator(Char* pointer);
-
-			Iterator operator+(uint offset);
-
-			Iterator operator-(uint offset);
-
-			Iterator& operator++();
-			Iterator operator++(int);
-			Iterator& operator--();
-			Iterator operator--(int);
-
-			Char& operator[](uint offset);
-
-			Char& operator*();
-			Char* operator->();
-
-			friend bool operator==(const Iterator& first, const Iterator& second);
-			friend bool operator!=(const Iterator& first, const Iterator& second);
-
-		private:
-			Char* m_Pointer;
-		};
 	};
+
+class StringIterator
+{
+public:
+	StringIterator(Char* pointer);
+	
+	StringIterator operator+(uint offset);
+	
+	StringIterator operator-(uint offset);
+	
+	StringIterator& operator++();
+	StringIterator operator++(int);
+	StringIterator& operator--();
+	StringIterator operator--(int);
+	
+	Char& operator[](uint offset);
+	
+	Char& operator*();
+	Char* operator->();
+	
+	friend bool operator==(const StringIterator& first, const StringIterator& second);
+	friend bool operator!=(const StringIterator& first, const StringIterator& second);
+	
+private:
+	Char* m_Pointer;
+};
 
 	String operator+(const Char* cstr, const String& string);
 	bool operator==(const String& first, const String& second);
 
-	bool operator==(const String::Iterator& first, const String::Iterator& second);
-	bool operator!=(const String::Iterator& first, const String::Iterator& second);
+	bool operator==(const StringIterator& first, const StringIterator& second);
+	bool operator!=(const StringIterator& first, const StringIterator& second);
 }

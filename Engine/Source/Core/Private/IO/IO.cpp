@@ -6,37 +6,13 @@ namespace Spark
 {
 namespace IO
 {
-	void FormatIntoString(String& formatInto, const String& formatString, String::Iterator& formatStart)
+	void FormatIntoString(String& formatInto, const String& formatString, StringIterator& formatStart)
 	{
 		while (formatStart != formatString.end())
 		{
 			formatInto += *formatStart;
 			formatStart++;
 		}
-	}
-
-	File CreateFile(const String& file)
-	{
-		File temp;
-
-		_wfopen_s(&temp, file.GetCharPointer(), STRING("w+, ccs=UNICODE"));
-
-		return temp;
-	}
-
-
-	File OpenFile(const String& file)
-	{
-		File temp;
-
-		_wfopen_s(&temp, file.GetCharPointer(), STRING("r+, ccs=UNICODE"));
-
-		return temp;
-	}
-
-	void CloseFile(File file)
-	{
-		fclose(file);
 	}
 }
 }

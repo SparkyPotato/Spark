@@ -8,6 +8,8 @@
 
 #include "Platform/Platform.h"
 
+#include "Core/Memory/MemoryBase.h"
+
 #include "Core/Types/String.h"
 #include "Core/Types/Time.h"
 #include "Core/Types/Container.h"

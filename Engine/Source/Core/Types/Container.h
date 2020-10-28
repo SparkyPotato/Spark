@@ -146,7 +146,7 @@ namespace Spark
 
 			for (uint i = 0; i < m_RegisteredCount; i++)
 			{
-				if (m_RegisteredPointers[i]->m_ObjectIndex >= index) m_RegisteredPointers[i]->m_ObjectIndex++;
+				if (m_RegisteredPointers[i]->m_ObjectIndex >= position) m_RegisteredPointers[i]->m_ObjectIndex++;
 			}
 
 			return *(m_DataPointer + position);
@@ -192,7 +192,7 @@ namespace Spark
 		}
 
 	private:
-		template<typename Type, typename Alloc>
+		template<typename T, typename Alloc>
 		friend class ArrayPtr;
 
 		void Realloc(uint requiredObjects)
@@ -317,13 +317,13 @@ namespace Spark
 	};	
 
 	template<typename T>
-	bool operator==(typename ArrayIterator<T> first, typename ArrayIterator<T> second)
+	bool operator==(ArrayIterator<T> first, ArrayIterator<T> second)
 	{
 		return first.m_Pointer == second.m_Pointer;
 	}
 
 	template<typename T>
-	bool operator!=(typename ArrayIterator<T> first, typename ArrayIterator<T> second)
+	bool operator!=(ArrayIterator<T> first, ArrayIterator<T> second)
 	{
 		return first.m_Pointer != second.m_Pointer;
 	}

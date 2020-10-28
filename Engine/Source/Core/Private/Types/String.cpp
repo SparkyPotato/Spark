@@ -40,16 +40,6 @@ namespace Spark
 		charArray = nullptr;
 	}
 
-	String::String(const char* charArray)
-	{
-		Char* temp = Platform::ToUnicode(charArray);
-
-		uint arraySize = GetCharPointerLength(temp);
-
-		m_AllocatedSize = m_UsedMemory = arraySize;
-		m_DataPointer = temp;
-	}
-
 	String::String(const String& other) 
 	{
 		// Allocate memory
@@ -232,14 +222,14 @@ namespace Spark
 		return m_DataPointer;
 	}
 
-	String::Iterator String::begin() const 
+	StringIterator String::begin() const
 	{
-		return Iterator(m_DataPointer);
+		return StringIterator(m_DataPointer);
 	}
 
-	String::Iterator String::end() const 
+	StringIterator String::end() const
 	{
-		return Iterator(m_DataPointer + m_UsedMemory);
+		return StringIterator(m_DataPointer + m_UsedMemory);
 	}
 
 	uint String::Length() const
@@ -336,34 +326,34 @@ namespace Spark
 		m_DataPointer = newPointer;
 	}
 
-	String::Iterator::Iterator(Char* pointer)  
+	StringIterator::StringIterator(Char* pointer)
 		: m_Pointer(pointer)
 	{}
 
-	String::Iterator String::Iterator::operator+(uint offset) 
+	StringIterator StringIterator::operator+(uint offset)
 	{
-		return Iterator(m_Pointer + offset);
+		return StringIterator(m_Pointer + offset);
 	}
 
-	String::Iterator String::Iterator::operator-(uint offset) 
+	StringIterator StringIterator::operator-(uint offset)
 	{
-		return Iterator(m_Pointer - offset);
+		return StringIterator(m_Pointer - offset);
 	}
 
-	String::Iterator String::Iterator::operator++(int) 
+	StringIterator StringIterator::operator++(int)
 	{
 		auto self = *this;
 		++m_Pointer;
 		return self;
 	}
 
-	String::Iterator& String::Iterator::operator++() 
+	StringIterator& StringIterator::operator++()
 	{
 		++m_Pointer;
 		return *this;
 	}
 
-	String::Iterator String::Iterator::operator--(int) 
+	StringIterator StringIterator::operator--(int)
 	{
 
 		auto self = *this;
@@ -371,24 +361,24 @@ namespace Spark
 		return self;
 	}
 
-	String::Iterator& String::Iterator::operator--() 
+	StringIterator& StringIterator::operator--()
 	{
 
 		--m_Pointer;
 		return *this;
 	}
 
-	Char& String::Iterator::operator[](uint offset)
+	Char& StringIterator::operator[](uint offset)
 	{
 		return m_Pointer[offset];
 	}
 
-	Char& String::Iterator::operator*() 
+	Char& StringIterator::operator*()
 	{
 		return *m_Pointer;
 	}
 
-	Char* String::Iterator::operator->() 
+	Char* StringIterator::operator->()
 	{
 		return m_Pointer;
 	}
@@ -398,12 +388,12 @@ namespace Spark
 		return String(cstr) + string;
 	}
 
-	bool operator==(const String::Iterator& first, const String::Iterator& second)
+	bool operator==(const StringIterator& first, const StringIterator& second)
 	{
 		return first.m_Pointer == second.m_Pointer;
 	}
 
-	bool operator!=(const String::Iterator& first, const String::Iterator& second) 
+	bool operator!=(const StringIterator& first, const StringIterator& second) 
 	{
 		return !(first == second);
 	}

@@ -6,11 +6,11 @@ namespace Spark
 {
 	class String;
 
-	void Assert(String message, int line, String file);
+	void Assert(const String& message, int line, const char* file);
 }
 
 #if IS_DEBUG
-#define SPARK_ASSERT(x, message) if (!(x)) Spark::Assert(message, __LINE__, __FILE__)
+	#define SPARK_ASSERT(x, message) if (!(x)) Spark::Assert(message, __LINE__, __FILE__)
 #else
-#define SPARK_ASSERT(x, message) 
+	#define SPARK_ASSERT(x, message) 
 #endif

@@ -12,7 +12,7 @@ namespace Spark
 		static void Shutdown();
 
 		template<LogLevel T, typename ...Args>
-		static void DoLog(LogCategory<T>* category, LogLevel level, const String& format, Args... args);
+		static void DoLog(LogCategory<T>* category, LogLevel level, const String& format, const Args&... args);
 
 		static void HandleFatal();
 
@@ -29,7 +29,7 @@ namespace Spark
 	};
 
 	template<LogLevel T, typename ...Args>
-	void Logger::DoLog(LogCategory<T>* category, LogLevel level, const String& log, Args... args)
+	void Logger::DoLog(LogCategory<T>* category, LogLevel level, const String& log, const Args&... args)
 	{
 		if (level < T) return;
 
@@ -62,5 +62,5 @@ namespace Spark
 	}
 }
 
-#define SPARK_LOG(Category, Level, Text, ...) \
-Spark::Logger::DoLog(&Category, Spark::LogLevel::Level, Text, __VA_ARGS__)
+#define SPARK_LOG(Category, Level, ...) \
+Spark::Logger::DoLog(&Category, Spark::LogLevel::Level, __VA_ARGS__)
