@@ -7,9 +7,9 @@ project "SparkBuild"
 	cppdialect "C++20"
 	staticruntime "on"
 	
-	targetdir "../../../Binaries/SparkBuild/%{cfg.buildcfg}"
-	objdir "../../../Intermediate/SparkBuild/%{cfg.buildcfg}"
-	debugdir "../../../Binaries/SparkBuild/%{cfg.buildcfg}"
+	targetdir "../../../Binaries/%{cfg.buildcfg}/SparkBuild/"
+	objdir "../../../Intermediate/%{cfg.buildcfg}/SparkBuild/"
+	debugdir "../../../Binaries/%{cfg.buildcfg}/SparkBuild/"
 	
 	kind "ConsoleApp"
 		

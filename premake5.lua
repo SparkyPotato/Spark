@@ -5,12 +5,15 @@ workspace "Spark"
 	
 	configurations
 	{
-		"Debug Lib",
-		"Debug Editor",
-		"Development Lib",
-		"Development Editor",
-		"Release Lib",
-		"Release Editor",
+		"DebugLib",
+		"DebugEditor",
+		"DevelopmentLib",
+		"DevelopmentEditor",
+		"ReleaseLib",
+		"ReleaseEditor",
 	}
 	
+	startproject "Spark"
+	
 	include "Engine/Tools/SparkBuild"
+	include "Engine"

@@ -21,3 +21,5 @@ if %vsVersion%==2019 (
 )
 
 popd
+
+pause

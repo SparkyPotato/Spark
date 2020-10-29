@@ -1,4 +1,11 @@
-// Copyright 2020 SparkyPotato
+/*
+	SparkBuild.PlatformDefs
+	Copyright 2020 SparkyPotato
+
+	Platform macro definitions for platform-based building
+*/
+
+#pragma once
 
 #ifdef _WIN32
 	#ifdef _WIN64
