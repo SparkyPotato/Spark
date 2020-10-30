@@ -41,3 +41,25 @@ xcopy "LICENSE.txt" "..\" /Y
 cd ..\
 rmdir /q /s premake-core-master
 cd %startDir%
+
+cd Engine
+mkdir Dependencies
+cd Dependencies
+
+echo Downloading json
+mkdir json
+cd json
+
+powershell -Command "Invoke-WebRequest https://github.com/nlohmann/json/archive/master.zip -OutFile json.zip"
+powershell -Command "Expand-Archive -Force json.zip ./"
+del json.zip /q /f
+
+cd json-master
+xcopy "LICENSE.MIT" "..\" /Y
+cd single_include\nlohmann
+xcopy "json.hpp" "..\..\..\" /Y
+
+cd ..\..\..\
+rmdir /q /s json-master
+cd %startDir%
+cd %startDir%

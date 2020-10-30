@@ -39,13 +39,13 @@ int wmain(int argc, wchar_t** argv)
  		LARGE_INTEGER frequency, start, end;
  		QueryPerformanceFrequency(&frequency);
  
- 		wprintf(L"Starting build \n\n");
+ 		wprintf(L"Starting build. \n\n");
  		QueryPerformanceCounter(&start);
  
  		BuildTree buildTree(parser);
 
 		QueryPerformanceCounter(&end);
-		float time = static_cast<float>(end.QuadPart - start.QuadPart);
+		auto time = static_cast<float>(end.QuadPart - start.QuadPart);
 		time /= frequency.QuadPart;
 
 		wprintf(L"Build finished. \nTook %.4f seconds. \n", time);

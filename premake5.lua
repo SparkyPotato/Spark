@@ -15,5 +15,8 @@ workspace "Spark"
 	
 	startproject "Spark"
 	
-	include "Engine/Tools/SparkBuild"
-	include "Engine"
+	group "Engine"
+		include "Engine"
+		
+	group "Tools"
+		include "Engine/Tools/SparkBuild"

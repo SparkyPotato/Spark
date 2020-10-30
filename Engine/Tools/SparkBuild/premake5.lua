@@ -20,7 +20,7 @@ project "SparkBuild"
 		
 	filter "configurations:*Development*"
 		optimize "speed"
-		symbols "off"
+		symbols "on"
 		defines "IS_DEBUG"
 		
 	filter "configurations:*Debug*"
@@ -32,7 +32,8 @@ project "SparkBuild"
 	
 	includedirs
 	{
-		"Source"
+		"Source",
+		"../../Dependencies/json"
 	}
 	
 	files
