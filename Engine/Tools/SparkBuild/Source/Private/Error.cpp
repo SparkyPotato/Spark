@@ -8,9 +8,3 @@
 #include "Error.h"
 
 std::map<std::wstring, std::pair<int, std::wstring>> Error::m_ErrorCodes;
-
-Error::Error(const std::wstring& errorCode)
-	: m_ErrorCode(errorCode)
-{
-	wprintf(L"Error: %s", m_ErrorCode.c_str());
-}

@@ -9,7 +9,12 @@
 
 #ifdef PLATFORM_WINDOWS
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 #include "ArgParse.h"
+#include "BuildTree.h"
+
 #include "Error.h"
 
 int wmain(int argc, wchar_t** argv)
@@ -26,16 +31,33 @@ int wmain(int argc, wchar_t** argv)
 
 		if (args.empty())
 		{
-			throw Error(L"NO_ARGS");
+			wprintf(L"Warning: Empty Arguments. Building Spark with defaults. \n\n");
 		}
 
-		ArgParser parser(args);
+ 		ArgParser parser(args);
+ 
+ 		LARGE_INTEGER frequency, start, end;
+ 		QueryPerformanceFrequency(&frequency);
+ 
+ 		wprintf(L"Starting build \n\n");
+ 		QueryPerformanceCounter(&start);
+ 
+ 		BuildTree buildTree(parser);
+
+		QueryPerformanceCounter(&end);
+		float time = static_cast<float>(end.QuadPart - start.QuadPart);
+		time /= frequency.QuadPart;
+
+		wprintf(L"Build finished. \nTook %.4f seconds. \n", time);
+
 	}
 	catch (Error& error)
 	{
 		error.PrintDiagnostic();
 		return error.GetReturnValue();
 	}
+
+	return 0;
 }
 
 #endif

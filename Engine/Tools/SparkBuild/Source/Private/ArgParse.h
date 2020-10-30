@@ -16,6 +16,9 @@ class ArgParser
 public:
 	ArgParser(const std::vector<std::wstring>& args);
 
+	const std::wstring& GetProperty(const std::wstring& property) { return m_Properties[property]; }
+
 private:
-	std::map<std::wstring, std::wstring> m_PropertyMap;
+	std::map<std::wstring, std::wstring> m_Properties;
+	std::vector<std::wstring> m_Switches;
 };

@@ -28,5 +28,5 @@ project "Spark"
 
 	buildcommands
 	{
-		"..\\..\\Binaries\\%{cfg.buildcfg}\\SparkBuild\\SparkBuild.exe"
+		"..\\..\\Binaries\\%{cfg.buildcfg}\\SparkBuild\\SparkBuild.exe -BE Source=../../Engine"
 	}

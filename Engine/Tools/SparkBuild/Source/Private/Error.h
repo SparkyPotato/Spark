@@ -13,7 +13,14 @@
 class Error
 {
 public:
-	Error(const std::wstring& errorCode);
+	template <typename ...Args>
+	Error(const std::wstring& errorCode, const Args&... args)
+		: m_ErrorCode(errorCode)
+	{
+		std::wstring error = L"Error: " + errorCode;
+
+		wprintf(error.c_str(), args...);
+	}
 
 	int GetReturnValue() { return m_ErrorCodes[m_ErrorCode].first; }
 	void PrintDiagnostic() { wprintf(L"%s", m_ErrorCodes[m_ErrorCode].second.c_str()); }
