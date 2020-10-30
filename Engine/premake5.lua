@@ -8,7 +8,7 @@ project "Spark"
 	staticruntime "on"
 	
 	targetdir "../Binaries/%{cfg.buildcfg}/Spark/"
-	objdir "../Intermediate/%{cfg.buildcfg}/Spark/"
+	objdir "../Intermediate/Int/%{cfg.buildcfg}/Spark/"
 	debugdir "../Binaries/%{cfg.buildcfg}/Spark/"
 	
 	dependson "SparkBuild"

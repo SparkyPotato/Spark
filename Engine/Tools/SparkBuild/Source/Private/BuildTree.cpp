@@ -24,7 +24,9 @@ void BuildTree::BuildModuleTree(std::filesystem::path path)
 {
 	try
 	{
-		wprintf(L"Found %zu modules. \n\n", SearchPath(path, m_ModuleTree));
+		size_t modules = SearchPath(path, m_ModuleList);
+
+		wprintf(L"Found %zu modules. \n\n", modules);
 	}
 	catch (const Error& e)
 	{
@@ -59,19 +61,9 @@ size_t BuildTree::SearchPath(std::filesystem::path path, std::vector<Module>& li
 				throw Error(L"DUP_MODULE");
 			}
 		}
-	}
-
-	std::filesystem::directory_iterator dir(path);
-
-	for (auto& entry : dir)
-	{
-		if (entry.is_directory() && pathIsModule)
-		{
-			foundModules += SearchPath(entry.path(), (*(list.end() - 1)).Submodules);
-		}
 		else if (entry.is_directory())
 		{
-			foundModules += SearchPath(entry.path(), list);
+			foundModules += SearchPath(entry.path(), m_ModuleList);
 		}
 	}
 

@@ -12,8 +12,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#include "ArgParse.h"
-#include "BuildTree.h"
+#include "ModuleParser.h"
 
 #include "Error.h"
 
@@ -32,6 +31,7 @@ int wmain(int argc, wchar_t** argv)
 		if (args.empty())
 		{
 			wprintf(L"Warning: Empty Arguments. Building Spark with defaults. \n\n");
+			args.push_back(L"-be");
 		}
 
  		ArgParser parser(args);
@@ -43,6 +43,7 @@ int wmain(int argc, wchar_t** argv)
  		QueryPerformanceCounter(&start);
  
  		BuildTree buildTree(parser);
+		ModuleParser(parser, buildTree.GetModules());
 
 		QueryPerformanceCounter(&end);
 		auto time = static_cast<float>(end.QuadPart - start.QuadPart);
