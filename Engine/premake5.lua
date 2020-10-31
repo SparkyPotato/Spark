@@ -8,7 +8,7 @@ project "Spark"
 	staticruntime "on"
 	
 	targetdir "../Binaries/%{cfg.buildcfg}/Spark/"
-	objdir "../Intermediate/Int/%{cfg.buildcfg}/Spark/"
+	objdir "../Intermediate/Build/%{cfg.buildcfg}/Spark/"
 	debugdir "../Binaries/%{cfg.buildcfg}/Spark/"
 	
 	dependson "SparkBuild"
@@ -28,5 +28,10 @@ project "Spark"
 
 	buildcommands
 	{
-		"..\\..\\Binaries\\%{cfg.buildcfg}\\SparkBuild\\SparkBuild.exe -BE Source=../../Engine"
+		"..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Engine\\Source -be"
+	}
+	
+	rebuildcommands
+	{
+		"..\\..\\Engine\\Tools\\SparkBuild\\Rebuild.bat Engine\\Source -be"
 	}

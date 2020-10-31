@@ -38,6 +38,10 @@ public:
 
 	std::vector<Module>& GetModules() { return m_ModuleList; }
 
+	std::filesystem::path SourcePath;
+	std::filesystem::path IntermediatePath;
+	std::filesystem::path BinaryPath;
+
 private:
 	void BuildModuleTree(std::filesystem::path source);
 	size_t SearchPath(std::filesystem::path path, std::vector<Module>& list);

@@ -30,8 +30,7 @@ int wmain(int argc, wchar_t** argv)
 
 		if (args.empty())
 		{
-			wprintf(L"Warning: Empty Arguments. Building Spark with defaults. \n\n");
-			args.push_back(L"-be");
+			throw Error(L"NO_ARGS");
 		}
 
  		ArgParser parser(args);
@@ -39,26 +38,30 @@ int wmain(int argc, wchar_t** argv)
  		LARGE_INTEGER frequency, start, end;
  		QueryPerformanceFrequency(&frequency);
  
- 		wprintf(L"Starting build. \n\n");
+ 		wprintf(L"Starting build. \n");
  		QueryPerformanceCounter(&start);
- 
+		
+		if (parser.GetSwitch(L"r"))
+		{
+			wprintf(L"Rebuilding.\n");
+		}
+
  		BuildTree buildTree(parser);
-		ModuleParser(parser, buildTree.GetModules());
+		ModuleParser(parser, buildTree);
 
 		QueryPerformanceCounter(&end);
 		auto time = static_cast<float>(end.QuadPart - start.QuadPart);
 		time /= frequency.QuadPart;
 
-		wprintf(L"Build finished. \nTook %.4f seconds. \n", time);
+		wprintf(L"Updated modules, took %.4f seconds. \n", time);
 
+		return 0;
 	}
 	catch (Error& error)
 	{
 		error.PrintDiagnostic();
-		return error.GetReturnValue();
+		return -1;
 	}
-
-	return 0;
 }
 
 #endif

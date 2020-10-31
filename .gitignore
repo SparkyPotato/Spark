@@ -6,6 +6,10 @@ Dependencies
 *.sln
 *.vcxproj*
 
+# Tup files
+*.tup
+*.ini
+
 # Builds
 Binaries
 Intermediate

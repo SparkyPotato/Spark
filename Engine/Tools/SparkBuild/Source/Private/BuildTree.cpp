@@ -17,7 +17,20 @@ BuildTree::BuildTree(ArgParser& parser)
 		source = L"../../../Engine";
 	}
 
-	BuildModuleTree(source + L"/Source");
+	SourcePath = source;
+
+	if (parser.GetSwitch(L"be"))
+	{
+		IntermediatePath = source + L"/../../Intermediate";
+		BinaryPath = source + L"/../../Binaries";
+	}
+	else
+	{
+		IntermediatePath = source + L"/../Intermediate";
+		BinaryPath = source + L"/../Binaries";
+	}
+
+	BuildModuleTree(SourcePath);
 }
 
 void BuildTree::BuildModuleTree(std::filesystem::path path)
@@ -26,7 +39,7 @@ void BuildTree::BuildModuleTree(std::filesystem::path path)
 	{
 		size_t modules = SearchPath(path, m_ModuleList);
 
-		wprintf(L"Found %zu modules. \n\n", modules);
+		wprintf(L"Found %zu modules. \n", modules);
 	}
 	catch (const Error& e)
 	{

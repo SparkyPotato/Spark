@@ -15,8 +15,14 @@
 class ModuleParser
 {
 public:
-	ModuleParser(ArgParser& parser, std::vector<Module>& modules);
+	ModuleParser(ArgParser& parser, BuildTree& tree);
 
 private:
+	void RebuildModules();
+	void RecreateModule(Module& module);
+
+	BuildTree& m_Tree;
+	bool m_Rebuild = false;
+
 	using json = nlohmann::json;
 };

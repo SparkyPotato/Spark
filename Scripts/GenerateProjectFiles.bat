@@ -1,7 +1,8 @@
 :: Copyright 2020 SparkyPotato
 
 @echo off
-pushd ..\
+pushd %~dp0
+cd ..
 
 set vswhere="C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
 call %vswhere% -latest -property catalog_productLineVersion>tmp
@@ -21,5 +22,3 @@ if %vsVersion%==2019 (
 )
 
 popd
-
-pause

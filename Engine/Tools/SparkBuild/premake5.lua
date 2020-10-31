@@ -7,26 +7,14 @@ project "SparkBuild"
 	cppdialect "C++20"
 	staticruntime "on"
 	
-	targetdir "../../../Binaries/%{cfg.buildcfg}/SparkBuild/"
-	objdir "../../../Intermediate/%{cfg.buildcfg}/SparkBuild/"
-	debugdir "../../../Binaries/%{cfg.buildcfg}/SparkBuild/"
+	targetdir "../../../Binaries/SparkBuild/"
+	objdir "../../../Intermediate/Build/SparkBuild/"
+	debugdir "../../../Binaries/SparkBuild/"
 	
 	kind "ConsoleApp"
 		
-	filter "configurations:*Release*"
-		optimize "speed"
-		symbols "off"
-		defines "IS_RELEASE"
-		
-	filter "configurations:*Development*"
-		optimize "speed"
-		symbols "on"
-		defines "IS_DEBUG"
-		
-	filter "configurations:*Debug*"
-		optimize "off"
-		symbols "on"
-		defines "IS_DEBUG"
+	optimize "speed"
+	symbols "on"
 		
 	filter {}
 	

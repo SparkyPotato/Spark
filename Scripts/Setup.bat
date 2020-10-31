@@ -1,6 +1,7 @@
 :: Copyright 2020 SparkyPotato
 
 @echo off
+pushd %~dp0
 cd ..
 
 set startDir=%cd%
@@ -46,7 +47,7 @@ cd Engine
 mkdir Dependencies
 cd Dependencies
 
-echo Downloading json
+echo Downloading nlohmann-json
 mkdir json
 cd json
 
@@ -62,4 +63,5 @@ xcopy "json.hpp" "..\..\..\" /Y
 cd ..\..\..\
 rmdir /q /s json-master
 cd %startDir%
-cd %startDir%
+
+popd
