@@ -8,7 +8,7 @@ Dependencies
 
 # Tup files
 *.tup
-*.ini
+*Tupfile
 
 # Builds
 Binaries

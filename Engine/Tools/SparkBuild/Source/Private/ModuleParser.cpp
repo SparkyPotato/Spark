@@ -27,8 +27,8 @@ void ModuleParser::RebuildModules()
 
 	std::wstring intermediate = m_Tree.IntermediatePath;
 	std::filesystem::path modulesPath = intermediate + L"/Build/Modules.json";
-	std::wstring tup = m_Tree.SourcePath;
-	tup += L"/.tup/";
+	std::wstring tup = m_Tree.IntermediatePath;
+	tup += L"/../.tup/";
 
 	if (m_Rebuild && std::filesystem::exists(modulesPath))
 	{
@@ -47,7 +47,10 @@ void ModuleParser::RebuildModules()
 
 	if (!std::filesystem::exists(tup))
 	{
-		SetCurrentDirectoryW(m_Tree.SourcePath.c_str());
+		std::wstring inter = m_Tree.IntermediatePath;
+		inter += L"/../";
+
+		SetCurrentDirectoryW(inter.c_str());
 		system("tup init");
 
 		SetFileAttributesW(tup.c_str(), FILE_ATTRIBUTE_HIDDEN);
@@ -114,7 +117,15 @@ void ModuleParser::RecreateModule(Module& module)
 		std::filesystem::create_directory(modulePath);
 	}
 
-	std::wstring tupPath = modulePath + L"Tupfile.ini";
-	std::ofstream tupfile(tupPath);
+	std::wstring tupPath = modulePath + L"Tupfile";
+	if (std::filesystem::exists(tupPath)) { std::filesystem::remove(tupPath); }
+	std::ofstream tupfile(tupPath, std::ios_base::trunc);
+
+	std::string filePath = std::filesystem::absolute(m_Tree.IntermediatePath).string() + "/Build/" + module.Name + "/";
+	std::replace(filePath.begin(), filePath.end(), '\\', '/');
+	tupfile << ": foreach *.cpp |> cl /c %f /Fo\"%o\" |> " << filePath << "%B.o";
+
+	tupfile << std::endl;
+	tupfile.close();
 	SetFileAttributesW(tupPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
 }
