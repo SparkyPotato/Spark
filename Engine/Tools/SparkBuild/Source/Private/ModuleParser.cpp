@@ -12,8 +12,8 @@
 
 #include <Windows.h>
 
-ModuleParser::ModuleParser(ArgParser& parser, BuildTree& tree)
-	: m_Tree(tree)
+ModuleParser::ModuleParser(ArgParser& parser, BuildTree& tree, std::wstring startPath)
+	: m_Tree(tree), m_ExecPath(startPath)
 {
 	m_Rebuild = parser.GetSwitch(L"rebuild");
 	m_Clean = parser.GetSwitch(L"clean");
@@ -21,7 +21,7 @@ ModuleParser::ModuleParser(ArgParser& parser, BuildTree& tree)
 	std::wstring intermediate = m_Tree.IntermediatePath;
 	std::wstring binaries = m_Tree.BinaryPath;
 
-	m_ModuleCache = intermediate + L"/Build/Modules.json";
+	m_ModuleCache = intermediate + L"/Build/ModuleCache.json";
 	m_TupPath = intermediate + L"/../.tup";
 	m_BinariesPath = binaries + L"/Build/";
 
@@ -33,9 +33,7 @@ void ModuleParser::RebuildModules()
 	Clean();
 	if (m_Clean) return;
 
-	int changeCount = 0;
-
-	bool isIncrementalBuild = std::filesystem::exists(m_ModuleCache);
+	bool isIncrementalBuild = std::filesystem::exists(m_ModuleCache) && !(m_Clean || m_Rebuild);
 
 	json moduleCache;
 	if (isIncrementalBuild)
@@ -45,8 +43,17 @@ void ModuleParser::RebuildModules()
 		cache.close();
 	}
 
+	auto writeTime = std::filesystem::last_write_time(m_ExecPath).time_since_epoch().count();
+	if (!isIncrementalBuild || moduleCache["SparkBuild"] < writeTime)
+	{
+		wprintf(L"SparkBuild was updated, rebuilding. \n");
+		isIncrementalBuild = false;
+		moduleCache["SparkBuild"] = writeTime;
+	}
+
 	InitTup();
 
+	int changeCount = 0;
 	for (auto& module : m_Tree.GetModules())
 	{
 		std::ifstream stream(module.DefinitionPath);

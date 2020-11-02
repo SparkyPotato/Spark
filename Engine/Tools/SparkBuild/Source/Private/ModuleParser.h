@@ -15,7 +15,7 @@
 class ModuleParser
 {
 public:
-	ModuleParser(ArgParser& parser, BuildTree& tree);
+	ModuleParser(ArgParser& parser, BuildTree& tree, std::wstring startPath);
 
 private:
 	void RebuildModules();
@@ -31,6 +31,7 @@ private:
 	std::filesystem::path m_ModuleCache;
 	std::filesystem::path m_TupPath;
 	std::filesystem::path m_BinariesPath;
+	std::filesystem::path m_ExecPath;
 
 	using json = nlohmann::json;
 };
