@@ -18,11 +18,25 @@ public:
 	ModuleParser(ArgParser& parser, BuildTree& tree, std::wstring startPath);
 
 private:
-	void RebuildModules();
-	void RecreateModule(Module& module);
-	void Clean();
-	void InitTup();
+	struct Folder
+	{
+		std::string Name;
+		std::vector<Folder> Subfolders;
+	};
 
+	friend void from_json(const nlohmann::json& j, Folder& folder);
+	friend void to_json(nlohmann::json& j, const Folder& folder);
+
+	void RebuildModules();
+
+	void ParseModule(Module& module, nlohmann::json& moduleDef);
+	void CheckFolderStructure(const Module& module, const std::filesystem::path& path, nlohmann::json& moduleCache);
+	std::vector<Folder> GetSubfolders(const std::filesystem::path path);
+
+	void Clean();
+	void RecreateModule(Module& module);
+
+	void InitTup();
 	void CreateTupfile(std::ostream& file, Module& module);
 
 	BuildTree& m_Tree;

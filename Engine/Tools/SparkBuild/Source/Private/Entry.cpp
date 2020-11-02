@@ -49,7 +49,7 @@ int wmain(int argc, wchar_t** argv)
 		QueryPerformanceCounter(&start);
 
  		BuildTree buildTree(parser);
-		ModuleParser(parser, buildTree, startPath);
+		ModuleParser moduleParser(parser, buildTree, startPath);
 
 		QueryPerformanceCounter(&end);
 		auto time = static_cast<float>(end.QuadPart - start.QuadPart);

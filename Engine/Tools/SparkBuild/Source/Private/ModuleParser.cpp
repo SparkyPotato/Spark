@@ -41,6 +41,8 @@ void ModuleParser::RebuildModules()
 		std::ifstream cache(m_ModuleCache);
 		cache >> moduleCache;
 		cache.close();
+
+		std::filesystem::remove(m_ModuleCache);
 	}
 
 	auto writeTime = std::filesystem::last_write_time(m_ExecPath).time_since_epoch().count();
@@ -68,42 +70,19 @@ void ModuleParser::RebuildModules()
 			throw Error(L"PARSE_FAIL: %s", module.DefinitionPath.c_str());
 		}
 
-		try
-		{
-			module.Name = moduleDef.at("Module");
-		}
-		catch (...)
-		{
-			throw Error(L"UNNAMED_MODULE");
-		}
-
-		try
-		{
-			std::vector<std::string> version = moduleDef.at("Version");
-
-			if (version.size() < 3 || version.size() > 4) { throw Error(L"ILLEGAL_VERSION_FORMAT"); }
-
-			module.Version.Major = std::stoul(version[0]);
-			module.Version.Minor = std::stoul(version[1]);
-			module.Version.Patch = std::stoul(version[2]);
-
-			if (version.size() == 4)
-			{
-				module.Version.Prerelease = version[3];
-			}
-		}
-		catch (...)
-		{
-			throw Error(L"NO_MODULE_VERSION");
-		}
+		ParseModule(module, moduleDef);
 
 		auto writeTime = std::filesystem::last_write_time(module.DefinitionPath).time_since_epoch().count();
-		if (!isIncrementalBuild || moduleCache[module.Name] < writeTime)
+		if (!isIncrementalBuild || moduleCache[module.Name]["WriteTime"] < writeTime)
 		{
 			changeCount++;
 			RecreateModule(module);
-			moduleCache[module.Name] = writeTime;
+			moduleCache[module.Name]["WriteTime"] = writeTime;
 		}
+
+		std::wstring modulePrivate = module.DefinitionPath.parent_path();
+		modulePrivate += L"/Private/";
+		CheckFolderStructure(module, modulePrivate, moduleCache);
 
 		stream.close();
 	}
@@ -113,6 +92,76 @@ void ModuleParser::RebuildModules()
 	cache.close();
 
 	wprintf(L"%d module definition/s changed. \n", changeCount);
+}
+
+void ModuleParser::ParseModule(Module& module, nlohmann::json& moduleDef)
+{
+	try
+	{
+		module.Name = moduleDef.at("Module");
+	}
+	catch (...)
+	{
+		throw Error(L"UNNAMED_MODULE");
+	}
+
+	try
+	{
+		std::vector<std::string> version = moduleDef.at("Version");
+
+		if (version.size() < 3 || version.size() > 4) { throw Error(L"ILLEGAL_VERSION_FORMAT"); }
+
+		module.Version.Major = std::stoul(version[0]);
+		module.Version.Minor = std::stoul(version[1]);
+		module.Version.Patch = std::stoul(version[2]);
+
+		if (version.size() == 4)
+		{
+			module.Version.Prerelease = version[3];
+		}
+	}
+	catch (...)
+	{
+		throw Error(L"NO_MODULE_VERSION");
+	}
+}
+
+
+void ModuleParser::CheckFolderStructure(const Module& module, const std::filesystem::path& path, nlohmann::json& moduleCache)
+{
+	if (!std::filesystem::exists(path)) { moduleCache[module.Name]["Directories"] = nullptr; return; }
+
+	std::filesystem::directory_iterator privatePath(path);
+
+	std::vector<json> directories;
+	for (auto& entry : privatePath)
+	{
+		if (entry.is_directory()) 
+		{
+			Folder folder = { entry.path().string(), GetSubfolders(entry.path()) };
+			directories.emplace_back(folder); 
+		}
+	}
+
+	moduleCache[module.Name]["Directories"] = directories;
+}
+
+std::vector<ModuleParser::Folder> ModuleParser::GetSubfolders(const std::filesystem::path path)
+{
+	if (!std::filesystem::exists(path)) return std::vector<ModuleParser::Folder>();
+
+	std::filesystem::directory_iterator it(path);
+
+	std::vector<ModuleParser::Folder> directories;
+	for (auto& entry : it)
+	{
+		if (entry.is_directory())
+		{
+			directories.push_back({ entry.path().string(), GetSubfolders(entry.path()) });
+		}
+	}
+
+	return directories;
 }
 
 void ModuleParser::RecreateModule(Module& module)
@@ -176,4 +225,16 @@ void ModuleParser::CreateTupfile(std::ostream& file, Module& module)
 	std::replace(filePath.begin(), filePath.end(), '\\', '/');
 
 	file << ": foreach *.cpp |> cl /c %f /Fo\"%o\" |> " << filePath << "%B.o";
+}
+
+void from_json(const nlohmann::json& j, ModuleParser::Folder& folder)
+{
+	j.at("Name").get_to(folder.Name);
+	j.at("Subdirectories").get_to(folder.Subfolders);
+}
+
+void to_json(nlohmann::json& j, const ModuleParser::Folder& folder)
+{
+	j["Name"] = folder.Name;
+	j["Subdirectories"] = folder.Subfolders;
 }
