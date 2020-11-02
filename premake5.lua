@@ -5,12 +5,9 @@ workspace "Spark"
 	
 	configurations
 	{
-		"DebugLib",
-		"DebugEditor",
-		"DevelopmentLib",
-		"DevelopmentEditor",
-		"ReleaseLib",
-		"ReleaseEditor",
+		"Debug",
+		"Development",
+		"Release",
 	}
 	
 	startproject "Spark"

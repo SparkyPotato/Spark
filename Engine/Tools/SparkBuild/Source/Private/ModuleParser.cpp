@@ -154,29 +154,6 @@ std::vector<ModuleParser::Folder> ModuleParser::GetSubfolders(const std::filesys
 
 	return directories;
 }
-/*
-void ModuleParser::RecreateModule(Module& module)
-{
-	std::wstring modulePrivate = module.DefinitionPath.parent_path();
-	modulePrivate += L"/Private/";
-
-	if (!std::filesystem::exists(modulePrivate))
-	{
-		printf("Warning: Module '%s' has no Private folder, skipping.\n", module.Name.c_str());
-		return;
-	}
-
-	std::wstring tupfilePath = modulePrivate + L"Tupfile";
-	if (std::filesystem::exists(tupfilePath)) { std::filesystem::remove(tupfilePath); }
-	std::ofstream tupfile(tupfilePath);
-
-	CreateTupfile(tupfile, module);
-
-	tupfile << std::endl;
-	tupfile.close();
-	SetFileAttributesW(tupfilePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
-}
-*/
 
 void ModuleParser::Clean()
 {
@@ -204,10 +181,15 @@ void ModuleParser::InitTup()
 		std::wstring intermediate = m_Tree.IntermediatePath;
 		intermediate += L"/../";
 
+		wchar_t directory[10000];
+		GetCurrentDirectoryW(1000, directory);
+
 		SetCurrentDirectoryW(intermediate.c_str());
 		system("tup init");
 
 		SetFileAttributesW(m_TupPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+
+		SetCurrentDirectoryW(directory);
 	}
 }
 

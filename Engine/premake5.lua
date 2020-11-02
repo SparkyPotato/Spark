@@ -5,7 +5,6 @@ project "Spark"
 
 	language "C++"
 	cppdialect "C++20"
-	staticruntime "on"
 	
 	targetdir "../Binaries/Build/%{cfg.buildcfg}/Spark/"
 	objdir "../Intermediate/Build/%{cfg.buildcfg}/Spark/"
@@ -28,10 +27,16 @@ project "Spark"
 
 	buildcommands
 	{
-		"..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Engine\\Source -Engine"
+		'..\..\Engine\Tools\SparkBuild\Build.bat Source=Engine/Source Config=%{cfg.buildcfg} -Engine'
 	}
 	
 	rebuildcommands
 	{
-		"..\\..\\Engine\\Tools\\SparkBuild\\Rebuild.bat Engine\\Source -Engine"
+		'..\..\Engine\Tools\SparkBuild\Build.bat Source=Engine/Source Config=%{cfg.buildcfg} -Engine -Rebuild'
 	}
+	
+	cleancommands
+	{
+		'..\..\Engine\Tools\SparkBuild\Build.bat Source=Engine/Source Config=%{cfg.buildcfg} -Engine -Clean'
+	}
+		

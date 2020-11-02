@@ -5,7 +5,7 @@ pushd %~dp0
 cd ..\..\..
 
 set startDir=%cd%
-%startDir%\Binaries\SparkBuild\SparkBuild.exe source="%1" %2
+%startDir%\Binaries\SparkBuild\Release\SparkBuild.exe %*
 
 echo.
 
