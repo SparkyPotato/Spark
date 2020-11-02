@@ -11,15 +11,9 @@
 BuildTree::BuildTree(ArgParser& parser)
 {
 	std::wstring source = parser.GetProperty(L"source");
-
-	if (source.empty())
-	{
-		source = L"../../../Engine";
-	}
-
 	SourcePath = source;
 
-	if (parser.GetSwitch(L"be"))
+	if (parser.GetSwitch(L"engine"))
 	{
 		IntermediatePath = source + L"/../../Intermediate";
 		BinaryPath = source + L"/../../Binaries";
@@ -30,6 +24,8 @@ BuildTree::BuildTree(ArgParser& parser)
 		BinaryPath = source + L"/../Binaries";
 	}
 
+	if (parser.GetSwitch(L"clean")) return;
+
 	BuildModuleTree(SourcePath);
 }
 
@@ -39,7 +35,7 @@ void BuildTree::BuildModuleTree(std::filesystem::path path)
 	{
 		size_t modules = SearchPath(path, m_ModuleList);
 
-		wprintf(L"Found %zu modules. \n", modules);
+		wprintf(L"Found %zu modules. \n\n", modules);
 	}
 	catch (const Error& e)
 	{
@@ -66,7 +62,7 @@ size_t BuildTree::SearchPath(std::filesystem::path path, std::vector<Module>& li
 			if (!pathIsModule)
 			{
 				pathIsModule = true;
-				list.emplace_back(entry.path());
+				list.emplace_back(std::filesystem::absolute(entry.path()));
 				foundModules++;
 			}
 			else

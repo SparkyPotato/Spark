@@ -5,9 +5,7 @@ pushd %~dp0
 cd ..\..\..
 
 set startDir=%cd%
-%startDir%\Binaries\SparkBuild\SparkBuild.exe source="%1" %2 -r
-
-cd %1
+%startDir%\Binaries\SparkBuild\SparkBuild.exe source="%1" %2 -rebuild
 
 echo.
 
@@ -16,7 +14,7 @@ call %vswhere% -latest -property installationPath>tmp
 set /p vsPath=<tmp
 del /q /f tmp
 
-@call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat"
+call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat"
 
 tup upd
 

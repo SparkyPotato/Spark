@@ -43,4 +43,9 @@ ArgParser::ArgParser(const std::vector<std::wstring>& args)
 			m_Properties.emplace(property, value);
 		}
 	}
+
+	if (GetProperty(L"source").empty())
+	{
+		throw Error(L"NO_SOURCE");
+	}
 }

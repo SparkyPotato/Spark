@@ -15,56 +15,55 @@
 ModuleParser::ModuleParser(ArgParser& parser, BuildTree& tree)
 	: m_Tree(tree)
 {
+	m_Rebuild = parser.GetSwitch(L"rebuild");
+	m_Clean = parser.GetSwitch(L"clean");
+
 	std::wstring intermediate = m_Tree.IntermediatePath;
-	m_Rebuild = parser.GetSwitch(L"r");
+	std::wstring binaries = m_Tree.BinaryPath;
+
+	m_ModuleCache = intermediate + L"/Build/Modules.json";
+	m_TupPath = intermediate + L"/../.tup";
+	m_BinariesPath = binaries + L"/Build/";
 
 	RebuildModules();
 }
 
 void ModuleParser::RebuildModules()
 {
+	Clean();
+	if (m_Clean) return;
+
 	int changeCount = 0;
 
-	std::wstring intermediate = m_Tree.IntermediatePath;
-	std::filesystem::path modulesPath = intermediate + L"/Build/Modules.json";
-	std::wstring tup = m_Tree.IntermediatePath;
-	tup += L"/../.tup/";
+	bool isIncrementalBuild = std::filesystem::exists(m_ModuleCache);
 
-	if (m_Rebuild && std::filesystem::exists(modulesPath))
+	json moduleCache;
+	if (isIncrementalBuild)
 	{
-		std::filesystem::remove(modulesPath);
-		std::filesystem::remove_all(tup);
+		std::ifstream cache(m_ModuleCache);
+		cache >> moduleCache;
+		cache.close();
 	}
 
-	bool haveModuleList = std::filesystem::exists(modulesPath);
-
-	json moduleList;
-	if (haveModuleList)
-	{
-		std::ifstream modules(modulesPath);
-		modules >> moduleList;
-	}
-
-	if (!std::filesystem::exists(tup))
-	{
-		std::wstring inter = m_Tree.IntermediatePath;
-		inter += L"/../";
-
-		SetCurrentDirectoryW(inter.c_str());
-		system("tup init");
-
-		SetFileAttributesW(tup.c_str(), FILE_ATTRIBUTE_HIDDEN);
-	}
+	InitTup();
 
 	for (auto& module : m_Tree.GetModules())
 	{
 		std::ifstream stream(module.DefinitionPath);
-		json j;
-		stream >> j;
+		json moduleDef;
+		
+		try
+		{
+			stream >> moduleDef;
+		}
+		catch (...)
+		{
+			throw Error(L"PARSE_FAIL: %s", module.DefinitionPath.c_str());
+		}
 
 		try
 		{
-			module.Name = j.at("Module");
+			module.Name = moduleDef.at("Module");
 		}
 		catch (...)
 		{
@@ -73,7 +72,7 @@ void ModuleParser::RebuildModules()
 
 		try
 		{
-			std::vector<std::string> version = j.at("Version");
+			std::vector<std::string> version = moduleDef.at("Version");
 
 			if (version.size() < 3 || version.size() > 4) { throw Error(L"ILLEGAL_VERSION_FORMAT"); }
 
@@ -92,40 +91,82 @@ void ModuleParser::RebuildModules()
 		}
 
 		auto writeTime = std::filesystem::last_write_time(module.DefinitionPath).time_since_epoch().count();
-		if (moduleList[module.Name] < writeTime || !haveModuleList)
+		if (!isIncrementalBuild || moduleCache[module.Name] < writeTime)
 		{
 			changeCount++;
 			RecreateModule(module);
-			moduleList[module.Name] = writeTime;
+			moduleCache[module.Name] = writeTime;
 		}
+
+		stream.close();
 	}
 
-	std::ofstream modules(modulesPath);
-	modules << std::setw(4) << moduleList << std::endl;
+	std::ofstream cache(m_ModuleCache);
+	cache << std::setw(4) << moduleCache << std::endl;
+	cache.close();
 
-	wprintf(L"%d module definition/s changed. \n\n", changeCount);
+	wprintf(L"%d module definition/s changed. \n", changeCount);
 }
 
 void ModuleParser::RecreateModule(Module& module)
 {
-	std::wstring modulePath = module.DefinitionPath.parent_path();
-	modulePath += L"/Private/";
+	std::wstring modulePrivate = module.DefinitionPath.parent_path();
+	modulePrivate += L"/Private/";
 
-	if (!std::filesystem::exists(modulePath))
+	if (!std::filesystem::exists(modulePrivate))
 	{
-		printf("Warning: Module '%s' has no Private folder, creating.\n", module.Name.c_str());
-		std::filesystem::create_directory(modulePath);
+		printf("Warning: Module '%s' has no Private folder, skipping.\n", module.Name.c_str());
+		return;
 	}
 
-	std::wstring tupPath = modulePath + L"Tupfile";
-	if (std::filesystem::exists(tupPath)) { std::filesystem::remove(tupPath); }
-	std::ofstream tupfile(tupPath, std::ios_base::trunc);
+	std::wstring tupfilePath = modulePrivate + L"Tupfile";
+	if (std::filesystem::exists(tupfilePath)) { std::filesystem::remove(tupfilePath); }
+	std::ofstream tupfile(tupfilePath);
 
-	std::string filePath = std::filesystem::absolute(m_Tree.IntermediatePath).string() + "/Build/" + module.Name + "/";
-	std::replace(filePath.begin(), filePath.end(), '\\', '/');
-	tupfile << ": foreach *.cpp |> cl /c %f /Fo\"%o\" |> " << filePath << "%B.o";
+	CreateTupfile(tupfile, module);
 
 	tupfile << std::endl;
 	tupfile.close();
-	SetFileAttributesW(tupPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+	SetFileAttributesW(tupfilePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+}
+
+void ModuleParser::Clean()
+{
+	if (m_Rebuild || m_Clean)
+	{
+		wprintf(L"Cleaning up Intermediate and Binaries. \n");
+		if (std::filesystem::exists(m_ModuleCache)) { std::filesystem::remove_all(m_ModuleCache.parent_path()); }
+		if (std::filesystem::exists(m_TupPath)) { std::filesystem::remove_all(m_TupPath); }
+		if (std::filesystem::exists(m_BinariesPath)) { std::filesystem::remove_all(m_BinariesPath); }
+
+		wprintf(L"Cleaning up Build files. \n");
+		std::filesystem::recursive_directory_iterator it(m_Tree.SourcePath);
+
+		for (auto& entry : it)
+		{
+			if (entry.path().filename() == L"Tupfile") std::filesystem::remove_all(entry);
+		}
+	}
+}
+
+void ModuleParser::InitTup()
+{
+	if (!std::filesystem::exists(m_TupPath))
+	{
+		std::wstring intermediate = m_Tree.IntermediatePath;
+		intermediate += L"/../";
+
+		SetCurrentDirectoryW(intermediate.c_str());
+		system("tup init");
+
+		SetFileAttributesW(m_TupPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+	}
+}
+
+void ModuleParser::CreateTupfile(std::ostream& file, Module& module)
+{
+	std::string filePath = std::filesystem::absolute(m_Tree.IntermediatePath).string() + "/Build/" + module.Name + "/";
+	std::replace(filePath.begin(), filePath.end(), '\\', '/');
+
+	file << ": foreach *.cpp |> cl /c %f /Fo\"%o\" |> " << filePath << "%B.o";
 }

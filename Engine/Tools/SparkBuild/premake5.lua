@@ -8,7 +8,7 @@ project "SparkBuild"
 	staticruntime "on"
 	
 	targetdir "../../../Binaries/SparkBuild/"
-	objdir "../../../Intermediate/Build/SparkBuild/"
+	objdir "../../../Intermediate/SparkBuild/"
 	debugdir "../../../Binaries/SparkBuild/"
 	
 	kind "ConsoleApp"

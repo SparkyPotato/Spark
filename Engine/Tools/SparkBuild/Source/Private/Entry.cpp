@@ -28,23 +28,25 @@ int wmain(int argc, wchar_t** argv)
 			args.emplace_back(argv[i]);
 		}
 
-		if (args.empty())
-		{
-			throw Error(L"NO_ARGS");
-		}
-
  		ArgParser parser(args);
  
  		LARGE_INTEGER frequency, start, end;
  		QueryPerformanceFrequency(&frequency);
- 
- 		wprintf(L"Starting build. \n");
- 		QueryPerformanceCounter(&start);
 		
-		if (parser.GetSwitch(L"r"))
+		if (parser.GetSwitch(L"rebuild"))
 		{
-			wprintf(L"Rebuilding.\n");
+			wprintf(L"Rebuilding. \n\n");
 		}
+		else if (parser.GetSwitch(L"clean"))
+		{
+			wprintf(L"Cleaning. \n\n");
+		}
+		else
+		{
+			wprintf(L"Starting build. \n\n");
+		}
+
+		QueryPerformanceCounter(&start);
 
  		BuildTree buildTree(parser);
 		ModuleParser(parser, buildTree);
@@ -53,7 +55,7 @@ int wmain(int argc, wchar_t** argv)
 		auto time = static_cast<float>(end.QuadPart - start.QuadPart);
 		time /= frequency.QuadPart;
 
-		wprintf(L"Updated modules, took %.4f seconds. \n", time);
+		wprintf(L"\nUpdated. Took %.4f seconds. \n", time);
 
 		return 0;
 	}

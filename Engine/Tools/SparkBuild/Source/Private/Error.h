@@ -23,7 +23,7 @@ public:
 	}
 
 	int GetReturnValue() { return m_ErrorCodes[m_ErrorCode].first; }
-	void PrintDiagnostic() { wprintf(L"%s", m_ErrorCodes[m_ErrorCode].second.c_str()); }
+	void PrintDiagnostic() { wprintf(L"%s \n", m_ErrorCodes[m_ErrorCode].second.c_str()); }
 
 private:
 	std::wstring m_ErrorCode;
