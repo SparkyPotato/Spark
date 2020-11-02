@@ -35,27 +35,27 @@ void ModuleParser::RebuildModules()
 
 	bool isIncrementalBuild = std::filesystem::exists(m_ModuleCache) && !(m_Clean || m_Rebuild);
 
-	json moduleCache;
+	json moduleCacheIn;
+	json moduleCacheOut;
 	if (isIncrementalBuild)
 	{
 		std::ifstream cache(m_ModuleCache);
-		cache >> moduleCache;
+		cache >> moduleCacheIn;
 		cache.close();
 
 		std::filesystem::remove(m_ModuleCache);
 	}
 
 	auto writeTime = std::filesystem::last_write_time(m_ExecPath).time_since_epoch().count();
-	if (!isIncrementalBuild || moduleCache["SparkBuild"] < writeTime)
+	if (!isIncrementalBuild || moduleCacheIn["SparkBuild"] < writeTime)
 	{
 		wprintf(L"SparkBuild was updated, rebuilding. \n");
 		isIncrementalBuild = false;
-		moduleCache["SparkBuild"] = writeTime;
+		moduleCacheOut["SparkBuild"] = writeTime;
 	}
 
 	InitTup();
 
-	int changeCount = 0;
 	for (auto& module : m_Tree.GetModules())
 	{
 		std::ifstream stream(module.DefinitionPath);
@@ -73,25 +73,16 @@ void ModuleParser::RebuildModules()
 		ParseModule(module, moduleDef);
 
 		auto writeTime = std::filesystem::last_write_time(module.DefinitionPath).time_since_epoch().count();
-		if (!isIncrementalBuild || moduleCache[module.Name]["WriteTime"] < writeTime)
-		{
-			changeCount++;
-			RecreateModule(module);
-			moduleCache[module.Name]["WriteTime"] = writeTime;
-		}
 
 		std::wstring modulePrivate = module.DefinitionPath.parent_path();
-		modulePrivate += L"/Private/";
-		CheckFolderStructure(module, modulePrivate, moduleCache);
+		CheckFolderStructure(module, modulePrivate, moduleCacheOut);
 
 		stream.close();
 	}
 
 	std::ofstream cache(m_ModuleCache);
-	cache << std::setw(4) << moduleCache << std::endl;
+	cache << std::setw(4) << moduleCacheOut << std::endl;
 	cache.close();
-
-	wprintf(L"%d module definition/s changed. \n", changeCount);
 }
 
 void ModuleParser::ParseModule(Module& module, nlohmann::json& moduleDef)
@@ -138,7 +129,7 @@ void ModuleParser::CheckFolderStructure(const Module& module, const std::filesys
 	{
 		if (entry.is_directory()) 
 		{
-			Folder folder = { entry.path().string(), GetSubfolders(entry.path()) };
+			Folder folder(entry.path().string(), GetSubfolders(entry.path()));
 			directories.emplace_back(folder); 
 		}
 	}
@@ -157,13 +148,13 @@ std::vector<ModuleParser::Folder> ModuleParser::GetSubfolders(const std::filesys
 	{
 		if (entry.is_directory())
 		{
-			directories.push_back({ entry.path().string(), GetSubfolders(entry.path()) });
+			directories.emplace_back(entry.path().string(), GetSubfolders(entry.path()));
 		}
 	}
 
 	return directories;
 }
-
+/*
 void ModuleParser::RecreateModule(Module& module)
 {
 	std::wstring modulePrivate = module.DefinitionPath.parent_path();
@@ -185,6 +176,7 @@ void ModuleParser::RecreateModule(Module& module)
 	tupfile.close();
 	SetFileAttributesW(tupfilePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
 }
+*/
 
 void ModuleParser::Clean()
 {
@@ -237,4 +229,19 @@ void to_json(nlohmann::json& j, const ModuleParser::Folder& folder)
 {
 	j["Name"] = folder.Name;
 	j["Subdirectories"] = folder.Subfolders;
+}
+
+ModuleParser::Folder::Folder(std::string name, const std::vector<Folder> subfolders)
+	: Name(name), Subfolders(subfolders)
+{
+	std::filesystem::path tupfilePath = name + "/Tupfile";
+	if (std::filesystem::exists(tupfilePath)) return;
+
+	std::ofstream tupfile(tupfilePath);
+
+	// CreateTupfile(tupfile, module);
+
+	tupfile << std::endl;
+	tupfile.close();
+	SetFileAttributesW(tupfilePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
 }

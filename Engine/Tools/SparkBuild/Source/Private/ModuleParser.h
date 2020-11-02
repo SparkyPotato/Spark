@@ -20,6 +20,9 @@ public:
 private:
 	struct Folder
 	{
+		Folder() {}
+		Folder(std::string name, const std::vector<Folder> subfolders);
+
 		std::string Name;
 		std::vector<Folder> Subfolders;
 	};
@@ -34,7 +37,6 @@ private:
 	std::vector<Folder> GetSubfolders(const std::filesystem::path path);
 
 	void Clean();
-	void RecreateModule(Module& module);
 
 	void InitTup();
 	void CreateTupfile(std::ostream& file, Module& module);
