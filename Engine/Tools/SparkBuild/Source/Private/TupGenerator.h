@@ -25,10 +25,10 @@ private:
 	using json = nlohmann::json;
 
 	void LoadBuildConfig();
-	void SaveBuildCache();
 	void SetRules(json buildConfig);
 
 	void LoadBuildCache();
+	void SaveBuildCache();
 
 	BuildTree& m_Tree;
 	ArgParser& m_Parser;

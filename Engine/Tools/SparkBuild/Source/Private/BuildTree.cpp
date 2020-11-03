@@ -15,27 +15,38 @@ BuildTree::BuildTree(ArgParser& parser)
 
 	if (parser.GetSwitch(L"engine"))
 	{
-		IntermediatePath = source + L"/../../Intermediate/";
-		BinaryPath = source + L"/../../Binaries/";
+		IntermediatePath = source + L"/../../Intermediate/Build/";
+		BinaryPath = source + L"/../../Binaries/Build/";
 	}
 	else
 	{
-		IntermediatePath = source + L"/../Intermediate/";
-		BinaryPath = source + L"/../Binaries/";
+		IntermediatePath = source + L"/../Intermediate/Build/";
+		BinaryPath = source + L"/../Binaries/Build/";
 	}
 
 	if (parser.GetSwitch(L"clean")) return;
 
-	BuildModuleTree(SourcePath);
+	if (!std::filesystem::exists(BinaryPath)) { std::filesystem::create_directory(BinaryPath); }
+	if (!std::filesystem::exists(IntermediatePath)) { std::filesystem::create_directory(IntermediatePath); }
+
+	BuildModuleTree();
 }
 
-void BuildTree::BuildModuleTree(std::filesystem::path path)
+void BuildTree::BuildModuleTree()
 {
 	try
 	{
-		size_t modules = SearchPath(path, m_ModuleList);
+		int foundModules = 0;
 
-		wprintf(L"Found %zu modules. \n", modules);
+		for (auto& moduleDir : std::filesystem::directory_iterator(SourcePath))
+		{
+			std::wstring moduleDef = moduleDir.path();
+			moduleDef += L"/Module.json";
+
+			if (std::filesystem::exists(moduleDef)) { m_ModuleList.emplace_back(moduleDef); foundModules++; }
+		}
+
+		wprintf(L"Found %d modules. \n", foundModules);
 	}
 	catch (const Error& e)
 	{
@@ -43,38 +54,6 @@ void BuildTree::BuildModuleTree(std::filesystem::path path)
 	}
 	catch (...)
 	{
-		throw Error(L"PATH_NOT_FOUND: %s", path.c_str());
+		throw Error(L"PATH_NOT_FOUND: %s", SourcePath.c_str());
 	}
-}
-
-size_t BuildTree::SearchPath(std::filesystem::path path, std::vector<Module>& list)
-{
-	size_t foundModules = 0;
-
-	std::filesystem::directory_iterator directory(path);
-
-	bool pathIsModule = false;
-
-	for (auto& entry : directory)
-	{
-		if (entry.is_regular_file() && entry.path().filename() == L"Module.json")
-		{
-			if (!pathIsModule)
-			{
-				pathIsModule = true;
-				list.emplace_back(std::filesystem::absolute(std::filesystem::absolute(entry.path())));
-				foundModules++;
-			}
-			else
-			{
-				throw Error(L"DUP_MODULE");
-			}
-		}
-		else if (entry.is_directory())
-		{
-			foundModules += SearchPath(entry.path(), m_ModuleList);
-		}
-	}
-
-	return foundModules;
 }

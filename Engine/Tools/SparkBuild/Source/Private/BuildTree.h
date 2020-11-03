@@ -27,6 +27,7 @@ struct Module
 
 	std::string Name;
 	ModuleVersion Version;
+	bool DefChanged = false;
 
 	std::filesystem::path DefinitionPath;
 };
@@ -43,8 +44,7 @@ public:
 	std::filesystem::path BinaryPath;
 
 private:
-	void BuildModuleTree(std::filesystem::path source);
-	size_t SearchPath(std::filesystem::path path, std::vector<Module>& list);
+	void BuildModuleTree();
 
 	std::vector<Module> m_ModuleList;
 };

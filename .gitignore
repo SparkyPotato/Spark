@@ -19,3 +19,6 @@ Intermediate
 *.DS_Store
 *.xcodeproj
 *.xcworkspace
+
+# Engine Registries
+Engine/Registry

@@ -15,7 +15,7 @@ TupGenerator::TupGenerator(ArgParser& parser, BuildTree& tree)
 	: m_Tree(tree), m_Parser(parser)
 {
 	std::wstring intermediate = m_Tree.IntermediatePath;
-	m_TupPath = intermediate + L"../.tup/";
+	m_TupPath = intermediate + L"../../.tup/";
 }
 
 TupGenerator::~TupGenerator()
@@ -28,7 +28,7 @@ void TupGenerator::InitTup()
 	if (!std::filesystem::exists(m_TupPath))
 	{
 		std::wstring intermediate = m_Tree.IntermediatePath;
-		intermediate += L"/../";
+		intermediate += L"../../";
 
 		auto directory = new wchar_t[10000];
 		GetCurrentDirectoryW(1000, directory);
@@ -51,9 +51,9 @@ void TupGenerator::CreateTupfiles(Module& module, std::filesystem::path moduleRo
 {
 	CreateTupfile(module, moduleRoot);
 
-	for (auto& entry : std::filesystem::directory_iterator(moduleRoot))
+	for (auto& entry : std::filesystem::recursive_directory_iterator(moduleRoot))
 	{
-		if (entry.is_directory()) { CreateTupfiles(module, entry.path()); }
+		if (entry.is_directory()) { CreateTupfile(module, entry.path()); }
 	}
 }
 
@@ -69,7 +69,12 @@ void TupGenerator::CreateTupfile(Module& module, std::filesystem::path path)
 
 	if (path == module.DefinitionPath.parent_path())
 	{
-		if (std::filesystem::exists(stringPath + L"/Tuprules.tup")) std::filesystem::remove(stringPath + L"/Tuprules.tup");
+		if (std::filesystem::exists(stringPath + L"/Tuprules.tup")) 
+		{
+			if (!module.DefChanged) { return; } 
+			std::filesystem::remove(stringPath + L"/Tuprules.tup");
+		}
+
 		std::wofstream tupfile(stringPath + L"/Tuprules.tup");
 
 		std::wstring includePath = std::filesystem::absolute(module.DefinitionPath.parent_path()).wstring() + L"/Public/";
@@ -79,9 +84,13 @@ void TupGenerator::CreateTupfile(Module& module, std::filesystem::path path)
 
 		SetFileAttributesW(std::wstring(stringPath + L"/Tuprules.tup").c_str(), FILE_ATTRIBUTE_HIDDEN);
 	}
-	else if (path == privatePath || std::search(privatePath.begin(), privatePath.end(), path.begin(), path.end()) != privatePath.end())
+	else
 	{
-		if (std::filesystem::exists(stringPath + L"/Tupfile")) std::filesystem::remove(stringPath + L"/Tupfile");
+		if (std::filesystem::exists(stringPath + L"/Tupfile")) 
+		{
+			if (!module.DefChanged) { return; }
+			std::filesystem::remove(stringPath + L"/Tupfile");
+		}
 		std::wofstream tupfile(stringPath + L"/Tupfile");
 
 		std::wstring debugFilePath = std::filesystem::absolute(m_Tree.IntermediatePath).wstring() + L"/Build/Debug/" + modName + L"/";
@@ -103,7 +112,7 @@ void TupGenerator::CreateTupfile(Module& module, std::filesystem::path path)
 
 void TupGenerator::LoadBuildConfig()
 {
-	std::wstring buildConfigPath = m_Tree.IntermediatePath.wstring() + L"/Build/BuildConfig.json";
+	std::wstring buildConfigPath = m_Tree.IntermediatePath.wstring() + L"/../BuildConfig.json";
 
 	if (!std::filesystem::exists(buildConfigPath))
 	{
@@ -126,7 +135,7 @@ void TupGenerator::LoadBuildConfig()
 		buildConfig["Debug"]["RuntimeErrorChecks"] = true;
 		buildConfig["Debug"]["DebugInformation"] = true;
 
-		std::ofstream(buildConfigPath) << std::setw(4) << buildConfig;
+		std::ofstream(buildConfigPath) << std::setw(4) << buildConfig << std::endl;
 
 		auto writeTime = std::filesystem::last_write_time(buildConfigPath).time_since_epoch().count();
 		m_BuildCache["BuildConfig"]["WriteTime"] = writeTime;
@@ -213,7 +222,7 @@ void TupGenerator::SetRules(json buildConfig)
 
 void TupGenerator::LoadBuildCache()
 {
-	std::filesystem::path buildCachePath = m_Tree.IntermediatePath.wstring() + L"/Build/Cache/BuildCache.json";
+	std::filesystem::path buildCachePath = m_Tree.IntermediatePath.wstring() + L"../Cache/BuildCache.json";
 
 	if (!std::filesystem::exists(buildCachePath.parent_path())) { std::filesystem::create_directory(buildCachePath.parent_path()); }
 	if (std::filesystem::exists(buildCachePath)) { std::ifstream(buildCachePath) >> m_BuildCache; }
@@ -221,8 +230,7 @@ void TupGenerator::LoadBuildCache()
 
 void TupGenerator::SaveBuildCache()
 {
-	std::filesystem::path buildCachePath = m_Tree.IntermediatePath.wstring() + L"/Build/Cache/BuildCache.json";
+	std::filesystem::path buildCachePath = m_Tree.IntermediatePath.wstring() + L"../Cache/BuildCache.json";
 
-	if (std::filesystem::exists(buildCachePath)) { std::filesystem::remove(buildCachePath); }
-	std::ofstream(buildCachePath) << std::setw(4) << m_BuildCache;
+	std::ofstream(buildCachePath, std::ofstream::trunc) << std::setw(4) << m_BuildCache;
 }
