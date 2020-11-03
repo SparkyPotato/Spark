@@ -16,7 +16,8 @@ project "Spark"
 	
 	includedirs
 	{
-		"Source"
+		"Source",
+		"Source/*/Public"
 	}
 	
 	files

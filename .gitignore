@@ -7,8 +7,9 @@ Dependencies
 *.vcxproj*
 
 # Tup files
-*.tup
+*.tup*
 *Tupfile
+*Tuprules*
 
 # Builds
 Binaries

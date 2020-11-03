@@ -35,7 +35,7 @@ void BuildTree::BuildModuleTree(std::filesystem::path path)
 	{
 		size_t modules = SearchPath(path, m_ModuleList);
 
-		wprintf(L"Found %zu modules. \n\n", modules);
+		wprintf(L"Found %zu modules. \n", modules);
 	}
 	catch (const Error& e)
 	{

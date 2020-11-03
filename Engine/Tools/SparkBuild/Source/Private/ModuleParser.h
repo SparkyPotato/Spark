@@ -11,6 +11,7 @@
 #include "BuildTree.h"
 
 #include "json.hpp"
+#include "TupGenerator.h"
 
 class ModuleParser
 {
@@ -26,15 +27,12 @@ private:
 
 	void Clean();
 
-	void InitTup();
-	void CreateTupfile(Module& module, std::filesystem::path path);
-	void CreateTupfiles(Module& module, std::filesystem::path moduleRoot);
+	TupGenerator m_Generator;
 
 	BuildTree& m_Tree;
 	ArgParser& m_Parser;
 	bool m_Rebuild = false;
 	std::filesystem::path m_ModuleCache;
-	std::filesystem::path m_TupPath;
 	std::filesystem::path m_BinariesPath;
 	std::filesystem::path m_ExecPath;
 };
