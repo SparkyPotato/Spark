@@ -20,8 +20,15 @@ int wmain(int argc, wchar_t** argv)
 {
 	try
 	{
-		std::wstring startPath = argv[0]; // Store the path of the executable
+		std::filesystem::path startPath = argv[0]; // Store the path of the executable
+		startPath = startPath.parent_path();
+		std::filesystem::path execPath = argv[0];
 		std::vector<std::wstring> args; // Vector for all other args
+
+		std::wstring engineRoot = startPath;
+		engineRoot += L"\\..\\..\\..\\";
+		SetCurrentDirectoryW(engineRoot.c_str()); // Start in the engine root folder
+		startPath = engineRoot;
 
 		for (int i = 1; i < argc; i++)
 		{
@@ -49,7 +56,7 @@ int wmain(int argc, wchar_t** argv)
 		QueryPerformanceCounter(&start);
 
  		BuildTree buildTree(parser);
-		ModuleParser moduleParser(parser, buildTree, startPath);
+		ModuleParser moduleParser(parser, buildTree, execPath);
 
 		QueryPerformanceCounter(&end);
 		auto time = static_cast<float>(end.QuadPart - start.QuadPart);

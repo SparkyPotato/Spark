@@ -12,18 +12,17 @@
 
 #include <Windows.h>
 
-ModuleParser::ModuleParser(ArgParser& parser, BuildTree& tree, std::wstring startPath)
-	: m_Tree(tree), m_ExecPath(startPath)
+ModuleParser::ModuleParser(ArgParser& parser, BuildTree& tree, std::filesystem::path startPath)
+	: m_Tree(tree), m_ExecPath(startPath), m_Parser(parser)
 {
 	m_Rebuild = parser.GetSwitch(L"rebuild");
-	m_Clean = parser.GetSwitch(L"clean");
 
 	std::wstring intermediate = m_Tree.IntermediatePath;
 	std::wstring binaries = m_Tree.BinaryPath;
 
-	m_ModuleCache = intermediate + L"/Build/ModuleCache.json";
-	m_TupPath = intermediate + L"/../.tup";
-	m_BinariesPath = binaries + L"/Build/";
+	m_ModuleCache = intermediate + L"Build/ModuleCache.json";
+	m_TupPath = intermediate + L"../.tup/";
+	m_BinariesPath = binaries + L"Build/";
 
 	RebuildModules();
 }
@@ -31,28 +30,6 @@ ModuleParser::ModuleParser(ArgParser& parser, BuildTree& tree, std::wstring star
 void ModuleParser::RebuildModules()
 {
 	Clean();
-	if (m_Clean) return;
-
-	bool isIncrementalBuild = std::filesystem::exists(m_ModuleCache) && !(m_Clean || m_Rebuild);
-
-	json moduleCacheIn;
-	json moduleCacheOut;
-	if (isIncrementalBuild)
-	{
-		std::ifstream cache(m_ModuleCache);
-		cache >> moduleCacheIn;
-		cache.close();
-
-		std::filesystem::remove(m_ModuleCache);
-	}
-
-	auto writeTime = std::filesystem::last_write_time(m_ExecPath).time_since_epoch().count();
-	if (!isIncrementalBuild || moduleCacheIn["SparkBuild"] < writeTime)
-	{
-		wprintf(L"SparkBuild was updated, rebuilding. \n");
-		isIncrementalBuild = false;
-		moduleCacheOut["SparkBuild"] = writeTime;
-	}
 
 	InitTup();
 
@@ -72,20 +49,13 @@ void ModuleParser::RebuildModules()
 
 		ParseModule(module, moduleDef);
 
-		auto writeTime = std::filesystem::last_write_time(module.DefinitionPath).time_since_epoch().count();
-
-		std::wstring modulePrivate = module.DefinitionPath.parent_path();
-		CheckFolderStructure(module, modulePrivate, moduleCacheOut);
+		CreateTupfiles(module, module.DefinitionPath.parent_path());
 
 		stream.close();
 	}
-
-	std::ofstream cache(m_ModuleCache);
-	cache << std::setw(4) << moduleCacheOut << std::endl;
-	cache.close();
 }
 
-void ModuleParser::ParseModule(Module& module, nlohmann::json& moduleDef)
+void ModuleParser::ParseModule(Module& module, json& moduleDef)
 {
 	try
 	{
@@ -117,47 +87,9 @@ void ModuleParser::ParseModule(Module& module, nlohmann::json& moduleDef)
 	}
 }
 
-
-void ModuleParser::CheckFolderStructure(const Module& module, const std::filesystem::path& path, nlohmann::json& moduleCache)
-{
-	if (!std::filesystem::exists(path)) { moduleCache[module.Name]["Directories"] = nullptr; return; }
-
-	std::filesystem::directory_iterator privatePath(path);
-
-	std::vector<json> directories;
-	for (auto& entry : privatePath)
-	{
-		if (entry.is_directory()) 
-		{
-			Folder folder(entry.path().string(), GetSubfolders(entry.path()));
-			directories.emplace_back(folder); 
-		}
-	}
-
-	moduleCache[module.Name]["Directories"] = directories;
-}
-
-std::vector<ModuleParser::Folder> ModuleParser::GetSubfolders(const std::filesystem::path path)
-{
-	if (!std::filesystem::exists(path)) return std::vector<ModuleParser::Folder>();
-
-	std::filesystem::directory_iterator it(path);
-
-	std::vector<ModuleParser::Folder> directories;
-	for (auto& entry : it)
-	{
-		if (entry.is_directory())
-		{
-			directories.emplace_back(entry.path().string(), GetSubfolders(entry.path()));
-		}
-	}
-
-	return directories;
-}
-
 void ModuleParser::Clean()
 {
-	if (m_Rebuild || m_Clean)
+	if (m_Rebuild)
 	{
 		wprintf(L"Cleaning up Intermediate and Binaries. \n");
 		if (std::filesystem::exists(m_ModuleCache)) { std::filesystem::remove_all(m_ModuleCache.parent_path()); }
@@ -181,7 +113,7 @@ void ModuleParser::InitTup()
 		std::wstring intermediate = m_Tree.IntermediatePath;
 		intermediate += L"/../";
 
-		wchar_t directory[10000];
+		auto directory = new wchar_t[10000];
 		GetCurrentDirectoryW(1000, directory);
 
 		SetCurrentDirectoryW(intermediate.c_str());
@@ -190,40 +122,86 @@ void ModuleParser::InitTup()
 		SetFileAttributesW(m_TupPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
 
 		SetCurrentDirectoryW(directory);
+
+		delete[] directory;
 	}
 }
 
-void ModuleParser::CreateTupfile(std::ostream& file, Module& module)
+void ModuleParser::CreateTupfiles(Module& module, std::filesystem::path moduleRoot)
 {
-	std::string filePath = std::filesystem::absolute(m_Tree.IntermediatePath).string() + "/Build/" + module.Name + "/";
-	std::replace(filePath.begin(), filePath.end(), '\\', '/');
+	CreateTupfile(module, moduleRoot);
 
-	file << ": foreach *.cpp |> cl /c %f /Fo\"%o\" |> " << filePath << "%B.o";
+	for (auto& entry : std::filesystem::directory_iterator(moduleRoot))
+	{
+		if (entry.is_directory()) { CreateTupfiles(module, entry.path()); }
+	}
 }
 
-void from_json(const nlohmann::json& j, ModuleParser::Folder& folder)
+void ModuleParser::CreateTupfile(Module& module, std::filesystem::path path)
 {
-	j.at("Name").get_to(folder.Name);
-	j.at("Subdirectories").get_to(folder.Subfolders);
-}
+	wchar_t modName[1000];
+	MultiByteToWideChar(CP_UTF8, 0, module.Name.c_str(), -1, modName, 1000);
 
-void to_json(nlohmann::json& j, const ModuleParser::Folder& folder)
-{
-	j["Name"] = folder.Name;
-	j["Subdirectories"] = folder.Subfolders;
-}
+	std::filesystem::path privatePath = module.DefinitionPath.parent_path().wstring() + L"/Private/";
+	privatePath = std::filesystem::absolute(privatePath);
 
-ModuleParser::Folder::Folder(std::string name, const std::vector<Folder> subfolders)
-	: Name(name), Subfolders(subfolders)
-{
-	std::filesystem::path tupfilePath = name + "/Tupfile";
-	if (std::filesystem::exists(tupfilePath)) return;
+	std::wstring stringPath = path;
 
-	std::ofstream tupfile(tupfilePath);
+	if (path == module.DefinitionPath.parent_path())
+	{
+		if (std::filesystem::exists(stringPath + L"/Tuprules.tup")) std::filesystem::remove(stringPath + L"/Tuprules.tup");
+		std::wofstream tupfile(stringPath + L"/Tuprules.tup");
 
-	// CreateTupfile(tupfile, module);
+		std::wstring includePath = std::filesystem::absolute(module.DefinitionPath.parent_path()).wstring() + L"/Public/";
+		std::replace(includePath.begin(), includePath.end(), '\\', '/');
 
-	tupfile << std::endl;
-	tupfile.close();
-	SetFileAttributesW(tupfilePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+		tupfile << L"CFLAGS += /c \n";
+		tupfile << L"CFLAGS += /EHsc \n";
+		tupfile << L"CFLAGS += /utf-8 \n";
+
+		tupfile << L"CFLAGS +=  /I\"" << includePath << L"\"\n";
+		tupfile << L"CFLAGS += /D\"_UNICODE\" \n";
+		tupfile << L"CFLAGS += /D\"UNICODE\" \n";
+		tupfile << L"CFLAGS += /diagnostics:caret \n";
+		tupfile << L"CFLAGS += /TP \n";
+		tupfile << L"CFLAGS += /W3 \n";
+		tupfile << L"CFLAGS += /WX \n";
+		tupfile << L"CFLAGS += /GS \n";
+		tupfile << L"CFLAGS += /std:c++17 \n";
+
+		tupfile << std::endl;
+		tupfile << L"RELFLAGS += /D\"IS_RELEASE\" \n";
+		tupfile << L"RELFLAGS += /O2 \n";
+
+		tupfile << std::endl;
+		tupfile << L"DEVFLAGS += /D\"IS_DEVELOPMENT\" \n";
+		tupfile << L"DEVFLAGS += /O2 \n";
+
+		tupfile << std::endl;
+		tupfile << L"DEBFLAGS += /D\"IS_DEBUG\" \n";
+		tupfile << L"DEBFLAGS += /Od \n";
+		tupfile << L"DEBFLAGS += /RTC1 \n";
+		tupfile << L"DEBFLAGS += /Z7 \n";
+
+		SetFileAttributesW(std::wstring(stringPath + L"/Tuprules.tup").c_str(), FILE_ATTRIBUTE_HIDDEN);
+	}
+	else if (path == privatePath || std::search(privatePath.begin(), privatePath.end(), path.begin(), path.end()) != privatePath.end()) 
+	{
+		if (std::filesystem::exists(stringPath + L"/Tupfile")) std::filesystem::remove(stringPath + L"/Tupfile");
+		std::wofstream tupfile(stringPath + L"/Tupfile");
+
+		std::wstring debugFilePath = std::filesystem::absolute(m_Tree.IntermediatePath).wstring() + L"/Build/Debug/" + modName + L"/";
+		std::replace(debugFilePath.begin(), debugFilePath.end(), '\\', '/');
+		std::wstring devFilePath = std::filesystem::absolute(m_Tree.IntermediatePath).wstring() + L"/Build/Development/" + modName + L"/";
+		std::replace(devFilePath.begin(), devFilePath.end(), '\\', '/');
+		std::wstring relFilePath = std::filesystem::absolute(m_Tree.IntermediatePath).wstring() + L"/Build/Release/" + modName + L"/";
+		std::replace(relFilePath.begin(), relFilePath.end(), '\\', '/');
+
+		tupfile << L"include_rules" << L"\n";
+		tupfile << L": foreach *.cpp |> cl $(CFLAGS) $(RELFLAGS) %f /Fo\"%o\" |> " << relFilePath << L"%B.o" << L"\n";
+		tupfile << L": foreach *.cpp |> cl $(CFLAGS) $(DEVFLAGS) %f /Fo\"%o\" |> " << devFilePath << L"%B.o" << L"\n";
+		tupfile << L": foreach *.cpp |> cl $(CFLAGS) $(DEBFLAGS) %f /Fo\"%o\" |> " << debugFilePath << L"%B.o" << L"\n";
+
+		SetFileAttributesW(std::wstring(stringPath + L"/Tupfile").c_str(), FILE_ATTRIBUTE_HIDDEN);
+	}
 }

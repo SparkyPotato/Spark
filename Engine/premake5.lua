@@ -27,16 +27,11 @@ project "Spark"
 
 	buildcommands
 	{
-		'..\..\Engine\Tools\SparkBuild\Build.bat Source=Engine/Source Config=%{cfg.buildcfg} -Engine'
+		"..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Source=Engine/Source -Engine"
 	}
 	
 	rebuildcommands
 	{
-		'..\..\Engine\Tools\SparkBuild\Build.bat Source=Engine/Source Config=%{cfg.buildcfg} -Engine -Rebuild'
-	}
-	
-	cleancommands
-	{
-		'..\..\Engine\Tools\SparkBuild\Build.bat Source=Engine/Source Config=%{cfg.buildcfg} -Engine -Clean'
+		'..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Source=Engine/Source -Engine -Rebuild'
 	}
 		

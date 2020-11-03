@@ -15,13 +15,13 @@ BuildTree::BuildTree(ArgParser& parser)
 
 	if (parser.GetSwitch(L"engine"))
 	{
-		IntermediatePath = source + L"/../../Intermediate";
-		BinaryPath = source + L"/../../Binaries";
+		IntermediatePath = source + L"/../../Intermediate/";
+		BinaryPath = source + L"/../../Binaries/";
 	}
 	else
 	{
-		IntermediatePath = source + L"/../Intermediate";
-		BinaryPath = source + L"/../Binaries";
+		IntermediatePath = source + L"/../Intermediate/";
+		BinaryPath = source + L"/../Binaries/";
 	}
 
 	if (parser.GetSwitch(L"clean")) return;
@@ -62,7 +62,7 @@ size_t BuildTree::SearchPath(std::filesystem::path path, std::vector<Module>& li
 			if (!pathIsModule)
 			{
 				pathIsModule = true;
-				list.emplace_back(std::filesystem::absolute(entry.path()));
+				list.emplace_back(std::filesystem::absolute(std::filesystem::absolute(entry.path())));
 				foundModules++;
 			}
 			else

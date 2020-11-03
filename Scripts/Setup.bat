@@ -51,17 +51,17 @@ echo Downloading nlohmann-json
 mkdir json
 cd json
 
-powershell -Command "Invoke-WebRequest https://github.com/nlohmann/json/archive/master.zip -OutFile json.zip"
+powershell -Command "Invoke-WebRequest https://github.com/SparkyPotato/json/archive/develop.zip -OutFile json.zip"
 powershell -Command "Expand-Archive -Force json.zip ./"
 del json.zip /q /f
 
-cd json-master
+cd json-develop
 xcopy "LICENSE.MIT" "..\" /Y
 cd single_include\nlohmann
 xcopy "json.hpp" "..\..\..\" /Y
 
 cd ..\..\..\
-rmdir /q /s json-master
+rmdir /q /s json-develop
 cd %startDir%
 
 popd
