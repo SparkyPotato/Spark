@@ -54,8 +54,7 @@ void ModuleParser::RebuildModules()
 			throw Error(L"PARSE_FAIL: %s", module.DefinitionPath.c_str());
 		}
 
-		std::string modulePath = std::filesystem::absolute(module.DefinitionPath).string();
-		auto writeTime = std::filesystem::last_write_time(modulePath).time_since_epoch().count();
+		auto writeTime = std::filesystem::last_write_time(module.DefinitionPath).time_since_epoch().count();
 
 		ParseModule(module, moduleDef);
 
@@ -65,11 +64,14 @@ void ModuleParser::RebuildModules()
 			m_ModuleCache[module.Name]["WriteTime"] = writeTime;
 			module.DefChanged = true;
 
+			m_ModuleRegistry[module.Name]["IncludePath"] = module.IncludePath.string();
+
+			std::string modulePath = std::filesystem::absolute(m_Tree.BinaryPath).string() + module.Name = "/";
 			std::replace(modulePath.begin(), modulePath.end(), '\\', '/');
-			m_ModuleRegistry[module.Name]["Path"] = modulePath;
+			m_ModuleRegistry[module.Name]["BinaryPath"] = modulePath;
 		}
 
-		m_Generator.CreateTupfiles(module, module.DefinitionPath.parent_path());
+		m_Generator.CreateTupfile(module);
 
 		stream.close();
 	}

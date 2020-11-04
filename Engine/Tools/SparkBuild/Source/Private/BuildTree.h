@@ -21,15 +21,20 @@ struct ModuleVersion
 
 struct Module
 {
-	Module(const std::filesystem::path& path)
-		: DefinitionPath(path)
-	{}
+	Module(const std::filesystem::path& defpath, const std::filesystem::path& incpath, const std::filesystem::path& srcpath)
+	{
+		DefinitionPath = std::filesystem::absolute(defpath);
+		IncludePath = std::filesystem::absolute(incpath);
+		SourcePath = std::filesystem::absolute(srcpath);
+	}
 
 	std::string Name;
 	ModuleVersion Version;
 	bool DefChanged = false;
 
 	std::filesystem::path DefinitionPath;
+	std::filesystem::path IncludePath;
+	std::filesystem::path SourcePath;
 };
 
 class BuildTree

@@ -14,8 +14,8 @@ call %vswhere% -latest -property installationPath>tmp
 set /p vsPath=<tmp
 del /q /f tmp
 
-call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat"
+@call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat">Intermediate\Cache\tmp
 
-tup upd
+tup --quiet
 
 popd

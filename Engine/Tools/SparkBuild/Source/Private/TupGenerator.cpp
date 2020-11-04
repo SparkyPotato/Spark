@@ -47,67 +47,64 @@ void TupGenerator::InitTup()
 	LoadBuildConfig();
 }
 
-void TupGenerator::CreateTupfiles(Module& module, std::filesystem::path moduleRoot)
+void TupGenerator::CreateTupfile(Module& module)
 {
-	CreateTupfile(module, moduleRoot);
+	wchar_t modName[100];
+	MultiByteToWideChar(CP_UTF8, 0, module.Name.c_str(), -1, modName, 100);
 
-	for (auto& entry : std::filesystem::recursive_directory_iterator(moduleRoot))
+	std::wstring debPath = m_Tree.IntermediatePath.wstring() + L"Debug/" + modName;
+	std::wstring devPath = m_Tree.IntermediatePath.wstring() + L"Development/" + modName;
+	std::wstring relPath = m_Tree.IntermediatePath.wstring() + L"Release/" + modName;
+
+	if (!std::filesystem::exists(debPath)) { std::filesystem::create_directory(debPath); }
+	if (!std::filesystem::exists(devPath)) { std::filesystem::create_directory(devPath); }
+	if (!std::filesystem::exists(relPath)) { std::filesystem::create_directory(relPath); }
+
+	if (std::filesystem::exists(debPath + L"/Tupfile")) { std::filesystem::remove(debPath + L"/Tupfile"); }
+	if (std::filesystem::exists(devPath + L"/Tupfile")) { std::filesystem::remove(devPath + L"/Tupfile"); }
+	if (std::filesystem::exists(relPath + L"/Tupfile")) { std::filesystem::remove(relPath + L"/Tupfile"); }
+
+	std::wofstream debTupfile(debPath + L"/Tupfile");
+	std::wofstream devTupfile(devPath + L"/Tupfile");
+	std::wofstream relTupfile(relPath + L"/Tupfile");
+
+	debTupfile << L"include_rules" << L"\n\n";
+	devTupfile << L"include_rules" << L"\n\n";
+	relTupfile << L"include_rules" << L"\n\n";
+
+	std::wstring includePath = std::filesystem::absolute(module.DefinitionPath.parent_path()).wstring() + L"/Public/";
+	std::replace(includePath.begin(), includePath.end(), '\\', '/');
+	debTupfile << L"CFLAGS +=  /I\"" << includePath << L"\"\n\n";
+	devTupfile << L"CFLAGS +=  /I\"" << includePath << L"\"\n\n";
+	relTupfile << L"CFLAGS +=  /I\"" << includePath << L"\"\n\n";
+
+	std::wstring path = module.SourcePath;
+	std::replace(path.begin(), path.end(), L'\\', L'/');
+
+	relTupfile << L": foreach " << path << L"*.cpp |> cl $(CFLAGS) $(RELFLAGS) %f /Fo\"%o\" |> %B.o \n";
+	devTupfile << L": foreach " << path << L"*.cpp |> cl $(CFLAGS) $(DEVFLAGS) %f /Fo\"%o\" |> %B.o \n";
+	debTupfile << L": foreach " << path << L"*.cpp |> cl $(CFLAGS) $(DEBFLAGS) %f /Fo\"%o\" |> %B.o \n";
+
+	for (auto& entry : std::filesystem::recursive_directory_iterator(module.SourcePath))
 	{
-		if (entry.is_directory()) { CreateTupfile(module, entry.path()); }
-	}
-}
-
-void TupGenerator::CreateTupfile(Module& module, std::filesystem::path path)
-{
-	wchar_t modName[1000];
-	MultiByteToWideChar(CP_UTF8, 0, module.Name.c_str(), -1, modName, 1000);
-
-	std::filesystem::path privatePath = module.DefinitionPath.parent_path().wstring() + L"/Private/";
-	privatePath = std::filesystem::absolute(privatePath);
-
-	std::wstring stringPath = path;
-
-	if (path == module.DefinitionPath.parent_path())
-	{
-		if (std::filesystem::exists(stringPath + L"/Tuprules.tup")) 
+		if (entry.is_directory())
 		{
-			if (!module.DefChanged) { return; } 
-			std::filesystem::remove(stringPath + L"/Tuprules.tup");
+			std::wstring subPath = std::filesystem::absolute(entry.path());
+			std::replace(subPath.begin(), subPath.end(), L'\\', L'/');
+
+			relTupfile << L": foreach " << subPath << L"/*.cpp |> cl $(CFLAGS) $(RELFLAGS) %f /Fo\"%o\" |> %B.o \n";
+			devTupfile << L": foreach " << subPath << L"/*.cpp |> cl $(CFLAGS) $(DEVFLAGS) %f /Fo\"%o\" |> %B.o \n";
+			debTupfile << L": foreach " << subPath << L"/*.cpp |> cl $(CFLAGS) $(DEBFLAGS) %f /Fo\"%o\" |> %B.o \n";
 		}
-
-		std::wofstream tupfile(stringPath + L"/Tuprules.tup");
-
-		std::wstring includePath = std::filesystem::absolute(module.DefinitionPath.parent_path()).wstring() + L"/Public/";
-		std::replace(includePath.begin(), includePath.end(), '\\', '/');
-
-		tupfile << L"CFLAGS +=  /I\"" << includePath << L"\"\n";
-
-		SetFileAttributesW(std::wstring(stringPath + L"/Tuprules.tup").c_str(), FILE_ATTRIBUTE_HIDDEN);
 	}
-	else
-	{
-		if (std::filesystem::exists(stringPath + L"/Tupfile")) 
-		{
-			if (!module.DefChanged) { return; }
-			std::filesystem::remove(stringPath + L"/Tupfile");
-		}
-		std::wofstream tupfile(stringPath + L"/Tupfile");
 
-		std::wstring debugFilePath = std::filesystem::absolute(m_Tree.IntermediatePath).wstring() + L"/Build/Debug/" + modName + L"/";
-		std::replace(debugFilePath.begin(), debugFilePath.end(), '\\', '/');
-		std::wstring devFilePath = std::filesystem::absolute(m_Tree.IntermediatePath).wstring() + L"/Build/Development/" + modName + L"/";
-		std::replace(devFilePath.begin(), devFilePath.end(), '\\', '/');
-		std::wstring relFilePath = std::filesystem::absolute(m_Tree.IntermediatePath).wstring() + L"/Build/Release/" + modName + L"/";
-		std::replace(relFilePath.begin(), relFilePath.end(), '\\', '/');
+	debTupfile << std::endl;
+	devTupfile << std::endl;
+	relTupfile << std::endl;
 
-		tupfile << L"include_rules" << L"\n\n";
-
-		tupfile << L": foreach *.cpp |> cl $(CFLAGS) $(RELFLAGS) %f /Fo\"%o\" |> " << relFilePath << L"%B.o" << L"\n";
-		tupfile << L": foreach *.cpp |> cl $(CFLAGS) $(DEVFLAGS) %f /Fo\"%o\" |> " << devFilePath << L"%B.o" << L"\n";
-		tupfile << L": foreach *.cpp |> cl $(CFLAGS) $(DEBFLAGS) %f /Fo\"%o\" |> " << debugFilePath << L"%B.o" << L"\n";
-
-		SetFileAttributesW(std::wstring(stringPath + L"/Tupfile").c_str(), FILE_ATTRIBUTE_HIDDEN);
-	}
+	SetFileAttributesW(std::wstring(debPath + L"/Tupfile").c_str(), FILE_ATTRIBUTE_HIDDEN);
+	SetFileAttributesW(std::wstring(devPath + L"/Tupfile").c_str(), FILE_ATTRIBUTE_HIDDEN);
+	SetFileAttributesW(std::wstring(relPath + L"/Tupfile").c_str(), FILE_ATTRIBUTE_HIDDEN);
 }
 
 void TupGenerator::LoadBuildConfig()
@@ -159,7 +156,7 @@ void TupGenerator::LoadBuildConfig()
 
 void TupGenerator::SetRules(json buildConfig)
 {
-	std::wstring globalRules = m_Tree.SourcePath.wstring() + L"/Tuprules.tup";
+	std::wstring globalRules = L"Tuprules.tup";
 	if (std::filesystem::exists(globalRules)) std::filesystem::remove(globalRules);
 	std::wofstream tupfile(globalRules);
 
@@ -170,6 +167,7 @@ void TupGenerator::SetRules(json buildConfig)
 	tupfile << L"CFLAGS += /D\"_UNICODE\" \n";
 	tupfile << L"CFLAGS += /D\"UNICODE\" \n";
 	tupfile << L"CFLAGS += /diagnostics:caret \n";
+	tupfile << L"CFLAGS += /nologo \n";
 
 	if (buildConfig["Global"]["C++Only"]) { tupfile << L"CFLAGS += /TP \n"; }
 	if (buildConfig["Global"]["WarningsAreErrors"]) { tupfile << L"CFLAGS += /WX \n"; }
@@ -218,6 +216,8 @@ void TupGenerator::SetRules(json buildConfig)
 
 	if (buildConfig["Debug"]["RuntimeErrorChecks"]) { tupfile << L"DEBFLAGS += /RTC1 \n"; }
 	if (buildConfig["Debug"]["DebugInformation"]) { tupfile << L"DEBFLAGS += /Z7 \n"; }
+
+	SetFileAttributesW(L"Tuprules.tup", FILE_ATTRIBUTE_HIDDEN);
 }
 
 void TupGenerator::LoadBuildCache()

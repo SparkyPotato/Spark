@@ -18,8 +18,7 @@ public:
 	~TupGenerator();
 
 	void InitTup();
-	void CreateTupfile(Module& module, std::filesystem::path path);
-	void CreateTupfiles(Module& module, std::filesystem::path moduleRoot);
+	void CreateTupfile(Module& module);
 
 private:
 	using json = nlohmann::json;

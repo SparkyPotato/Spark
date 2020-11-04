@@ -27,7 +27,14 @@ BuildTree::BuildTree(ArgParser& parser)
 	if (parser.GetSwitch(L"clean")) return;
 
 	if (!std::filesystem::exists(BinaryPath)) { std::filesystem::create_directory(BinaryPath); }
+	if (!std::filesystem::exists(BinaryPath.wstring() + L"Debug")) { std::filesystem::create_directory(BinaryPath.wstring() + L"Debug"); }
+	if (!std::filesystem::exists(BinaryPath.wstring() + L"Development")) { std::filesystem::create_directory(BinaryPath.wstring() + L"Development"); }
+	if (!std::filesystem::exists(BinaryPath.wstring() + L"Release")) { std::filesystem::create_directory(BinaryPath.wstring() + L"Release"); }
+
 	if (!std::filesystem::exists(IntermediatePath)) { std::filesystem::create_directory(IntermediatePath); }
+	if (!std::filesystem::exists(IntermediatePath.wstring() + L"Debug")) { std::filesystem::create_directory(IntermediatePath.wstring() + L"Debug"); }
+	if (!std::filesystem::exists(IntermediatePath.wstring() + L"Development")) { std::filesystem::create_directory(IntermediatePath.wstring() + L"Development"); }
+	if (!std::filesystem::exists(IntermediatePath.wstring() + L"Release")) { std::filesystem::create_directory(IntermediatePath.wstring() + L"Release"); }
 
 	BuildModuleTree();
 }
@@ -41,9 +48,12 @@ void BuildTree::BuildModuleTree()
 		for (auto& moduleDir : std::filesystem::directory_iterator(SourcePath))
 		{
 			std::wstring moduleDef = moduleDir.path();
-			moduleDef += L"/Module.json";
 
-			if (std::filesystem::exists(moduleDef)) { m_ModuleList.emplace_back(moduleDef); foundModules++; }
+			if (std::filesystem::exists(moduleDef + L"/Module.json"))
+			{
+				m_ModuleList.emplace_back(moduleDef + L"/Module.json", moduleDef + L"/Public/", moduleDef + L"/Private/");
+				foundModules++; 
+			}
 		}
 
 		wprintf(L"Found %d modules. \n", foundModules);
