@@ -12,7 +12,7 @@
 #include <fstream>
 
 ModuleParser::ModuleParser(ArgParser& parser, BuildTree& tree, std::filesystem::path startPath)
-	: m_Tree(tree), m_ExecPath(startPath), m_Parser(parser), m_Generator(parser, tree)
+	: m_Tree(tree), m_ExecPath(startPath), m_Parser(parser), m_Generator(parser, tree, m_ModuleRegistry)
 {
 	m_Rebuild = parser.GetSwitch(L"rebuild");
 
@@ -51,7 +51,7 @@ void ModuleParser::RebuildModules()
 		}
 		catch (...)
 		{
-			throw Error(L"PARSE_FAIL: %s", module.DefinitionPath.c_str());
+			throw Error(L"Failed parsing: %s", module.DefinitionPath.c_str());
 		}
 
 		auto writeTime = std::filesystem::last_write_time(module.DefinitionPath).time_since_epoch().count();
@@ -64,16 +64,16 @@ void ModuleParser::RebuildModules()
 			m_ModuleCache[module.Name]["WriteTime"] = writeTime;
 			module.DefChanged = true;
 
-			m_ModuleRegistry[module.Name]["IncludePath"] = module.IncludePath.string();
-
-			std::string modulePath = std::filesystem::absolute(m_Tree.BinaryPath).string() + module.Name = "/";
-			std::replace(modulePath.begin(), modulePath.end(), '\\', '/');
-			m_ModuleRegistry[module.Name]["BinaryPath"] = modulePath;
+			std::string incPath = module.IncludePath.string();
+			std::replace(incPath.begin(), incPath.end(), '\\', '/');
+			m_ModuleRegistry[module.Name]["IncludePath"] = incPath;
 		}
-
-		m_Generator.CreateTupfile(module);
-
 		stream.close();
+	}
+
+	for (auto& module : m_Tree.GetModules())
+	{
+		m_Generator.CreateTupfile(module);
 	}
 
 	wprintf(L"%d module definitions changed \n", reparseCount);
@@ -84,18 +84,23 @@ void ModuleParser::ParseModule(Module& module, json& moduleDef)
 	module.Name = moduleDef["Module"];
 	if (module.Name.empty())
 	{
-		throw Error(L"INVALID_MODULE");
+		throw Error(L"Unnamed module: %s", module.SourcePath);
 	}
 
 	std::vector<std::string> version = moduleDef["Version"];
 
-	if (version.size() < 3 || version.size() > 4) { throw Error(L"ILLEGAL_VERSION_FORMAT"); }
+	if (version.size() < 3 || version.size() > 4) { throw Error(L"Illegal version format"); }
 
 	module.Version.Major = std::stoul(version[0]);
 	module.Version.Minor = std::stoul(version[1]);
 	module.Version.Patch = std::stoul(version[2]);
 
 	if (version.size() == 4) { module.Version.Prerelease = version[3]; }
+	try { module.Dependencies = moduleDef["Dependencies"].get<std::vector<std::string>>(); }
+	catch (...)
+	{
+		printf("Warning: No dependency list for module '%s', assuming none. \n", module.Name.c_str());
+	}
 }
 
 void ModuleParser::Clean()

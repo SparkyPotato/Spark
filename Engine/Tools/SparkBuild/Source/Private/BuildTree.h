@@ -35,7 +35,11 @@ struct Module
 	std::filesystem::path DefinitionPath;
 	std::filesystem::path IncludePath;
 	std::filesystem::path SourcePath;
+
+	std::vector<std::string> Dependencies;
 };
+
+inline bool operator==(const Module& module, const std::string& name) { return module.Name == name; }
 
 class BuildTree
 {

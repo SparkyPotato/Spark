@@ -14,7 +14,7 @@
 class TupGenerator
 {
 public:
-	TupGenerator(ArgParser& parser, BuildTree& tree);
+	TupGenerator(ArgParser& parser, BuildTree& tree, nlohmann::json& moduleRegistry);
 	~TupGenerator();
 
 	void InitTup();
@@ -35,4 +35,5 @@ private:
 	std::filesystem::path m_TupPath;
 
 	json m_BuildCache;
+	json& m_ModuleRegistry;
 };

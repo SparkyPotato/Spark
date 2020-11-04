@@ -11,8 +11,8 @@
 #include <fstream>
 #include <Windows.h>
 
-TupGenerator::TupGenerator(ArgParser& parser, BuildTree& tree)
-	: m_Tree(tree), m_Parser(parser)
+TupGenerator::TupGenerator(ArgParser& parser, BuildTree& tree, json& moduleRegistry)
+	: m_Tree(tree), m_Parser(parser), m_ModuleRegistry(moduleRegistry)
 {
 	std::wstring intermediate = m_Tree.IntermediatePath;
 	m_TupPath = intermediate + L"../../.tup/";
@@ -78,12 +78,31 @@ void TupGenerator::CreateTupfile(Module& module)
 	devTupfile << L"CFLAGS +=  /I\"" << includePath << L"\"\n\n";
 	relTupfile << L"CFLAGS +=  /I\"" << includePath << L"\"\n\n";
 
+	for (auto& dependency : module.Dependencies)
+	{
+		std::string incPath;
+
+		try { incPath = m_ModuleRegistry.at(dependency)["IncludePath"]; }
+		catch (...)
+		{
+			throw Error("Invalid dependency '%s' in module '%s'", dependency.c_str(), module.Name.c_str());
+		}
+
+		std::filesystem::path path = incPath;
+
+		debTupfile << L"CFLAGS +=  /I\"" << path.wstring() << L"\"\n\n";
+		devTupfile << L"CFLAGS +=  /I\"" << path.wstring() << L"\"\n\n";
+		relTupfile << L"CFLAGS +=  /I\"" << path.wstring() << L"\"\n\n";
+	}
+
 	std::wstring path = module.SourcePath;
 	std::replace(path.begin(), path.end(), L'\\', L'/');
 
 	relTupfile << L": foreach " << path << L"*.cpp |> cl $(CFLAGS) $(RELFLAGS) %f /Fo\"%o\" |> %B.o \n";
 	devTupfile << L": foreach " << path << L"*.cpp |> cl $(CFLAGS) $(DEVFLAGS) %f /Fo\"%o\" |> %B.o \n";
 	debTupfile << L": foreach " << path << L"*.cpp |> cl $(CFLAGS) $(DEBFLAGS) %f /Fo\"%o\" |> %B.o \n";
+
+	if (!std::filesystem::exists(module.SourcePath)) { return; }
 
 	for (auto& entry : std::filesystem::recursive_directory_iterator(module.SourcePath))
 	{
