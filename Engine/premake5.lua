@@ -28,11 +28,11 @@ project "Spark"
 
 	buildcommands
 	{
-		"..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Source=Engine/Source -Engine"
+		"..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=\"Engine/\" -Engine"
 	}
 	
 	rebuildcommands
 	{
-		'..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Source=Engine/Source -Engine -Rebuild'
+		'..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=\"Engine/\" -Engine -Rebuild'
 	}
 		

@@ -13,6 +13,8 @@ project "SparkBuild"
 	debugdir "../../../Binaries/SparkBuild/%{cfg.buildcfg}/"
 	
 	kind "ConsoleApp"
+	
+	characterset "MBCS"
 
 	filter "configurations: Debug"
 		defines "IS_DEBUG"
@@ -30,6 +32,11 @@ project "SparkBuild"
 		symbols "off"
 		
 	filter {}
+	
+	buildoptions
+	{
+		"/utf-8"
+	}
 	
 	includedirs
 	{

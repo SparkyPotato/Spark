@@ -5,61 +5,45 @@
 	Entry-point
 */
 
-#include "PlatformDefs.h"
+#include "Globals.h"
 
 #ifdef PLATFORM_WINDOWS
+
+#include "Globals.h"
+#include "Error.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#include "Error.h"
-#include "ModuleParser.h"
+#include <fcntl.h>
+#include <io.h>
 
 int wmain(int argc, wchar_t** argv)
 {
 	try
 	{
+		int ret = _setmode(_fileno(stdout), _O_U8TEXT);
+		setvbuf(stdout, nullptr, _IOFBF, 1000);
+
 		LARGE_INTEGER frequency, start, end;
-		QueryPerformanceFrequency(&frequency); 
-		QueryPerformanceCounter(&start); // Get start time
+		QueryPerformanceFrequency(&frequency);
+		QueryPerformanceCounter(&start);
+		// Begin profiling
 
-		std::filesystem::path execPath = argv[0]; // Path of executable
-		std::vector<std::wstring> args; // Vector for all other args
-
-		std::wstring engineRoot = execPath.parent_path();
-		engineRoot += L"\\..\\..\\..\\";
-		SetCurrentDirectoryW(engineRoot.c_str()); // Start in the engine root folder
-
-		for (int i = 1; i < argc; i++)
-		{
-			args.emplace_back(argv[i]);
-		} // Place args into args vector
-
- 		ArgParser parser(args);
-		
-		if (!parser.GetSwitch(L"rebuild"))
-		{
-			wprintf(L"Starting build. \n\n");
-		}
-		else
-		{
-			wprintf(L"Rebuilding. \n\n");
-		}
-
- 		BuildTree buildTree(parser); // Generate build tree
-		ModuleParser moduleParser(parser, buildTree, execPath); // Parse module files and generate tupfiles
+		Globals::Setup(argc, argv);
 
 		QueryPerformanceCounter(&end);
 		auto time = static_cast<float>(end.QuadPart - start.QuadPart);
 		time /= frequency.QuadPart;
+		// End profiling
 
-		wprintf(L"\nUpdated. Took %.4f seconds. \n", time);
+		BasePlatform::Output("Updated modules");
+		BasePlatform::Output("Took ", time, "s");
 
 		return 0;
 	}
-	catch (Error& error)
+	catch (...)
 	{
-		error.PrintDiagnostic();
 		return -1;
 	}
 }

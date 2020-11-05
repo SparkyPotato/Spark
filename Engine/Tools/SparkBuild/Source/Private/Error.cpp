@@ -6,5 +6,3 @@
 */
 
 #include "Error.h"
-
-std::map<std::wstring, std::pair<int, std::wstring>> Error::m_ErrorCodes;
