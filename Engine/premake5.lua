@@ -6,9 +6,9 @@ project "Spark"
 	language "C++"
 	cppdialect "C++20"
 	
-	targetdir "../Binaries/Build/%{cfg.buildcfg}/Spark/"
-	objdir "../Intermediate/Build/%{cfg.buildcfg}/Spark/"
-	debugdir "../Binaries/%{cfg.buildcfg}/Spark/"
+	targetdir "Binaries/Build/%{cfg.buildcfg}/Spark/"
+	objdir "Intermediate/Build/%{cfg.buildcfg}/Spark/"
+	debugdir "Binaries/%{cfg.buildcfg}/Spark/"
 	
 	dependson "SparkBuild"
 	
@@ -28,11 +28,11 @@ project "Spark"
 
 	buildcommands
 	{
-		"..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=\"Engine/\" -Engine"
+		"..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=\"Engine/\""
 	}
 	
 	rebuildcommands
 	{
-		'..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=\"Engine/\" -Engine -Rebuild'
+		'..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=\"Engine/\" -Rebuild'
 	}
 		

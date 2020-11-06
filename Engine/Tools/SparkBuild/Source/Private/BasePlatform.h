@@ -10,6 +10,7 @@
 #include "Globals.h"
 
 #include <iostream>
+#include <iomanip>
 
 namespace BasePlatform
 {

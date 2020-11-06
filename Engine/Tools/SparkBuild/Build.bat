@@ -11,11 +11,8 @@ call %vswhere% -latest -property installationPath>tmp
 set /p vsPath=<tmp
 del /q /f tmp
 
-@call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat">Intermediate\Cache\tmp
+@call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat">Intermediate\tmp
 
-%startDir%\Binaries\SparkBuild\Release\SparkBuild.exe %*
-echo.
-
-tup --quiet
+%startDir%\Engine\Binaries\SparkBuild\SparkBuild.exe %*
 
 popd

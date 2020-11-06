@@ -19,14 +19,33 @@ namespace Globals
 			- this may not work if we have a symlink for the executable and it is called through that
 		*/
 		String executablePath = std::filesystem::path(argv[0]).parent_path().string();
-		executablePath += "../../../";
+		executablePath += "/../../../";
 		BasePlatform::SetWorkingDirectory(executablePath);
 
 		ParseCommandLine(argc, argv);
 
+		std::string verbose = std::filesystem::absolute(executablePath).string();
+		std::replace(verbose.begin(), verbose.end(), '\\', '/'); // Format the path a bit better before displaying it
+
+		Verbose("Set working directory to '", verbose, "'.");
+
+		Verbose("Switches are: ");
+		for (auto& switchArg : CommandLine::Switches)
+		{
+			Verbose(false, String("    "), switchArg);
+		}
+		Verbose(false, String(""));
+
+		Verbose("Properties are: ");
+		for (auto& property : CommandLine::Properties)
+		{
+			Verbose(false, String("    "), property.first, ": ", property.second);
+		}
+		Verbose(false, String(""));
+
 		if (CommandLine::GetProperty("dir").empty())
 		{
-			throw Error("No project directory property found"); // SparkBuild needs a project directory location
+			auto e = Error("No project directory property found"); // SparkBuild needs a project directory location
 		}
 	}
 
@@ -50,7 +69,7 @@ namespace Globals
 				}
 
 				if (VerifySwitch(switchArg)) { CommandLine::Switches.emplace_back(std::move(switchArg)); }
-				else { BasePlatform::Output("Warning: Ignoring unknown switch '", switchArg, "'"); }
+				else { auto w = Warning("Ignoring unknown switch '", switchArg, "'."); }
 			}
 			else
 			{
@@ -58,7 +77,7 @@ namespace Globals
 
 				if (pos == arg.npos)
 				{
-					throw Error("Invalid property specifier: ", arg); // Invalid property if we don't find the '='
+					auto e = Error("Invalid property specifier: ", arg); // Invalid property if we don't find the '='
 				}
 
 				// If the argument is "dir=Engine/"
@@ -73,17 +92,18 @@ namespace Globals
 				// Values are not edited in any way, as they can be multi-byte UTF-8 characters (pathnames!)
 
 				if (VerifyProperty(name)) { CommandLine::Properties.emplace(std::move(name), std::move(value)); }
-				else { BasePlatform::Output("Warning: Ignoring unknown property '", name, "'"); }
+				else { auto w = Warning("Ignoring unknown property '", name, "'."); }
 			}
 		}
 	}
 
 	static std::vector<String> s_ValidSwitches =
 	{
-		"engine",
-		"rebuild"
+		"rebuild",
+		"fatalwarnings",
+		"verbose"
 	};
-	static std::vector<String> s_ValidProperties = 
+	static std::vector<String> s_ValidProperties =
 	{
 		"dir"
 	};

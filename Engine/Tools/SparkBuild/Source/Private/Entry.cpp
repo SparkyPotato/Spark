@@ -22,6 +22,7 @@ int wmain(int argc, wchar_t** argv)
 {
 	try
 	{
+		// Setting up the console output mode to UTF-8
 		int ret = _setmode(_fileno(stdout), _O_U8TEXT);
 		setvbuf(stdout, nullptr, _IOFBF, 1000);
 
@@ -37,13 +38,14 @@ int wmain(int argc, wchar_t** argv)
 		time /= frequency.QuadPart;
 		// End profiling
 
-		BasePlatform::Output("Updated modules");
-		BasePlatform::Output("Took ", time, "s");
+		BasePlatform::Output("Updated.");
+		BasePlatform::Output("Total time: ", std::fixed, std::setprecision(4), time, "s.");
 
 		return 0;
 	}
 	catch (...)
 	{
+		BasePlatform::Output("Cannot proceed.");
 		return -1;
 	}
 }

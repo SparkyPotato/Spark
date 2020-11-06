@@ -1,3 +1,5 @@
+# Copyright 2020 SparkyPotato
+
 # All dependencies are grabbed and compiled in the setup script
 Dependencies
 
@@ -21,4 +23,4 @@ Intermediate
 *.xcworkspace
 
 # Engine Registries
-Engine/Registry
+Registry/
