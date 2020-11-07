@@ -51,7 +51,7 @@ echo Downloading nlohmann-json
 mkdir json
 cd json
 
-powershell -Command "Invoke-WebRequest https://github.com/SparkyPotato/json/archive/develop.zip -OutFile json.zip"
+powershell -Command "Invoke-WebRequest https://github.com/nlohmann/json/archive/develop.zip -OutFile json.zip"
 powershell -Command "Expand-Archive -Force json.zip ./"
 del json.zip /q /f
 

@@ -1,24 +1,25 @@
-/*
-	SparkBuild.Private.BasePlatform
-	Copyright 2020 SparkyPotato
+// SparkBuild.Private.BasePlatform
+// Copyright 2020 SparkyPotato
 
-	Platform-specific interface
-*/
+// Platform-specific interface
 
 #pragma once
 
-#include "Globals.h"
-
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+
+#include "Globals.h"
 
 namespace BasePlatform
 {
 	bool SetWorkingDirectory(const String& directory);
 
+	// Convert the wide-characters (UTF-16 on Windows) to a UTF-8 encoded String.
 	String ToUTF8(const wchar_t* string);
+	// Convert a UTF-8 encoded string to a wide-string - to pass to the Windows API, for example.
 	std::wstring ToUTF16(const String& string);
 
+	// Output to the console.
 	template<typename T, typename ...Args>
 	void Output(const T& arg, const Args&... args)
 	{

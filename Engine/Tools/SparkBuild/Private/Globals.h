@@ -1,26 +1,26 @@
-/*
-	SparkBuild.Private.Globals
-	Copyright 2020 SparkyPotato
+// SparkBuild.Private.Globals
+// Copyright 2020 SparkyPotato
 
-	Global definitions
-*/
+// Global definitions
 
 #pragma once
 
 #ifdef _WIN32
-	#ifdef _WIN64
-		#define PLATFORM_WINDOWS
-	#else
-		#error 32-bit is not supported!
-	#endif
+#	ifdef _WIN64
+#		define PLATFORM_WINDOWS
+#	else
+#		error 32-bit is not supported!
+#	endif
 #endif
 
-#include <string>
-#include <map>
 #include <filesystem>
+#include <map>
+#include <string>
 
 using String = std::string;
 using StringView = std::string_view;
+
+namespace fs = std::filesystem;
 
 namespace Globals
 {
