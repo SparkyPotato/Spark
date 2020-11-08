@@ -21,7 +21,7 @@ int wmain(int argc, wchar_t** argv)
 	{
 		// Setting up the console output mode to UTF-8
 		if (_setmode(_fileno(stdout), _O_U8TEXT) == -1)
-		{ Warning("Failed to set console output mode - non-ASCII characters may not display correctly");}
+		{ Warning("Failed to set console output mode, non-ASCII characters may not display correctly");}
 
 		LARGE_INTEGER frequency, start, end;
 		QueryPerformanceFrequency(&frequency);
@@ -30,6 +30,7 @@ int wmain(int argc, wchar_t** argv)
 
 		Globals::Setup(argc, argv);
 
+		// The source tree will generate itself
 		SourceTree sourceTree;
 
 		// End profiling

@@ -23,19 +23,22 @@ namespace Globals
 
 		ParseCommandLine(argc, argv);
 
-		Verbose("Switches are: ");
-		for (auto& switchArg : CommandLine::Switches)
+		if (CommandLine::GetSwitch("verbose"))
 		{
-			Verbose(false, String("    "), switchArg);
-		}
-		Verbose(false, String(""));
+			Verbose("Switches are: ");
+			for (auto& switchArg : CommandLine::Switches)
+			{
+				Verbose(false, String("    "), switchArg);
+			}
+			Verbose(false, String(""));
 
-		Verbose("Properties are: ");
-		for (auto& property : CommandLine::Properties)
-		{
-			Verbose(false, String("    "), property.first, " = ", property.second);
+			Verbose("Properties are: ");
+			for (auto& property : CommandLine::Properties)
+			{
+				Verbose(false, String("    "), property.first, " = ", property.second);
+			}
+			Verbose(false, String(""));
 		}
-		Verbose(false, String(""));
 
 		if (CommandLine::GetProperty("dir").empty())
 		{
