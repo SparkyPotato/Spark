@@ -5,6 +5,8 @@
 
 #include "BasePlatform.h"
 
+#include "SourceTree.h"
+
 // SparkBuild is a small tool with very little platform-specific functionality used.
 // This is why we put all platform ifdefs in a single-file.
 
@@ -42,10 +44,17 @@ namespace BasePlatform
 		std::string toolsetVersion;
 		std::ifstream(toolPath) >> toolsetVersion;
 
+		BasePlatform::Output("Using MSVC toolchain version ", toolsetVersion, ".");
+
 		// Store the path for cl, link, and lib
-		s_CompilerPath = L"\"" + ToUTF16(vsPath) + L"/VC/Tools/MSVC/" + ToUTF16(toolsetVersion) + L"/bin/Hostx64/x64/cl.exe" + L"\"";
-		s_LinkerPath = L"\"" + ToUTF16(vsPath) + L"/VC/Tools/MSVC/" + ToUTF16(toolsetVersion) + L"/bin/Hostx64/x64/link.exe" + L"\"";
-		s_LibPath = L"\"" + ToUTF16(vsPath) + L"/VC/Tools/MSVC/" + ToUTF16(toolsetVersion) + L"/bin/Hostx64/x64/lib.exe" + L"\"";
+		s_CompilerPath = L"\"" + ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\cl.exe" + L"\" ";
+		s_LinkerPath = L"\"" + ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\link.exe" + L"\" ";
+		s_LibPath = L"\"" + ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\lib.exe" + L"\" ";
+	}
+
+	void Compile(File* file, const fs::path& output)
+	{
+		
 	}
 
 	String ToUTF8(const wchar_t* string)

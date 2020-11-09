@@ -7,14 +7,18 @@
 
 #include <iomanip>
 #include <iostream>
+#include <filesystem>
 
 #include "Globals.h"
+
+struct File;
 
 namespace BasePlatform
 {
 	bool SetWorkingDirectory(const String& directory);
 
 	void SetupCompiler();
+	void Compile(File* file, const fs::path& output);
 
 	// Convert the wide-characters (UTF-16 on Windows) to a UTF-8 encoded String.
 		String ToUTF8(const wchar_t* string);

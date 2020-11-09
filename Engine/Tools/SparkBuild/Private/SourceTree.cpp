@@ -5,8 +5,6 @@
 
 #include "SourceTree.h"
 
-#include <regex>
-
 #include "Error.h"
 
 SourceTree SourceTree::GenerateFromDirectory()
@@ -69,64 +67,92 @@ void SourceTree::SaveToCache(const SourceTree& tree)
 
 void SourceTree::CompareWithOld(const SourceTree& oldTree)
 {
-	for (auto& buildModule : oldTree.m_Modules)
+	const std::vector<Module>& oldModules = oldTree.m_Modules;
+	for (auto& buildModule : m_Modules)
 	{
-		auto it = std::find(m_Modules.begin(), m_Modules.end(), buildModule);
-		if (it != m_Modules.end() && it->Definition.WriteTime == buildModule.Definition.WriteTime)
+		// Comparing module definitions
+		auto oldModule = std::find(oldModules.begin(), oldModules.end(), buildModule);
+		if (oldModule != oldModules.end()) // Both modules exist
 		{
-			it->Definition.Dirty = false;
+			// Module definition was changed
+			if (oldModule->Definition.WriteTime != buildModule.Definition.WriteTime) 
+			{
+				buildModule.Definition.Dirty = true;
+				m_DirtyModules.emplace_back(&buildModule);
+				continue; // If a module is dirty, we're going to recompile it anyways
+			}
+			else
+			{
+				buildModule.Name = oldModule->Name;
+				buildModule.Version = oldModule->Version;
+				buildModule.Dependencies = oldModule->Dependencies;
+			}
 		}
+		else
+		{
+			buildModule.Definition.Dirty = true;
+			m_DirtyModules.emplace_back(&buildModule);
+			continue; // If a module is dirty, we're going to recompile it anyways
+		}
+
+		CompareFolders(buildModule.Location, oldModule->Location);
 	}
 }
 
-void SourceTree::ParseModule(Module& buildModule)
+void SourceTree::CompareFolders(Folder& newFolder, const Folder& oldFolder)
 {
-	Verbose("Parsing modules");
+	// If both folders have the same write time, no modifications have taken place
+	// Easy way to skive off some work and save time
+	// if (newFolder.WriteTime == oldFolder.WriteTime) return;
 
-	// Semver regex - https://regex101.com/r/vkijKf/1/
-	static std::regex versionRegex(R"(^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-])"
-		R"([0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)");
-
-	json parser;
-
-	// Get the name of the folder containing the module definition
-	std::string folderName = buildModule.Location.Path.string();
-	folderName = folderName.substr(folderName.rfind('/') + 1);
-	//                                  Skips the last '/'-^
-
-	// Check if the Module.json definition file exists
-	std::string definitionPath = buildModule.Location.Path.string() + "/Module.json";
-	if (!fs::exists(definitionPath))
+	// Compare headers
+	for (auto& newHeader : newFolder.HeaderFiles)
 	{
-		Error("Module '", folderName, "' has no module definition.");
+		auto oldHeader = std::find(oldFolder.HeaderFiles.begin(), oldFolder.HeaderFiles.end(), newHeader);
+		if (oldHeader != oldFolder.HeaderFiles.end())
+		{
+			if (oldHeader->WriteTime != newHeader.WriteTime)
+			{
+				newHeader.Dirty = true;
+				m_DirtyHeaders.emplace_back(&newHeader);
+			}
+			// If not dirty we just skip it
+		}
+		else
+		{
+			newHeader.Dirty = true;
+			m_DirtyHeaders.emplace_back(&newHeader);
+		}
 	}
 
-	// Catch any parse exceptions
-	try { std::ifstream(definitionPath) >> parser; }
-	catch (...) { Error("Failed to parse module '", folderName, "'"); }
-
-	// Parse Name and report any mismatches between folder name and module name
-	buildModule.Name = parser["Name"];
-	if (buildModule.Name.empty()) { Error("Module '", folderName, "' has no Name specifier."); }
-	if (buildModule.Name != folderName) { Error("Module '", buildModule.Name, "' does not match with it's folder name."); }
-
-	// Parse Version
-	buildModule.Version = parser["Version"];
-	if (buildModule.Version.empty()) { Error("Module '", buildModule.Name, "' does not have a version specifier"); }
-	if (!std::regex_match(buildModule.Version, versionRegex)) 
+	// Compare source files
+	for (auto& newSource : newFolder.SourceFiles)
 	{
-		Error("Module '", buildModule.Name, "' does not have a valid version specifier. See https://semver.org.");
+		auto oldSource = std::find(oldFolder.SourceFiles.begin(), oldFolder.SourceFiles.end(), newSource);
+		if (oldSource != oldFolder.SourceFiles.end())
+		{
+			if (oldSource->WriteTime != newSource.WriteTime)
+			{
+				newSource.Dirty = true;
+				m_DirtySourceFiles.emplace_back(&newSource);
+			}
+		}
+		else
+		{
+			newSource.Dirty = true;
+			m_DirtySourceFiles.emplace_back(&newSource);
+		}
 	}
 
-	// Parse Dependencies
-	try { buildModule.Dependencies = parser.at("Dependencies").get<std::vector<String>>(); }
-	catch (...) { Warning("Module '", buildModule.Name, "' has no dependencies specifier, assuming none."); }
-
-	Globals::ModuleRegistry[buildModule.Name] =
+	for (auto& newSub : newFolder.Subfolders)
 	{
-		{ "Version", buildModule.Version },
-		{ "Path", buildModule.Location.Path.string() }
-	};
+		auto oldSub = std::find(oldFolder.Subfolders.begin(), oldFolder.Subfolders.end(), newSub);
+		if (oldSub != oldFolder.Subfolders.end())
+		{
+			// If the old version of the subfolder exists, compare them
+			CompareFolders(newSub, *oldSub);
+		}
+	}
 }
 
 void SourceTree::FindModules(const fs::path& folder)
@@ -184,7 +210,7 @@ void from_json(const json& j, SourceTree& tree)
 
 void to_json(json& j, const Module& buildModule)
 {
-	j["Name"] = buildModule.Name;
+	j[" Name"] = buildModule.Name;
 	j["Version"] = buildModule.Version;
 	j["Dependencies"] = buildModule.Dependencies;
 	j["Definition"] = buildModule.Definition;
@@ -193,7 +219,7 @@ void to_json(json& j, const Module& buildModule)
 
 void from_json(const json& j, Module& buildModule)
 {
-	buildModule.Name = j["Name"];
+	buildModule.Name = j[" Name"];
 	buildModule.Version = j["Version"];
 	buildModule.Dependencies = j["Dependencies"].get<std::vector<String>>();
 	buildModule.Definition = j["Definition"];
@@ -202,42 +228,44 @@ void from_json(const json& j, Module& buildModule)
 
 void to_json(json& j, const Folder& folder)
 {
-	j["Path"] = fs::absolute(folder.Path).string();
+	j[" Path"] = fs::absolute(folder.Path).string();
 	j["Headers"] = folder.HeaderFiles;
 	j["Source"] = folder.SourceFiles;
 	j["Subfolders"] = folder.Subfolders;
+	j["WriteTime"] = folder.WriteTime;
 }
 
 void from_json(const json& j, Folder& folder)
 {
-	folder.Path = j["Path"].get<String>();
+	folder.Path = j[" Path"].get<String>();
 	folder.HeaderFiles = j["Headers"].get<std::vector<HeaderFile>>();
 	folder.SourceFiles = j["Source"].get<std::vector<File>>();
 	folder.Subfolders = j["Subfolders"].get<std::vector<Folder>>();
+	folder.WriteTime = j["WriteTime"];
 }
 
 void to_json(json& j, const File& file)
 {
-	j["Path"] = fs::absolute(file.Path).string();
+	j[" Path"] = fs::absolute(file.Path).string();
 	j["WriteTime"] = file.WriteTime;
 }
 
 void from_json(const json& j, File& file)
 {
-	file.Path = j["Path"].get<String>();
+	file.Path = j[" Path"].get<String>();
 	file.WriteTime = j["WriteTime"];
 }
 
 void to_json(json& j, const HeaderFile& file)
 {
-	j["Path"] = fs::absolute(file.Path).string();
+	j[" Path"] = fs::absolute(file.Path).string();
 	j["WriteTime"] = file.WriteTime;
 	j["DependedOn"] = file.DependedOn;
 }
 
 void from_json(const json& j, HeaderFile& file)
 {
-	file.Path = j["Path"].get<String>();
+	file.Path = j[" Path"].get<String>();
 	file.WriteTime = j["WriteTime"];
 	file.DependedOn = j["DependedOn"].get<std::vector<String>>();
 }

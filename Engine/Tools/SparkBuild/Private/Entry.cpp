@@ -38,7 +38,8 @@ int wmain(int argc, wchar_t** argv)
 		currentTree.CompareWithOld(lastTree);
 
 		Executor executor(currentTree);
-		executor.ExecuteParses();
+		executor.Parse();
+		executor.Compile();
 
 		SourceTree::SaveToCache(currentTree);
 		Globals::Save();
@@ -58,13 +59,12 @@ int wmain(int argc, wchar_t** argv)
 	catch (std::exception& e)
 	{
 		BasePlatform::Output(e.what());
-		return EXIT_FAILURE;
 	}
 	catch (...)
-	{
-		BasePlatform::Output("Fatal Error.");
-		return EXIT_FAILURE;
-	}
+	{}
+
+	BasePlatform::Output("Fatal Error.");
+	return EXIT_FAILURE;
 }
 
 #endif

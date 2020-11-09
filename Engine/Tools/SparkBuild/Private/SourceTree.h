@@ -20,7 +20,7 @@ struct File
 	}
 
 	// A dirty file will be reparsed and recompiled
-	bool Dirty = true;
+	bool Dirty = false;
 	fs::path Path;
 	uint64_t WriteTime = 0;
 };
@@ -45,6 +45,8 @@ struct Folder
 		std::string cleanPath = path.string();
 		std::replace(cleanPath.begin(), cleanPath.end(), '\\', '/');
 		Path = cleanPath;
+
+		WriteTime = fs::last_write_time(Path).time_since_epoch().count();
 	}
 
 	fs::path Path;
@@ -52,6 +54,8 @@ struct Folder
 	std::vector<HeaderFile> HeaderFiles;
 	std::vector<File> SourceFiles;
 	std::vector<Folder> Subfolders;
+
+	uint64_t WriteTime = 0;
 };
 
 // Representation of a build module.
@@ -89,6 +93,12 @@ public:
 
 	std::vector<Module>& GetModules() { return m_Modules; }
 
+	std::vector<Module*>& GetDirtyModules() { return m_DirtyModules; }
+	std::vector<File*>& GetDirtySourceFiles() { return m_DirtySourceFiles; }
+	std::vector<HeaderFile*>& GetDirtyHeaders() { return m_DirtyHeaders; }
+
+	void AddDirtySource(File* source) { m_DirtySourceFiles.emplace_back(source); }
+
 	// Generating source tree from caches and directories
 	static SourceTree GenerateFromDirectory();
 	static SourceTree GenerateFromCache();
@@ -96,8 +106,6 @@ public:
 
 	// Compares the source tree with the old tree, and ensures that changes are marked dirty
 	void CompareWithOld(const SourceTree& oldTree);
-
-	void SourceTree::ParseModule(Module& buildModule);
 
 private:
 	friend void to_json(json& j, const SourceTree& tree);
@@ -109,7 +117,13 @@ private:
 	// Populate a folder with source and header files, as well as sub-folders
 	void PopulateFolder(Folder& folder);
 
+	void CompareFolders(Folder& newFolder, const Folder& oldFolder);
+
 	std::vector<Module> m_Modules;
+
+	std::vector<Module*> m_DirtyModules;
+	std::vector<File*> m_DirtySourceFiles;
+	std::vector<HeaderFile*> m_DirtyHeaders;
 };
 
 void to_json(json& j, const SourceTree& tree);
@@ -127,6 +141,6 @@ void from_json(const json& j, File& file);
 void to_json(json& j, const HeaderFile& file);
 void from_json(const json& j, HeaderFile& file);
 
-inline bool operator==(const File& first, const File& second) { return fs::equivalent(first.Path, second.Path); }
+inline bool operator==(const File& first, const File& second) { std::error_code ec; return fs::equivalent(first.Path, second.Path, ec); }
 inline bool operator==(const Module& first, const Module& second) { return first.Definition == second.Definition; }
-inline bool operator==(const Folder& first, const Folder& second) { return fs::equivalent(first.Path, second.Path); }
+inline bool operator==(const Folder& first, const Folder& second) { std::error_code ec; return fs::equivalent(first.Path, second.Path, ec); }
