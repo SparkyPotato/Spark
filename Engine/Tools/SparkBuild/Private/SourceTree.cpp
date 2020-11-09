@@ -37,8 +37,6 @@ SourceTree SourceTree::GenerateFromDirectory()
 		tree.FindModules(toolPath);
 	}
 
-	BasePlatform::Output("Found ", tree.m_Modules.size(), " modules.");
-
 	if (CommandLine::GetSwitch("verbose"))
 	{
 		Verbose(false, "");
@@ -55,13 +53,6 @@ SourceTree SourceTree::GenerateFromDirectory()
 	{
 		tree.PopulateFolder(buildModule.Location);
 	}
-
-	BasePlatform::Output
-	(
-		"Found ", tree.m_HeaderCount, " headers and ",
-		tree.m_SourceCount, " source files, spread over ",
-		tree.m_DirectoryCount, " directories."
-	);
 
 	return tree;
 }
@@ -156,8 +147,6 @@ void SourceTree::FindModules(const fs::path& folder)
 
 void SourceTree::PopulateFolder(Folder& folder)
 {
-	m_DirectoryCount++;
-
 	for (auto& entry : fs::directory_iterator(folder.Path))
 	{
 		std::string extension = entry.path().extension().string();
@@ -167,14 +156,12 @@ void SourceTree::PopulateFolder(Folder& folder)
 		if (entry.is_regular_file() && isSource) 
 		{
 			folder.SourceFiles.emplace_back(entry.path());
-			m_SourceCount++;
 		}
 
 		bool isHeader = extension == ".h" || extension == ".hpp";
 		if (entry.is_regular_file() && isHeader) 
 		{
 			folder.HeaderFiles.emplace_back(entry.path());
-			m_HeaderCount++;
 		}
 
 		if (entry.is_directory())

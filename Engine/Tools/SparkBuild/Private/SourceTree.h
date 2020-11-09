@@ -11,14 +11,18 @@ struct File
 {
 	File() = default;
 	File(const fs::path& path)
-		: Path(path)
 	{
+		std::string cleanPath = path.string();
+		std::replace(cleanPath.begin(), cleanPath.end(), '\\', '/');
+		Path = cleanPath;
+
 		WriteTime = fs::last_write_time(Path).time_since_epoch().count();
 	}
 
+	// A dirty file will be reparsed and recompiled
 	bool Dirty = true;
 	fs::path Path;
-	uint64_t WriteTime;
+	uint64_t WriteTime = 0;
 };
 
 struct HeaderFile : File
@@ -37,8 +41,11 @@ struct Folder
 	Folder() = default;
 
 	Folder(const fs::path& path)
-		: Path(path)
-	{}
+	{
+		std::string cleanPath = path.string();
+		std::replace(cleanPath.begin(), cleanPath.end(), '\\', '/');
+		Path = cleanPath;
+	}
 
 	fs::path Path;
 
@@ -55,8 +62,10 @@ struct Module
 	Module() = default;
 
 	Module(const fs::path& location)
-		: Location(location), Definition(location.string() + "/Module.json")
-	{}
+		: Location(location)
+	{
+		Definition = File(Location.Path.string() + "/Module.json");
+	}
 
 	// Name of the module, derived from the folder name and name given in the
 	// module definition. They both must match or SparkBuild WILL fail.
@@ -80,17 +89,19 @@ public:
 
 	std::vector<Module>& GetModules() { return m_Modules; }
 
+	// Generating source tree from caches and directories
 	static SourceTree GenerateFromDirectory();
 	static SourceTree GenerateFromCache();
 	static void SaveToCache(const SourceTree& tree);
 
+	// Compares the source tree with the old tree, and ensures that changes are marked dirty
 	void CompareWithOld(const SourceTree& oldTree);
+
+	void SourceTree::ParseModule(Module& buildModule);
 
 private:
 	friend void to_json(json& j, const SourceTree& tree);
 	friend void from_json(const json& j, SourceTree& tree);
-
-	void SourceTree::ParseModule(Module& buildModule);
 
 	// Find all modules within a path
 	void FindModules(const fs::path& folder);
@@ -99,7 +110,6 @@ private:
 	void PopulateFolder(Folder& folder);
 
 	std::vector<Module> m_Modules;
-	int m_SourceCount = 0, m_HeaderCount = 0, m_DirectoryCount = 0;
 };
 
 void to_json(json& j, const SourceTree& tree);

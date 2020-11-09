@@ -7,6 +7,7 @@
 #include <io.h>
 
 #include "Error.h"
+#include "Executor.h"
 #include "Globals.h"
 #include "SourceTree.h"
 
@@ -35,6 +36,9 @@ int wmain(int argc, wchar_t** argv)
 		auto currentTree = SourceTree::GenerateFromDirectory();
 
 		currentTree.CompareWithOld(lastTree);
+
+		Executor executor(currentTree);
+		executor.ExecuteParses();
 
 		SourceTree::SaveToCache(currentTree);
 		Globals::Save();
