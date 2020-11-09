@@ -30,8 +30,14 @@ int wmain(int argc, wchar_t** argv)
 
 		Globals::Setup(argc, argv);
 
-		// The source tree will generate itself
-		SourceTree sourceTree;
+		SourceTree lastTree;
+		if (Globals::BuildCacheExists) { lastTree = SourceTree::GenerateFromCache(); }
+		auto currentTree = SourceTree::GenerateFromDirectory();
+
+		currentTree.CompareWithOld(lastTree);
+
+		SourceTree::SaveToCache(currentTree);
+		Globals::Save();
 
 		// End profiling
 		QueryPerformanceCounter(&end);
@@ -39,11 +45,16 @@ int wmain(int argc, wchar_t** argv)
 		time /= frequency.QuadPart; // Divide by frequency to get time in seconds
 
 		BasePlatform::Output("Updated.");
-		BasePlatform::Output("Total time: ", std::fixed, std::setprecision(4), time, "s.");
+		BasePlatform::Output("Total time: ", std::fixed, std::setprecision(3), time, "s.");
 		//                                   --------------------------------
-		// This ensures that time shown has 4 decimal places -^
+		// This ensures that time shown has 3 decimal places -^
 
 		return EXIT_SUCCESS;
+	}
+	catch (std::exception& e)
+	{
+		BasePlatform::Output(e.what());
+		return EXIT_FAILURE;
 	}
 	catch (...)
 	{

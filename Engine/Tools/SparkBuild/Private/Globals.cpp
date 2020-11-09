@@ -9,6 +9,14 @@
 
 namespace Globals
 {
+	fs::path SourcePath;
+	fs::path IntermediatePath;
+	fs::path BinariesPath;
+
+	json ModuleRegistry;
+	json BuildCache;
+	bool BuildCacheExists = false;
+
 	void ParseCommandLine(int argc, wchar_t** argv);
 
 	void Setup(int argc, wchar_t** argv)
@@ -18,10 +26,14 @@ namespace Globals
 			- this may not work if we have a symlink for the executable and it is called through that
 		*/
 		String executablePath = fs::path(argv[0]).parent_path().string();
-		executablePath += "/../../../";
+		executablePath += "/../../../../";
 		BasePlatform::SetWorkingDirectory(executablePath);
 
 		ParseCommandLine(argc, argv);
+
+		SourcePath = CommandLine::GetProperty("dir") + "/Source";
+		IntermediatePath = CommandLine::GetProperty("dir") + "/Intermediate";
+		BinariesPath = CommandLine::GetProperty("dir") + "/Binaries";
 
 		if (CommandLine::GetSwitch("verbose"))
 		{
@@ -44,6 +56,33 @@ namespace Globals
 		{
 			Error("No project directory property found"); // SparkBuild needs a project directory location
 		}
+
+		if (!fs::exists("Registry")) { fs::create_directory("Registry"); }
+
+		if (fs::exists("Registry/ModuleRegistry.json"))
+		{
+			std::ifstream("Registry/ModuleRegistry.json") >> ModuleRegistry;
+		}
+
+		if (!fs::exists(CommandLine::GetProperty("dir") + "/Intermediate")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Intermediate"); }
+
+		if (fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/BuildCache.json"))
+		{
+			BuildCacheExists = true;
+			std::ifstream(CommandLine::GetProperty("dir") + "/Intermediate/BuildCache.json") >> BuildCache;
+		}
+		else
+		{
+			BuildCacheExists = false;
+		}
+
+		BasePlatform::SetupCompiler();
+	}
+
+	void Save()
+	{
+		std::ofstream("Registry/ModuleRegistry.json") << std::setw(4) << ModuleRegistry;
+		std::ofstream(CommandLine::GetProperty("dir") + "/Intermediate/BuildCache.json") << std::setw(4) << BuildCache;
 	}
 
 	bool VerifySwitch(const String& switchArg);
@@ -101,7 +140,8 @@ namespace Globals
 	};
 	static std::vector<String> s_ValidProperties =
 	{
-		"dir"
+		"dir",
+		"config"
 	};
 
 	bool VerifySwitch(const String& switchArg)

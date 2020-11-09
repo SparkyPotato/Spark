@@ -8,14 +8,9 @@ Dependencies
 *.sln
 *.vcxproj*
 
-# Tup files
-*.tup*
-*Tupfile
-*Tuprules*
-
 # Builds
-Binaries
-Intermediate
+*Binaries*
+*Intermediate*
 
 # Mac files
 *.DS_Store

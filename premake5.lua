@@ -7,14 +7,14 @@ workspace "Spark"
 	{
 		"Debug",
 		"Development",
-		"Release",
+		"Release"
 	}
 	
 	startproject "Spark"
 	
 group "Engine"	
 project "Spark"
-	location "Intermediate/ProjectFiles"
+	location "Intermediate"
 
 	language "C++"
 	cppdialect "C++20"
@@ -29,7 +29,6 @@ project "Spark"
 	
 	includedirs
 	{
-		"Engine/Source",
 		"Engine/**/Public"
 	}
 	
@@ -41,33 +40,42 @@ project "Spark"
 
 	buildcommands
 	{
-		"..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=\"Engine/\""
+		"..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=Engine Config=\"%{cfg.buildcfg}\""
 	}
 	
 	rebuildcommands
 	{
-		'..\\..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=\"Engine/\" -Rebuild'
+		"..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=Engine Config=\"%{cfg.buildcfg}\" -Rebuild"
 	}
 
 group "Tools"
 project "SparkBuild"
-	location "Intermediate/ProjectFiles"
+	location "Intermediate"
 
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 	staticruntime "on"
 	runtime "Release"
 	
-	targetdir "Engine/Binaries/SparkBuild/"
-	objdir "Engine/Intermediate/SparkBuild/"
-	debugdir "Engine/Binaries/SparkBuild/"
+	targetdir "Engine/Binaries/%{cfg.buildcfg}/SparkBuild/"
+	objdir "Engine/Intermediate/%{cfg.buildcfg}/SparkBuild/"
+	debugdir "Engine/Binaries/%{cfg.buildcfg}/SparkBuild/"
 	
 	kind "ConsoleApp"
 	
 	characterset "Unicode"
 		
-	optimize "speed"
-	symbols "on"
+	filter "configurations: Release"
+		optimize "speed"
+		symbols "off"
+		
+	filter "configurations: Development"
+		optimize "speed"
+		symbols "on"
+		
+	filter "configurations: Debug"
+		optimize "off"
+		symbols "on"
 		
 	filter {}
 	

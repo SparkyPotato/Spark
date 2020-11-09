@@ -5,42 +5,45 @@
 
 #include "SourceTree.h"
 
+#include <regex>
+
 #include "Error.h"
 
-SourceTree::SourceTree()
+SourceTree SourceTree::GenerateFromDirectory()
 {
+	SourceTree tree;
+
 	fs::path projectDir = CommandLine::GetProperty("dir");
 
 	Verbose("Generating SourceTree for: ", projectDir, ".");
 
-	fs::path sourcePath = projectDir.string() + "/Source/";
-	if (!fs::exists(sourcePath))
+	if (!fs::exists(Globals::SourcePath))
 	{
 		Error("Project does not contain a Source folder!");
 	}
-	FindModules(sourcePath);
+	tree.FindModules(Globals::SourcePath);
 
 	fs::path dependencyPath = projectDir.string() + "/Dependencies";
 	if (fs::exists(dependencyPath))
 	{
 		Verbose("Found project dependencies.");
-		FindModules(dependencyPath);
+		tree.FindModules(dependencyPath);
 	}
 
 	fs::path toolPath = projectDir.string() + "/Tools";
 	if (fs::exists(toolPath))
 	{
 		Verbose("Found project tools.");
-		FindModules(toolPath);
+		tree.FindModules(toolPath);
 	}
 
-	BasePlatform::Output("Found ", m_Modules.size(), " modules.");
+	BasePlatform::Output("Found ", tree.m_Modules.size(), " modules.");
 
 	if (CommandLine::GetSwitch("verbose"))
 	{
 		Verbose(false, "");
 		Verbose("Modules located in:");
-		for (auto& buildModule : m_Modules)
+		for (auto& buildModule : tree.m_Modules)
 		{
 			Verbose(false, buildModule.Location.Path.string());
 		}
@@ -48,17 +51,91 @@ SourceTree::SourceTree()
 	}
 
 	// Would use 'module' here but it's a reserved keyword in C++20
-	for (auto& buildModule : m_Modules)
+	for (auto& buildModule : tree.m_Modules)
 	{
-		PopulateFolder(buildModule.Location);
+		tree.PopulateFolder(buildModule.Location);
 	}
 
 	BasePlatform::Output
 	(
-		"Found ", m_HeaderCount, " headers and ",
-		m_SourceCount, " source files, spread over ",
-		m_DirectoryCount, " directories."
+		"Found ", tree.m_HeaderCount, " headers and ",
+		tree.m_SourceCount, " source files, spread over ",
+		tree.m_DirectoryCount, " directories."
 	);
+
+	return tree;
+}
+
+SourceTree SourceTree::GenerateFromCache()
+{
+	return Globals::BuildCache.get<SourceTree>();
+}
+
+void SourceTree::SaveToCache(const SourceTree& tree)
+{
+	Globals::BuildCache = tree;
+}
+
+void SourceTree::CompareWithOld(const SourceTree& oldTree)
+{
+	for (auto& buildModule : oldTree.m_Modules)
+	{
+		auto it = std::find(m_Modules.begin(), m_Modules.end(), buildModule);
+		if (it != m_Modules.end() && it->Definition.WriteTime == buildModule.Definition.WriteTime)
+		{
+			it->Definition.Dirty = false;
+		}
+	}
+}
+
+void SourceTree::ParseModule(Module& buildModule)
+{
+	Verbose("Parsing modules");
+
+	// Semver regex - https://regex101.com/r/vkijKf/1/
+	static std::regex versionRegex(R"(^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-])"
+		R"([0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)");
+
+	json parser;
+
+	// Get the name of the folder containing the module definition
+	std::string folderName = buildModule.Location.Path.string();
+	folderName = folderName.substr(folderName.rfind('/') + 1);
+	//                                  Skips the last '/'-^
+
+	// Check if the Module.json definition file exists
+	std::string definitionPath = buildModule.Location.Path.string() + "/Module.json";
+	if (!fs::exists(definitionPath))
+	{
+		Error("Module '", folderName, "' has no module definition.");
+	}
+
+	// Catch any parse exceptions
+	try { std::ifstream(definitionPath) >> parser; }
+	catch (...) { Error("Failed to parse module '", folderName, "'"); }
+
+	// Parse Name and report any mismatches between folder name and module name
+	buildModule.Name = parser["Name"];
+	if (buildModule.Name.empty()) { Error("Module '", folderName, "' has no Name specifier."); }
+	if (buildModule.Name != folderName) { Error("Module '", buildModule.Name, "' does not match with it's folder name."); }
+
+	// Parse Version
+	buildModule.Version = parser["Version"];
+	if (buildModule.Version.empty()) { Error("Module '", buildModule.Name, "' does not have a version specifier"); }
+	if (!std::regex_match(buildModule.Version, versionRegex)) 
+	{
+		Error("Module '", buildModule.Name, "' does not have a valid version specifier. See https://semver.org.");
+	}
+
+	// Parse Dependencies
+	try { buildModule.Dependencies = parser.at("Dependencies").get<std::vector<String>>(); }
+	catch (...) { Warning("Module '", buildModule.Name, "' has no dependencies specifier, assuming none."); }
+
+	Globals::ModuleRegistry[buildModule.Name] =
+	{
+		{ "Version", buildModule.Version },
+		{ "Path", buildModule.Location.Path.string() }
+	};
 }
 
 void SourceTree::FindModules(const fs::path& folder)
@@ -66,11 +143,7 @@ void SourceTree::FindModules(const fs::path& folder)
 	// Check if the folder contains a module definition
 	if (fs::exists(folder.string() + "/Module.json"))
 	{
-		// Cleanup backslashes in the path (Windows annoying)
-		std::string cleanPath = folder.string();
-		std::replace(cleanPath.begin(), cleanPath.end(), '\\', '/');
-
-		m_Modules.emplace_back(cleanPath);
+		m_Modules.emplace_back(folder);
 		return;
 	}
 
@@ -93,30 +166,91 @@ void SourceTree::PopulateFolder(Folder& folder)
 		bool isSource = extension == ".cpp" || extension == ".cc" || extension == ".cxx";
 		if (entry.is_regular_file() && isSource) 
 		{
-			std::string cleanPath = entry.path().string();
-			std::replace(cleanPath.begin(), cleanPath.end(), '\\', '/');
-
-			folder.SourceFiles.emplace_back(cleanPath);
+			folder.SourceFiles.emplace_back(entry.path());
 			m_SourceCount++;
 		}
 
 		bool isHeader = extension == ".h" || extension == ".hpp";
 		if (entry.is_regular_file() && isHeader) 
 		{
-			std::string cleanPath = entry.path().string();
-			std::replace(cleanPath.begin(), cleanPath.end(), '\\', '/');
-
-			folder.HeaderFiles.emplace_back(cleanPath);
+			folder.HeaderFiles.emplace_back(entry.path());
 			m_HeaderCount++;
 		}
 
 		if (entry.is_directory())
 		{
-			std::string cleanPath = entry.path().string();
-			std::replace(cleanPath.begin(), cleanPath.end(), '\\', '/');
-
-			auto& subfolder = folder.Subfolders.emplace_back(cleanPath);
+			auto& subfolder = folder.Subfolders.emplace_back(entry.path());
 			PopulateFolder(subfolder); // Recursively populate sub-folders
 		}
 	}
+}
+
+void to_json(json& j, const SourceTree& tree)
+{
+	j = tree.m_Modules;
+}
+
+void from_json(const json& j, SourceTree& tree)
+{
+	tree.m_Modules = j.get<std::vector<Module>>();
+}
+
+void to_json(json& j, const Module& buildModule)
+{
+	j["Name"] = buildModule.Name;
+	j["Version"] = buildModule.Version;
+	j["Dependencies"] = buildModule.Dependencies;
+	j["Definition"] = buildModule.Definition;
+	j["Location"] = buildModule.Location;
+}
+
+void from_json(const json& j, Module& buildModule)
+{
+	buildModule.Name = j["Name"];
+	buildModule.Version = j["Version"];
+	buildModule.Dependencies = j["Dependencies"].get<std::vector<String>>();
+	buildModule.Definition = j["Definition"];
+	buildModule.Location = j["Location"];
+}
+
+void to_json(json& j, const Folder& folder)
+{
+	j["Path"] = fs::absolute(folder.Path).string();
+	j["Headers"] = folder.HeaderFiles;
+	j["Source"] = folder.SourceFiles;
+	j["Subfolders"] = folder.Subfolders;
+}
+
+void from_json(const json& j, Folder& folder)
+{
+	folder.Path = j["Path"].get<String>();
+	folder.HeaderFiles = j["Headers"].get<std::vector<HeaderFile>>();
+	folder.SourceFiles = j["Source"].get<std::vector<File>>();
+	folder.Subfolders = j["Subfolders"].get<std::vector<Folder>>();
+}
+
+void to_json(json& j, const File& file)
+{
+	j["Path"] = fs::absolute(file.Path).string();
+	j["WriteTime"] = file.WriteTime;
+}
+
+void from_json(const json& j, File& file)
+{
+	file.Path = j["Path"].get<String>();
+	file.WriteTime = j["WriteTime"];
+}
+
+void to_json(json& j, const HeaderFile& file)
+{
+	j["Path"] = fs::absolute(file.Path).string();
+	j["WriteTime"] = file.WriteTime;
+	j["DependedOn"] = file.DependedOn;
+}
+
+void from_json(const json& j, HeaderFile& file)
+{
+	file.Path = j["Path"].get<String>();
+	file.WriteTime = j["WriteTime"];
+	file.DependedOn = j["DependedOn"].get<std::vector<String>>();
 }

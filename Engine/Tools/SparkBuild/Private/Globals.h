@@ -14,9 +14,13 @@
 #endif
 
 #include <filesystem>
+#include <fstream>
 #include <map>
 #include <string>
 
+#include "json.hpp"
+
+using json = nlohmann::json;
 using String = std::string;
 using StringView = std::string_view;
 
@@ -25,6 +29,15 @@ namespace fs = std::filesystem;
 namespace Globals
 {
 	void Setup(int argc, wchar_t** argv);
+	void Save();
+
+	extern fs::path SourcePath;
+	extern fs::path IntermediatePath;
+	extern fs::path BinariesPath;
+
+	extern json ModuleRegistry;
+	extern json BuildCache;
+	extern bool BuildCacheExists;
 };
 
 namespace CommandLine

@@ -14,12 +14,38 @@
 
 namespace BasePlatform
 {
+	static std::wstring s_CompilerPath;
+	static std::wstring s_LinkerPath;
+	static std::wstring s_LibPath;
+
 	bool SetWorkingDirectory(const String& directory)
 	{
 		wchar_t dir[5000];
 		MultiByteToWideChar(CP_UTF8, 0, directory.c_str(), -1, dir, 5000);
 
 		return SetCurrentDirectoryW(dir);
+	}
+
+	void SetupCompiler()
+	{
+		// That is *always* going to be where vswhere is located
+		constexpr char* vswhere = R"("C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe")";
+
+		// Call vswhere and store the installation path in a file 'tmp'
+		system((std::string(vswhere) + " -latest -property installationPath > tmp").c_str());
+		std::string vsPath;
+		getline(std::ifstream("tmp"), vsPath);
+		fs::remove("tmp"); // Remove temporary
+
+		// Get the default MSVC toolset version and store it in toolsetVersion
+		std::string toolPath = vsPath + "/VC/Auxiliary/Build/Microsoft.VCToolsVersion.default.txt";
+		std::string toolsetVersion;
+		std::ifstream(toolPath) >> toolsetVersion;
+
+		// Store the path for cl, link, and lib
+		s_CompilerPath = L"\"" + ToUTF16(vsPath) + L"/VC/Tools/MSVC/" + ToUTF16(toolsetVersion) + L"/bin/Hostx64/x64/cl.exe" + L"\"";
+		s_LinkerPath = L"\"" + ToUTF16(vsPath) + L"/VC/Tools/MSVC/" + ToUTF16(toolsetVersion) + L"/bin/Hostx64/x64/link.exe" + L"\"";
+		s_LibPath = L"\"" + ToUTF16(vsPath) + L"/VC/Tools/MSVC/" + ToUTF16(toolsetVersion) + L"/bin/Hostx64/x64/lib.exe" + L"\"";
 	}
 
 	String ToUTF8(const wchar_t* string)
