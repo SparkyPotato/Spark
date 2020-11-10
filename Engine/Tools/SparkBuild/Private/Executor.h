@@ -16,16 +16,15 @@ public:
 	Executor(SourceTree& tree);
 
 	void Parse();
+	void CheckHeaders();
 	void Compile();
 
 private:
 	void ParseModule(Module& buildModule);
 
-	void DirtyFolder(Folder& folder);
-
-	void SpawnCompilationThread(File* source);
-	static void ThreadWorker(File* source);
+	void DirtyFolder(Module& buildModule, Folder& folder);
 
 	SourceTree& m_Tree;
-	std::vector<std::thread> m_CompilationThreads;
+
+	std::map<Module*, std::vector<File*>> m_CompileList;
 };

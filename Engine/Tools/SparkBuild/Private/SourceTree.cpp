@@ -7,9 +7,9 @@
 
 #include "Error.h"
 
-SourceTree SourceTree::GenerateFromDirectory()
+SourceTree* SourceTree::GenerateFromDirectory()
 {
-	SourceTree tree;
+	auto tree = new SourceTree;
 
 	fs::path projectDir = CommandLine::GetProperty("dir");
 
@@ -19,27 +19,27 @@ SourceTree SourceTree::GenerateFromDirectory()
 	{
 		Error("Project does not contain a Source folder!");
 	}
-	tree.FindModules(Globals::SourcePath);
+	tree->FindModules(Globals::SourcePath);
 
 	fs::path dependencyPath = projectDir.string() + "/Dependencies";
 	if (fs::exists(dependencyPath))
 	{
 		Verbose("Found project dependencies.");
-		tree.FindModules(dependencyPath);
+		tree->FindModules(dependencyPath);
 	}
 
 	fs::path toolPath = projectDir.string() + "/Tools";
 	if (fs::exists(toolPath))
 	{
 		Verbose("Found project tools.");
-		tree.FindModules(toolPath);
+		tree->FindModules(toolPath);
 	}
 
 	if (CommandLine::GetSwitch("verbose"))
 	{
 		Verbose(false, "");
 		Verbose("Modules located in:");
-		for (auto& buildModule : tree.m_Modules)
+		for (auto& buildModule : tree->m_Modules)
 		{
 			Verbose(false, buildModule.Location.Path.string());
 		}
@@ -47,17 +47,30 @@ SourceTree SourceTree::GenerateFromDirectory()
 	}
 
 	// Would use 'module' here but it's a reserved keyword in C++20
-	for (auto& buildModule : tree.m_Modules)
+	for (auto& buildModule : tree->m_Modules)
 	{
-		tree.PopulateFolder(buildModule.Location);
+		tree->PopulateFolder(buildModule.Location);
+	}
+
+	for (auto& buildModule : tree->m_Modules)
+	{
+		tree->Vectorize(buildModule, buildModule.Location);
 	}
 
 	return tree;
 }
 
-SourceTree SourceTree::GenerateFromCache()
+SourceTree* SourceTree::GenerateFromCache()
 {
-	return Globals::BuildCache.get<SourceTree>();
+	auto tree = new SourceTree;
+	*tree = Globals::BuildCache.get<SourceTree>();
+	
+	for (auto& buildModule : tree->m_Modules)
+	{
+		tree->Vectorize(buildModule, buildModule.Location);
+	}
+
+	return tree;
 }
 
 void SourceTree::SaveToCache(const SourceTree& tree)
@@ -92,14 +105,30 @@ void SourceTree::CompareWithOld(const SourceTree& oldTree)
 		{
 			buildModule.Definition.Dirty = true;
 			m_DirtyModules.emplace_back(&buildModule);
-			continue; // If a module is dirty, we're going to recompile it anyways
+			continue;
 		}
 
-		CompareFolders(buildModule.Location, oldModule->Location);
+		CompareFolders(buildModule, buildModule.Location, oldModule->Location);
 	}
 }
 
-void SourceTree::CompareFolders(Folder& newFolder, const Folder& oldFolder)
+void SourceTree::GenerateDirectories()
+{
+	for (auto& buildModule : m_Modules)
+	{
+		std::string path = Globals::IntermediatePath.string() + "/" +
+			CommandLine::GetProperty("config") + "/Build/" + buildModule.Name;
+		if (!fs::exists(path)) 
+		{
+			fs::create_directories(path);
+		}
+	}
+
+	std::string path = Globals::IntermediatePath.string() + "/DependencyGraph";
+	if (!fs::exists(path)) { fs::create_directories(path); }
+}
+
+void SourceTree::CompareFolders(Module& buildModule, Folder& newFolder, const Folder& oldFolder)
 {
 	// If both folders have the same write time, no modifications have taken place
 	// Easy way to skive off some work and save time
@@ -114,14 +143,15 @@ void SourceTree::CompareFolders(Folder& newFolder, const Folder& oldFolder)
 			if (oldHeader->WriteTime != newHeader.WriteTime)
 			{
 				newHeader.Dirty = true;
-				m_DirtyHeaders.emplace_back(&newHeader);
+				newHeader.DependedOn = oldHeader->DependedOn;
+				m_DirtyHeaders.emplace_back(&buildModule, &newHeader);
 			}
 			// If not dirty we just skip it
 		}
 		else
 		{
 			newHeader.Dirty = true;
-			m_DirtyHeaders.emplace_back(&newHeader);
+			m_DirtyHeaders.emplace_back(&buildModule, &newHeader);
 		}
 	}
 
@@ -134,13 +164,13 @@ void SourceTree::CompareFolders(Folder& newFolder, const Folder& oldFolder)
 			if (oldSource->WriteTime != newSource.WriteTime)
 			{
 				newSource.Dirty = true;
-				m_DirtySourceFiles.emplace_back(&newSource);
+				m_DirtySourceFiles.emplace_back(&buildModule, &newSource);
 			}
 		}
 		else
 		{
 			newSource.Dirty = true;
-			m_DirtySourceFiles.emplace_back(&newSource);
+			m_DirtySourceFiles.emplace_back(&buildModule, &newSource);
 		}
 	}
 
@@ -150,7 +180,7 @@ void SourceTree::CompareFolders(Folder& newFolder, const Folder& oldFolder)
 		if (oldSub != oldFolder.Subfolders.end())
 		{
 			// If the old version of the subfolder exists, compare them
-			CompareFolders(newSub, *oldSub);
+			CompareFolders(buildModule, newSub, *oldSub);
 		}
 	}
 }
@@ -181,13 +211,13 @@ void SourceTree::PopulateFolder(Folder& folder)
 		bool isSource = extension == ".cpp" || extension == ".cc" || extension == ".cxx";
 		if (entry.is_regular_file() && isSource) 
 		{
-			folder.SourceFiles.emplace_back(entry.path());
+			auto& ref = folder.SourceFiles.emplace_back(entry.path());
 		}
 
 		bool isHeader = extension == ".h" || extension == ".hpp";
 		if (entry.is_regular_file() && isHeader) 
 		{
-			folder.HeaderFiles.emplace_back(entry.path());
+			auto& ref = folder.HeaderFiles.emplace_back(entry.path());
 		}
 
 		if (entry.is_directory())
@@ -195,6 +225,24 @@ void SourceTree::PopulateFolder(Folder& folder)
 			auto& subfolder = folder.Subfolders.emplace_back(entry.path());
 			PopulateFolder(subfolder); // Recursively populate sub-folders
 		}
+	}
+}
+
+void SourceTree::Vectorize(Module& buildModule, Folder& folder)
+{
+	for (auto& source : folder.SourceFiles)
+	{
+		m_Sources.emplace_back(&buildModule, &source);
+	}
+
+	for (auto& header : folder.HeaderFiles)
+	{
+		m_Headers.emplace_back(&buildModule, &header);
+	}
+
+	for (auto& sub : folder.Subfolders)
+	{
+		Vectorize(buildModule, sub);
 	}
 }
 

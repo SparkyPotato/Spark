@@ -31,17 +31,22 @@ int wmain(int argc, wchar_t** argv)
 
 		Globals::Setup(argc, argv);
 
-		SourceTree lastTree;
+		SourceTree* lastTree;
 		if (Globals::BuildCacheExists) { lastTree = SourceTree::GenerateFromCache(); }
+		else { lastTree = new SourceTree; }
 		auto currentTree = SourceTree::GenerateFromDirectory();
 
-		currentTree.CompareWithOld(lastTree);
+		currentTree->CompareWithOld(*lastTree);
 
-		Executor executor(currentTree);
+		Executor executor(*currentTree);
 		executor.Parse();
+
+		currentTree->GenerateDirectories();
+
+		executor.CheckHeaders();
 		executor.Compile();
 
-		SourceTree::SaveToCache(currentTree);
+		SourceTree::SaveToCache(*currentTree);
 		Globals::Save();
 
 		// End profiling

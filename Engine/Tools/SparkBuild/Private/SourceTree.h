@@ -23,6 +23,11 @@ struct File
 	bool Dirty = false;
 	fs::path Path;
 	uint64_t WriteTime = 0;
+
+	explicit operator String()
+	{
+		return fs::absolute(Path).string();
+	}
 };
 
 struct HeaderFile : File
@@ -86,26 +91,33 @@ struct Module
 	Folder Location;
 };
 
+using SourcePair = std::pair<Module*, File*>;
+using HeaderPair = std::pair<Module*, HeaderFile*>;
+
 class SourceTree
 {
 public:
 	SourceTree() = default;
 
 	std::vector<Module>& GetModules() { return m_Modules; }
+	std::vector<SourcePair>& GetSources() { return m_Sources; }
+	std::vector<HeaderPair>& GetHeaders() { return m_Headers; }
 
 	std::vector<Module*>& GetDirtyModules() { return m_DirtyModules; }
-	std::vector<File*>& GetDirtySourceFiles() { return m_DirtySourceFiles; }
-	std::vector<HeaderFile*>& GetDirtyHeaders() { return m_DirtyHeaders; }
+	std::vector<SourcePair>& GetDirtySourceFiles() { return m_DirtySourceFiles; }
+	std::vector<HeaderPair>& GetDirtyHeaders() { return m_DirtyHeaders; }
 
-	void AddDirtySource(File* source) { m_DirtySourceFiles.emplace_back(source); }
+	void AddDirtySource(Module* buildModule, File* source) { m_DirtySourceFiles.emplace_back(buildModule, source); }
 
 	// Generating source tree from caches and directories
-	static SourceTree GenerateFromDirectory();
-	static SourceTree GenerateFromCache();
+	static SourceTree* GenerateFromDirectory();
+	static SourceTree* GenerateFromCache();
 	static void SaveToCache(const SourceTree& tree);
 
 	// Compares the source tree with the old tree, and ensures that changes are marked dirty
 	void CompareWithOld(const SourceTree& oldTree);
+
+	void GenerateDirectories();
 
 private:
 	friend void to_json(json& j, const SourceTree& tree);
@@ -116,14 +128,18 @@ private:
 
 	// Populate a folder with source and header files, as well as sub-folders
 	void PopulateFolder(Folder& folder);
+	void Vectorize(Module& buildModule, Folder& folder);
 
-	void CompareFolders(Folder& newFolder, const Folder& oldFolder);
+	void CompareFolders(Module& buildModule, Folder& newFolder, const Folder& oldFolder);
 
 	std::vector<Module> m_Modules;
 
+	std::vector<SourcePair> m_Sources;
+	std::vector<HeaderPair> m_Headers;
+
 	std::vector<Module*> m_DirtyModules;
-	std::vector<File*> m_DirtySourceFiles;
-	std::vector<HeaderFile*> m_DirtyHeaders;
+	std::vector<SourcePair> m_DirtySourceFiles;
+	std::vector<HeaderPair> m_DirtyHeaders;
 };
 
 void to_json(json& j, const SourceTree& tree);

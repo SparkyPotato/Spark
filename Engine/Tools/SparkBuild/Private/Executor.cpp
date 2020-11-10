@@ -23,27 +23,43 @@ void Executor::Parse()
 		ParseModule(*buildModule);
 
 		// Module has been marked dirty so all source files must be marked dirty
-		DirtyFolder(buildModule->Location);
+		DirtyFolder(*buildModule, buildModule->Location);
 	}
 
 	BasePlatform::Output("Built ", reparses, " modules.");
 }
 
+void Executor::CheckHeaders()
+{
+	for (auto header : m_Tree.GetDirtyHeaders())
+	{
+		for (auto& dependency : header.second->DependedOn)
+		{
+			for (auto source : m_Tree.GetSources())
+			{
+				std::error_code ec;
+				if (fs::equivalent(source.second->Path, dependency, ec))
+				{
+					m_Tree.AddDirtySource(source.first, source.second);
+				}
+			}
+		}
+	}
+}
+
 void Executor::Compile()
 {
-	int recompilations = 0;
-
+	int compilations = 0;
 	for (auto source : m_Tree.GetDirtySourceFiles())
 	{
-		recompilations++;
-		SpawnCompilationThread(source);
+		m_CompileList[source.first].emplace_back(source.second);
+		compilations++;
 	}
+	BasePlatform::Output("Compiling ", compilations, " files.");
 
-	BasePlatform::Output("Compiling ", recompilations, " files.");
-
-	for (auto& thread : m_CompilationThreads)
+	for (auto& list : m_CompileList)
 	{
-		thread.join();
+		BasePlatform::Compile(*list.first, list.second);
 	}
 }
 
@@ -100,26 +116,16 @@ void Executor::ParseModule(Module& buildModule)
 	};
 }
 
-void Executor::DirtyFolder(Folder& folder)
+void Executor::DirtyFolder(Module& buildModule, Folder& folder)
 {
 	for (auto& source : folder.SourceFiles)
 	{
 		source.Dirty = true;
-		m_Tree.AddDirtySource(&source);
+		m_Tree.AddDirtySource(&buildModule, &source);
 	}
 
 	for (auto& sub : folder.Subfolders)
 	{
-		DirtyFolder(sub);
+		DirtyFolder(buildModule, sub);
 	}
-}
-
-void Executor::SpawnCompilationThread(File* source)
-{
-	m_CompilationThreads.emplace_back(&Executor::ThreadWorker, source);
-}
-
-void Executor::ThreadWorker(File* source)
-{
-	BasePlatform::Compile(source, "");
 }

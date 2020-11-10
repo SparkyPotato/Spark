@@ -12,13 +12,14 @@
 #include "Globals.h"
 
 struct File;
+struct Module;
 
 namespace BasePlatform
 {
 	bool SetWorkingDirectory(const String& directory);
 
 	void SetupCompiler();
-	void Compile(File* file, const fs::path& output);
+	void Compile(Module& buildModule, std::vector<File*> files);
 
 	// Convert the wide-characters (UTF-16 on Windows) to a UTF-8 encoded String.
 		String ToUTF8(const wchar_t* string);

@@ -76,6 +76,12 @@ namespace Globals
 			BuildCacheExists = false;
 		}
 
+// 		std::string config = CommandLine::GetProperty("config");
+// 		if (config != "Debug" && config != "Release", config != "Development")
+// 		{
+// 			Error("Invalid config property: '", config, "'.");
+// 		}
+
 		BasePlatform::SetupCompiler();
 	}
 

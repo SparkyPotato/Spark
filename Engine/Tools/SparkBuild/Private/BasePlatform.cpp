@@ -5,6 +5,7 @@
 
 #include "BasePlatform.h"
 
+#include "Error.h"
 #include "SourceTree.h"
 
 // SparkBuild is a small tool with very little platform-specific functionality used.
@@ -47,14 +48,69 @@ namespace BasePlatform
 		BasePlatform::Output("Using MSVC toolchain version ", toolsetVersion, ".");
 
 		// Store the path for cl, link, and lib
-		s_CompilerPath = L"\"" + ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\cl.exe" + L"\" ";
-		s_LinkerPath = L"\"" + ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\link.exe" + L"\" ";
-		s_LibPath = L"\"" + ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\lib.exe" + L"\" ";
+		s_CompilerPath = ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\cl.exe";
+		s_LinkerPath = ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\link.exe";
+		s_LibPath = ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\lib.exe";
 	}
 
-	void Compile(File* file, const fs::path& output)
+	void Compile(Module& buildModule, std::vector<File*> files)
 	{
-		
+		std::wstring command = L" ";
+
+		for (auto file : files)
+		{
+			command += L"\"" + file->Path.wstring() + L"\" ";
+		}
+
+		command += LR"(/D"UNICODE" /EHsc /D"_UNICODE" /c /utf-8 /diagnostics:caret /nologo /std:c++17 /MP )";
+		command += L"/sourceDependencies\"" + Globals::IntermediatePath.wstring() + L"/DependencyGraph/" + L"\" ";
+
+		command += L"/Fo\"" + Globals::IntermediatePath.wstring() + L"/" +
+			ToUTF16(CommandLine::GetProperty("config")) + L"/Build/" + ToUTF16(buildModule.Name) + L"/\" ";
+
+		for (auto& dependency : buildModule.Dependencies)
+		{
+			fs::path include = Globals::ModuleRegistry[dependency]["Path"].get<String>() + "/Public";
+			command += L"/I\"" + include.wstring() + L"/\" ";
+		}
+
+		STARTUPINFO startupInfo;
+		ZeroMemory(&startupInfo, sizeof(startupInfo));
+		startupInfo.cb = sizeof(startupInfo);
+
+		PROCESS_INFORMATION processInfo;
+		ZeroMemory(&processInfo, sizeof(processInfo));
+
+		bool startup = CreateProcessW
+		(
+			s_CompilerPath.c_str(),
+			command.data(),
+			nullptr, nullptr,
+			true,
+			NORMAL_PRIORITY_CLASS,
+			nullptr,
+			nullptr,
+			&startupInfo,
+			&processInfo
+		);
+
+		if (!startup)
+		{
+			Error("Failed to start compiler! Error code: ", GetLastError());
+		}
+
+		WaitForSingleObject(processInfo.hProcess, INFINITE);
+
+		DWORD code;
+		GetExitCodeProcess(processInfo.hProcess, &code);
+
+		if (code != 0)
+		{
+			Error("Compiler error.");
+		}
+
+		CloseHandle(processInfo.hThread);
+		CloseHandle(processInfo.hProcess);
 	}
 
 	String ToUTF8(const wchar_t* string)

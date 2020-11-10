@@ -87,7 +87,7 @@ project "SparkBuild"
 	includedirs
 	{
 		"Engine/Tools/SparkBuild/Public",
-		"Engine/Dependencies/json"
+		"Engine/Dependencies/json/Public"
 	}
 	
 	files
