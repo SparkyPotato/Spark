@@ -143,7 +143,6 @@ void SourceTree::CompareFolders(Module& buildModule, Folder& newFolder, const Fo
 			if (oldHeader->WriteTime != newHeader.WriteTime)
 			{
 				newHeader.Dirty = true;
-				newHeader.DependedOn = oldHeader->DependedOn;
 				m_DirtyHeaders.emplace_back(&buildModule, &newHeader);
 			}
 			// If not dirty we just skip it
@@ -153,6 +152,8 @@ void SourceTree::CompareFolders(Module& buildModule, Folder& newFolder, const Fo
 			newHeader.Dirty = true;
 			m_DirtyHeaders.emplace_back(&buildModule, &newHeader);
 		}
+
+		newHeader.DependedOn = oldHeader->DependedOn;
 	}
 
 	// Compare source files

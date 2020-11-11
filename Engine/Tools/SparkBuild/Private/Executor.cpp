@@ -63,6 +63,30 @@ void Executor::Compile()
 	}
 }
 
+void Executor::AddHeaderDependencies()
+{
+	fs::path dependencies = Globals::IntermediatePath.string() + "/DependencyGraph/";
+	for (auto& entry : fs::directory_iterator(dependencies))
+	{
+		json j;
+		std::ifstream(entry.path()) >> j;
+
+		auto sourceDependencies = j["Data"]["Includes"].get<std::vector<String>>();
+		for (auto& header : sourceDependencies)
+		{
+			for (auto headerFile : m_Tree.GetHeaders())
+			{
+				if (fs::equivalent(headerFile.second->Path, header))
+				{
+					headerFile.second->DependedOn.emplace_back(j["Data"]["Source"]);
+				}
+			}
+		}
+	}
+
+	fs::remove_all(dependencies);
+}
+
 void Executor::ParseModule(Module& buildModule)
 {
 	Verbose("Parsing module");

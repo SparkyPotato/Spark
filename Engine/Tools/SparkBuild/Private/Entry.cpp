@@ -3,17 +3,15 @@
 
 // Entry point
 
-#include <fcntl.h>
-#include <io.h>
-
 #include "Error.h"
 #include "Executor.h"
-#include "Globals.h"
 #include "SourceTree.h"
 
 #ifdef PLATFORM_WINDOWS
 
 #define WIN32_LEAN_AND_MEAN
+#include <fcntl.h>
+#include <io.h>
 #include <Windows.h>
 
 int wmain(int argc, wchar_t** argv)
@@ -45,6 +43,8 @@ int wmain(int argc, wchar_t** argv)
 
 		executor.CheckHeaders();
 		executor.Compile();
+
+		executor.AddHeaderDependencies();
 
 		SourceTree::SaveToCache(*currentTree);
 		Globals::Save();

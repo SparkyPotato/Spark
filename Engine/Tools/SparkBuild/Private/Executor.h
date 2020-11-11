@@ -18,6 +18,7 @@ public:
 	void Parse();
 	void CheckHeaders();
 	void Compile();
+	void AddHeaderDependencies();
 
 private:
 	void ParseModule(Module& buildModule);
