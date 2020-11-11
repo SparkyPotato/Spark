@@ -249,12 +249,12 @@ void SourceTree::Vectorize(Module& buildModule, Folder& folder)
 
 void to_json(json& j, const SourceTree& tree)
 {
-	j = tree.m_Modules;
+	j["Data"] = tree.m_Modules;
 }
 
 void from_json(const json& j, SourceTree& tree)
 {
-	tree.m_Modules = j.get<std::vector<Module>>();
+	tree.m_Modules = j["Data"].get<std::vector<Module>>();
 }
 
 void to_json(json& j, const Module& buildModule)

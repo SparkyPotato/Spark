@@ -59,17 +59,23 @@ namespace Globals
 
 		if (!fs::exists("Registry")) { fs::create_directory("Registry"); }
 
-		if (fs::exists("Registry/ModuleRegistry.json"))
+		if (fs::exists("Registry/.modules"))
 		{
-			std::ifstream("Registry/ModuleRegistry.json") >> ModuleRegistry;
+			std::ifstream registry("Registry/.modules", std::ios::binary);
+			std::vector<uint8_t> vector((std::istreambuf_iterator<char>(registry)), std::istreambuf_iterator<char>());
+
+			ModuleRegistry = json::from_bson(vector);
 		}
 
 		if (!fs::exists(CommandLine::GetProperty("dir") + "/Intermediate")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Intermediate"); }
 
-		if (fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/BuildCache.json"))
+		if (fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/.cache"))
 		{
 			BuildCacheExists = true;
-			std::ifstream(CommandLine::GetProperty("dir") + "/Intermediate/BuildCache.json") >> BuildCache;
+			std::ifstream registry(CommandLine::GetProperty("dir") + "/Intermediate/.cache", std::ios::binary | std::ios::in);
+			std::vector<uint8_t> vector((std::istreambuf_iterator<char>(registry)), std::istreambuf_iterator<char>());
+
+			BuildCache = json::from_bson(vector);
 		}
 		else
 		{
@@ -87,8 +93,14 @@ namespace Globals
 
 	void Save()
 	{
-		std::ofstream("Registry/ModuleRegistry.json") << std::setw(4) << ModuleRegistry;
-		std::ofstream(CommandLine::GetProperty("dir") + "/Intermediate/BuildCache.json") << std::setw(4) << BuildCache;
+		std::vector<std::uint8_t> moduleRegistry = json::to_bson(ModuleRegistry);
+		std::vector<std::uint8_t> buildCache = json::to_bson(BuildCache);
+
+		std::ofstream registry("Registry/.modules", std::ios::binary | std::ios::out);
+		registry.write((char*)moduleRegistry.data(), moduleRegistry.size());
+
+		std::ofstream cache(CommandLine::GetProperty("dir") + "/Intermediate/.cache", std::ios::binary | std::ios::out);
+		cache.write((char*)buildCache.data(), buildCache.size());
 	}
 
 	bool VerifySwitch(const String& switchArg);

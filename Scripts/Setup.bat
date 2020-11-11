@@ -58,7 +58,7 @@ del json.zip /q /f
 cd json-develop
 xcopy "LICENSE.MIT" "..\" /Y
 xcopy "Module.json" "..\" /Y
-xcopy "Public" "..\" /Y
+xcopy "Public\" "..\" /Y /S /E
 
 cd ..\
 rmdir /q /s json-develop
