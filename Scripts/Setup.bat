@@ -48,20 +48,13 @@ mkdir Dependencies
 cd Dependencies
 
 echo Downloading nlohmann-json
-mkdir json
-cd json
 
 powershell -Command "Invoke-WebRequest https://github.com/SparkyPotato/json/archive/develop.zip -OutFile json.zip"
 powershell -Command "Expand-Archive -Force json.zip ./"
 del json.zip /q /f
 
-cd json-develop
-xcopy "LICENSE.MIT" "..\" /Y
-xcopy "Module.json" "..\" /Y
-xcopy "Public\" "..\" /Y /S /E
+ren json-develop json
 
-cd ..\
-rmdir /q /s json-develop
 cd %startDir%
 
 popd

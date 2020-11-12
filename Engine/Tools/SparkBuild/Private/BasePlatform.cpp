@@ -32,7 +32,7 @@ namespace BasePlatform
 	void SetupCompiler()
 	{
 		// That is *always* going to be where vswhere is located
-		constexpr char* vswhere = R"("C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe")";
+		const char* vswhere = R"("C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe")";
 
 		// Call vswhere and store the installation path in a file 'tmp'
 		system((std::string(vswhere) + " -latest -property installationPath > tmp").c_str());

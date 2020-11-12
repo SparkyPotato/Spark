@@ -18,11 +18,7 @@ if exist "Engine\Binaries\Release\SparkBuild\SparkBuild.exe" (
 	call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat">Intermediate\tmp
 	call "Engine\Binaries\Release\SparkBuild\SparkBuild.exe" %*
 ) else (
-	set msbuild="%vsPath%\MSBuild\Current\Bin\MSBuild.exe"
-	:: Build SparkBuild with MSBuild, and call it
-	call %msbuild% Intermediate\SparkBuild.vcxproj /p:Configuration=Release /p:Platform=x64
-	cls
-	call "Engine\Binaries\Release\SparkBuild\SparkBuild.exe" %*
+	echo Error: SparkBuild needs to be built in the Release configuration!
 )
 
 popd
