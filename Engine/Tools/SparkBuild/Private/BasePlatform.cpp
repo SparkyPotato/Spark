@@ -18,6 +18,9 @@
 namespace BasePlatform
 {
 	static std::wstring s_CompilerPath;
+
+	static std::wstring s_BaseCompilerCommand;
+
 	static std::wstring s_LinkerPath;
 	static std::wstring s_LibPath;
 
@@ -51,29 +54,26 @@ namespace BasePlatform
 		s_CompilerPath = ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\cl.exe";
 		s_LinkerPath = ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\link.exe";
 		s_LibPath = ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\lib.exe";
+
+		s_BaseCompilerCommand = LR"( /D"UNICODE" /EHsc /D"_UNICODE" /W4 /c /utf-8 /diagnostics:caret /nologo /std:c++17 /MP )";
+
+		std::string config = CommandLine::GetProperty("config");
+		if (config == "Debug")
+		{
+			s_BaseCompilerCommand += LR"( /D"CONFIG_DEBUG" /Od /Z7 )";
+		}
+		else if (config == "Development")
+		{
+			s_BaseCompilerCommand += LR"( /D"CONFIG_DEVELOPMENT" /O2 /Z7 )";
+		}
+		else
+		{
+			s_BaseCompilerCommand += LR"( /D"CONFIG_RELEASE" /O2 /GL )";
+		}
 	}
 
-	void Compile(Module& buildModule, std::vector<File*> files)
+	void StartCompiler(std::wstring& command)
 	{
-		std::wstring command = L" ";
-
-		for (auto file : files)
-		{
-			command += L"\"" + file->Path.wstring() + L"\" ";
-		}
-
-		command += LR"(/D"UNICODE" /EHsc /D"_UNICODE" /c /utf-8 /diagnostics:caret /nologo /std:c++17 /MP )";
-		command += L"/sourceDependencies\"" + Globals::IntermediatePath.wstring() + L"/DependencyGraph/" + L"\" ";
-
-		command += L"/Fo\"" + Globals::IntermediatePath.wstring() + L"/" +
-			ToUTF16(CommandLine::GetProperty("config")) + L"/Build/" + ToUTF16(buildModule.Name) + L"/\" ";
-
-		for (auto& dependency : buildModule.Dependencies)
-		{
-			fs::path include = Globals::ModuleRegistry[dependency]["Path"].get<String>() + "/Public";
-			command += L"/I\"" + include.wstring() + L"/\" ";
-		}
-
 		STARTUPINFO startupInfo;
 		ZeroMemory(&startupInfo, sizeof(startupInfo));
 		startupInfo.cb = sizeof(startupInfo);
@@ -111,6 +111,32 @@ namespace BasePlatform
 
 		CloseHandle(processInfo.hThread);
 		CloseHandle(processInfo.hProcess);
+	}
+
+	void Compile(Module& buildModule, std::vector<File*> files)
+	{
+		std::wstring command = s_BaseCompilerCommand;
+
+		// Add Dependency/Public folders to include path
+		for (auto& dependency : buildModule.Dependencies)
+		{
+			fs::path include = Globals::ModuleRegistry[dependency]["Path"].get<String>() + "/Public";
+			command += L"/I\"" + include.wstring() + L"/\" ";
+		}
+
+		for (auto file : files)
+		{
+			command += L"\"" + file->Path.wstring() + L"\" ";
+		}
+
+		// Output directory for compiled object files
+		command += L"/Fo\"" + Globals::IntermediatePath.wstring() + L"/" +
+			ToUTF16(CommandLine::GetProperty("config")) + L"/Build/" + ToUTF16(buildModule.Name) + L"/\" ";
+
+		// Where to output header file dependencies
+		command += L"/sourceDependencies\"" + Globals::IntermediatePath.wstring() + L"/DependencyGraph/" + L"\" ";
+
+		StartCompiler(command);
 	}
 
 	String ToUTF8(const wchar_t* string)

@@ -69,7 +69,8 @@ namespace Globals
 
 		if (!fs::exists(CommandLine::GetProperty("dir") + "/Intermediate")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Intermediate"); }
 
-		if (fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/.cache"))
+		if (!CommandLine::GetSwitch("rebuild") && // Do not load the cache if we are rebuilding
+			fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/.cache"))
 		{
 			BuildCacheExists = true;
 			std::ifstream registry(CommandLine::GetProperty("dir") + "/Intermediate/.cache", std::ios::binary | std::ios::in);
@@ -77,16 +78,12 @@ namespace Globals
 
 			BuildCache = json::from_bson(vector);
 		}
-		else
-		{
-			BuildCacheExists = false;
-		}
 
-// 		std::string config = CommandLine::GetProperty("config");
-// 		if (config != "Debug" && config != "Release", config != "Development")
-// 		{
-// 			Error("Invalid config property: '", config, "'.");
-// 		}
+		std::string config = CommandLine::GetProperty("config");
+		if (config != "Debug" && config != "Release" && config != "Development")
+		{
+			Error("Invalid config property: '", config, "'.");
+		}
 
 		BasePlatform::SetupCompiler();
 	}

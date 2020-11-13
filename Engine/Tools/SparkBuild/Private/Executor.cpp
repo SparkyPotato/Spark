@@ -26,7 +26,7 @@ void Executor::Parse()
 		DirtyFolder(*buildModule, buildModule->Location);
 	}
 
-	BasePlatform::Output("Built ", reparses, " modules.");
+	BasePlatform::Output("Changed ", reparses, " module/s.");
 }
 
 void Executor::CheckHeaders()
@@ -55,7 +55,7 @@ void Executor::Compile()
 		m_CompileList[source.first].emplace_back(source.second);
 		compilations++;
 	}
-	BasePlatform::Output("Compiling ", compilations, " files.");
+	BasePlatform::Output("Compiling ", compilations, " file/s.");
 
 	for (auto& list : m_CompileList)
 	{

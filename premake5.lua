@@ -17,7 +17,7 @@ project "Spark"
 	location "Intermediate"
 
 	language "C++"
-	cppdialect "C++20"
+	cppdialect "C++17"
 	
 	targetdir "Engine/Binaries/%{cfg.buildcfg}/Spark/"
 	objdir "Engine/Intermediate/%{cfg.buildcfg}/Spark/"
@@ -53,7 +53,7 @@ project "SparkBuild"
 	location "Intermediate"
 
 	language "C++"
-	cppdialect "C++20"
+	cppdialect "C++17"
 	staticruntime "on"
 	runtime "Release"
 	
@@ -78,6 +78,11 @@ project "SparkBuild"
 		symbols "on"
 		
 	filter {}
+	
+	flags
+	{
+		"MultiProcessorCompile"
+	}
 	
 	buildoptions
 	{
