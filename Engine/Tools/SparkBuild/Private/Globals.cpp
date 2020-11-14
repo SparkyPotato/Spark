@@ -68,6 +68,7 @@ namespace Globals
 		}
 
 		if (!fs::exists(CommandLine::GetProperty("dir") + "/Intermediate")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Intermediate"); }
+		if (!fs::exists(CommandLine::GetProperty("dir") + "/Binaries")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Binaries"); }
 
 		if (!CommandLine::GetSwitch("rebuild") && // Do not load the cache if we are rebuilding
 			fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/.cache"))

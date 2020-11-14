@@ -122,6 +122,13 @@ void SourceTree::GenerateDirectories()
 		{
 			fs::create_directories(path);
 		}
+
+		path = Globals::BinariesPath.string() + "/" +
+			CommandLine::GetProperty("config") + "/Build/" + buildModule.Name;
+		if (!fs::exists(path))
+		{
+			fs::create_directories(path);
+		}
 	}
 
 	std::string path = Globals::IntermediatePath.string() + "/DependencyGraph";
@@ -212,13 +219,13 @@ void SourceTree::PopulateFolder(Folder& folder)
 		bool isSource = extension == ".cpp" || extension == ".cc" || extension == ".cxx";
 		if (entry.is_regular_file() && isSource) 
 		{
-			auto& ref = folder.SourceFiles.emplace_back(entry.path());
+			folder.SourceFiles.emplace_back(entry.path());
 		}
 
 		bool isHeader = extension == ".h" || extension == ".hpp";
 		if (entry.is_regular_file() && isHeader) 
 		{
-			auto& ref = folder.HeaderFiles.emplace_back(entry.path());
+			folder.HeaderFiles.emplace_back(entry.path());
 		}
 
 		if (entry.is_directory())

@@ -87,6 +87,23 @@ void Executor::AddHeaderDependencies()
 	fs::remove_all(dependencies);
 }
 
+void Executor::Link()
+{
+	// We abuse the fact that only one key can exist in a map,
+	// and checking is fast
+	std::map<Module*, int> modulesToRelink;
+
+	for (auto source : m_Tree.GetDirtySourceFiles())
+	{
+		modulesToRelink[source.first] = 1;
+	}
+
+	for (auto buildModule : modulesToRelink)
+	{
+		BasePlatform::Link(*buildModule.first);
+	}
+}
+
 void Executor::ParseModule(Module& buildModule)
 {
 	Verbose("Parsing module");

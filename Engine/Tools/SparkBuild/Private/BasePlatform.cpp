@@ -18,10 +18,10 @@
 namespace BasePlatform
 {
 	static std::wstring s_CompilerPath;
-
 	static std::wstring s_BaseCompilerCommand;
 
 	static std::wstring s_LinkerPath;
+	static std::wstring s_BaseLinkerCommand;
 	static std::wstring s_LibPath;
 
 	bool SetWorkingDirectory(const String& directory)
@@ -56,19 +56,23 @@ namespace BasePlatform
 		s_LibPath = ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\lib.exe";
 
 		s_BaseCompilerCommand = LR"( /D"UNICODE" /EHsc /D"_UNICODE" /W4 /c /utf-8 /diagnostics:caret /nologo /std:c++17 /MP )";
+		s_BaseLinkerCommand = LR"( /NOLOGO )";
 
 		std::string config = CommandLine::GetProperty("config");
 		if (config == "Debug")
 		{
 			s_BaseCompilerCommand += LR"( /D"CONFIG_DEBUG" /Od /Z7 )";
+			s_BaseLinkerCommand += LR"( /DEBUG /LTCG:INCREMENTAL )";
 		}
 		else if (config == "Development")
 		{
 			s_BaseCompilerCommand += LR"( /D"CONFIG_DEVELOPMENT" /O2 /Z7 )";
+			s_BaseLinkerCommand += LR"( /DEBUG /LTCG:INCREMENTAL )";
 		}
 		else
 		{
 			s_BaseCompilerCommand += LR"( /D"CONFIG_RELEASE" /O2 /GL )";
+			s_BaseLinkerCommand += LR"( /LTCG )";
 		}
 	}
 
@@ -113,6 +117,47 @@ namespace BasePlatform
 		CloseHandle(processInfo.hProcess);
 	}
 
+	void StartLinker(std::wstring& command)
+	{
+		STARTUPINFO startupInfo;
+		ZeroMemory(&startupInfo, sizeof(startupInfo));
+		startupInfo.cb = sizeof(startupInfo);
+
+		PROCESS_INFORMATION processInfo;
+		ZeroMemory(&processInfo, sizeof(processInfo));
+
+		bool startup = CreateProcessW
+		(
+			s_LinkerPath.c_str(),
+			command.data(),
+			nullptr, nullptr,
+			true,
+			NORMAL_PRIORITY_CLASS,
+			nullptr,
+			nullptr,
+			&startupInfo,
+			&processInfo
+		);
+
+		if (!startup)
+		{
+			Error("Failed to start linker! Error code: ", GetLastError());
+		}
+
+		WaitForSingleObject(processInfo.hProcess, INFINITE);
+
+		DWORD code;
+		GetExitCodeProcess(processInfo.hProcess, &code);
+
+		if (code != 0)
+		{
+			Error("Linker error.");
+		}
+
+		CloseHandle(processInfo.hThread);
+		CloseHandle(processInfo.hProcess);
+	}
+
 	void Compile(Module& buildModule, std::vector<File*> files)
 	{
 		std::wstring command = s_BaseCompilerCommand;
@@ -137,6 +182,27 @@ namespace BasePlatform
 		command += L"/sourceDependencies\"" + Globals::IntermediatePath.wstring() + L"/DependencyGraph/" + L"\" ";
 
 		StartCompiler(command);
+	}
+
+	void Link(Module& buildModule)
+	{
+		std::wstring command = s_BaseLinkerCommand;
+
+		// Change later when executables are produced
+		command += L"/DLL ";
+
+		// Add all files to be linked
+		fs::directory_iterator objPath(Globals::IntermediatePath.wstring() + L"/" +
+			ToUTF16(CommandLine::GetProperty("config")) + L"/Build/" + ToUTF16(buildModule.Name));
+		for (auto& entry : objPath)
+		{
+			command += L"\"" + entry.path().wstring() + L"\" ";
+		}
+
+		command += L"/OUT:" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config")) + 
+			L"/Build/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".dll";
+
+		StartLinker(command);
 	}
 
 	String ToUTF8(const wchar_t* string)
