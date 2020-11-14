@@ -57,6 +57,12 @@ namespace Globals
 			Error("No project directory property found"); // SparkBuild needs a project directory location
 		}
 
+		std::string config = CommandLine::GetProperty("config");
+		if (config != "Debug" && config != "Release" && config != "Development")
+		{
+			Error("Invalid config property: '", config, "'.");
+		}
+
 		if (!fs::exists("Registry")) { fs::create_directory("Registry"); }
 
 		if (fs::exists("Registry/.modules"))
@@ -71,19 +77,14 @@ namespace Globals
 		if (!fs::exists(CommandLine::GetProperty("dir") + "/Binaries")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Binaries"); }
 
 		if (!CommandLine::GetSwitch("rebuild") && // Do not load the cache if we are rebuilding
-			fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/.cache"))
+			fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/" + CommandLine::GetProperty("config") + ".cache"))
 		{
 			BuildCacheExists = true;
-			std::ifstream registry(CommandLine::GetProperty("dir") + "/Intermediate/.cache", std::ios::binary | std::ios::in);
+			std::ifstream registry(CommandLine::GetProperty("dir") + "/Intermediate/" + 
+				CommandLine::GetProperty("config") + ".cache", std::ios::binary | std::ios::in);
 			std::vector<uint8_t> vector((std::istreambuf_iterator<char>(registry)), std::istreambuf_iterator<char>());
 
 			BuildCache = json::from_bson(vector);
-		}
-
-		std::string config = CommandLine::GetProperty("config");
-		if (config != "Debug" && config != "Release" && config != "Development")
-		{
-			Error("Invalid config property: '", config, "'.");
 		}
 
 		BasePlatform::SetupCompiler();
@@ -97,7 +98,7 @@ namespace Globals
 		std::ofstream registry("Registry/.modules", std::ios::binary | std::ios::out);
 		registry.write((char*)moduleRegistry.data(), moduleRegistry.size());
 
-		std::ofstream cache(CommandLine::GetProperty("dir") + "/Intermediate/.cache", std::ios::binary | std::ios::out);
+		std::ofstream cache(CommandLine::GetProperty("dir") + "/Intermediate/" + CommandLine::GetProperty("config") + ".cache", std::ios::binary | std::ios::out);
 		cache.write((char*)buildCache.data(), buildCache.size());
 	}
 
