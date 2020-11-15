@@ -19,9 +19,8 @@ project "Spark"
 	language "C++"
 	cppdialect "C++17"
 	
-	targetdir "Engine/Binaries/%{cfg.buildcfg}/Spark/"
-	objdir "Engine/Intermediate/%{cfg.buildcfg}/Spark/"
-	debugdir "Engine/Binaries/%{cfg.buildcfg}/Spark/"
+	targetdir "Binaries/%{cfg.buildcfg}/Spark/"
+	objdir "Intermediate/%{cfg.buildcfg}/Spark/"
 	
 	dependson "SparkBuild"
 	
@@ -57,9 +56,8 @@ project "SparkBuild"
 	staticruntime "on"
 	runtime "Release"
 	
-	targetdir "Engine/Binaries/%{cfg.buildcfg}/SparkBuild/"
-	objdir "Engine/Intermediate/%{cfg.buildcfg}/SparkBuild/"
-	debugdir "Engine/Binaries/%{cfg.buildcfg}/SparkBuild/"
+	targetdir "Binaries/%{cfg.buildcfg}/SparkBuild/"
+	objdir "Intermediate/%{cfg.buildcfg}/SparkBuild/"
 	
 	kind "ConsoleApp"
 	

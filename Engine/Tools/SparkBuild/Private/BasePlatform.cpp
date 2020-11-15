@@ -22,7 +22,9 @@ namespace BasePlatform
 
 	static std::wstring s_LinkerPath;
 	static std::wstring s_BaseLinkerCommand;
+
 	static std::wstring s_LibPath;
+	static std::wstring s_BaseLibCommand;
 
 	bool SetWorkingDirectory(const String& directory)
 	{
@@ -57,17 +59,18 @@ namespace BasePlatform
 
 		s_BaseCompilerCommand = LR"( /D"UNICODE" /EHsc /D"_UNICODE" /W4 /c /utf-8 /diagnostics:caret /nologo /std:c++17 /MP )";
 		s_BaseLinkerCommand = LR"( /NOLOGO )";
+		s_BaseLibCommand = LR"( /NOLOGO /DEF )";
 
 		std::string config = CommandLine::GetProperty("config");
 		if (config == "Debug")
 		{
 			s_BaseCompilerCommand += LR"( /D"CONFIG_DEBUG" /Od /Z7 )";
-			s_BaseLinkerCommand += LR"( /DEBUG /LTCG:INCREMENTAL )";
+			s_BaseLinkerCommand += LR"( /DEBUG /INCREMENTAL )";
 		}
 		else if (config == "Development")
 		{
 			s_BaseCompilerCommand += LR"( /D"CONFIG_DEVELOPMENT" /O2 /Z7 )";
-			s_BaseLinkerCommand += LR"( /DEBUG /LTCG:INCREMENTAL )";
+			s_BaseLinkerCommand += LR"( /DEBUG /INCREMENTAL )";
 		}
 		else
 		{
@@ -158,6 +161,47 @@ namespace BasePlatform
 		CloseHandle(processInfo.hProcess);
 	}
 
+	void StartLib(std::wstring& command)
+	{
+		STARTUPINFO startupInfo;
+		ZeroMemory(&startupInfo, sizeof(startupInfo));
+		startupInfo.cb = sizeof(startupInfo);
+
+		PROCESS_INFORMATION processInfo;
+		ZeroMemory(&processInfo, sizeof(processInfo));
+
+		bool startup = CreateProcessW
+		(
+			s_LibPath.c_str(),
+			command.data(),
+			nullptr, nullptr,
+			true,
+			NORMAL_PRIORITY_CLASS,
+			nullptr,
+			nullptr,
+			&startupInfo,
+			&processInfo
+		);
+
+		if (!startup)
+		{
+			Error("Failed to start lib! Error code: ", GetLastError());
+		}
+
+		WaitForSingleObject(processInfo.hProcess, INFINITE);
+
+		DWORD code;
+		GetExitCodeProcess(processInfo.hProcess, &code);
+
+		if (code != 0)
+		{
+			Error("Lib error.");
+		}
+
+		CloseHandle(processInfo.hThread);
+		CloseHandle(processInfo.hProcess);
+	}
+
 	void Compile(Module& buildModule, std::vector<File*> files)
 	{
 		std::wstring command = s_BaseCompilerCommand;
@@ -176,7 +220,7 @@ namespace BasePlatform
 
 		// Output directory for compiled object files
 		command += L"/Fo\"" + Globals::IntermediatePath.wstring() + L"/" +
-			ToUTF16(CommandLine::GetProperty("config")) + L"/Build/" + ToUTF16(buildModule.Name) + L"/\" ";
+			ToUTF16(CommandLine::GetProperty("config")) + L"/" + ToUTF16(buildModule.Name) + L"/\" ";
 
 		// Where to output header file dependencies
 		command += L"/sourceDependencies\"" + Globals::IntermediatePath.wstring() + L"/DependencyGraph/" + L"\" ";
@@ -193,14 +237,14 @@ namespace BasePlatform
 
 		// Add all files to be linked
 		fs::directory_iterator objPath(Globals::IntermediatePath.wstring() + L"/" +
-			ToUTF16(CommandLine::GetProperty("config")) + L"/Build/" + ToUTF16(buildModule.Name));
+			ToUTF16(CommandLine::GetProperty("config")) + L"/" + ToUTF16(buildModule.Name));
 		for (auto& entry : objPath)
 		{
 			command += L"\"" + entry.path().wstring() + L"\" ";
 		}
 
 		command += L"/OUT:" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config")) + 
-			L"/Build/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".dll";
+			+ L"/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".dll";
 
 		StartLinker(command);
 	}

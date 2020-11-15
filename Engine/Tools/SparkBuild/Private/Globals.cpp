@@ -26,7 +26,7 @@ namespace Globals
 			- this may not work if we have a symlink for the executable and it is called through that
 		*/
 		String executablePath = fs::path(argv[0]).parent_path().string();
-		executablePath += "/../../../../";
+		executablePath += "/../../../";
 		BasePlatform::SetWorkingDirectory(executablePath);
 
 		ParseCommandLine(argc, argv);

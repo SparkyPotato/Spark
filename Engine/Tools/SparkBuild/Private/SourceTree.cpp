@@ -117,14 +117,14 @@ void SourceTree::GenerateDirectories()
 	for (auto& buildModule : m_Modules)
 	{
 		std::string path = Globals::IntermediatePath.string() + "/" +
-			CommandLine::GetProperty("config") + "/Build/" + buildModule.Name;
+			CommandLine::GetProperty("config") + "/" + buildModule.Name;
 		if (!fs::exists(path)) 
 		{
 			fs::create_directories(path);
 		}
 
 		path = Globals::BinariesPath.string() + "/" +
-			CommandLine::GetProperty("config") + "/Build/" + buildModule.Name;
+			CommandLine::GetProperty("config") + "/" + buildModule.Name;
 		if (!fs::exists(path))
 		{
 			fs::create_directories(path);
