@@ -20,6 +20,7 @@ namespace BasePlatform
 
 	void SetupCompiler();
 	void Compile(Module& buildModule, std::vector<File*> files);
+	void GenerateExports(Module& buildModule);
 	void Link(Module& buildModule);
 
 	// Convert the wide-characters (UTF-16 on Windows) to a UTF-8 encoded String.

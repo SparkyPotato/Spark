@@ -100,6 +100,11 @@ void Executor::Link()
 
 	for (auto buildModule : modulesToRelink)
 	{
+		BasePlatform::GenerateExports(*buildModule.first);
+	}
+
+	for (auto buildModule : modulesToRelink)
+	{
 		BasePlatform::Link(*buildModule.first);
 	}
 }
@@ -153,7 +158,8 @@ void Executor::ParseModule(Module& buildModule)
 	Globals::ModuleRegistry[buildModule.Name] =
 	{
 		{ "Version", buildModule.Version },
-		{ "Path", buildModule.Location.Path.string() }
+		{ "Path", buildModule.Location.Path.string() },
+		{ "BinaryPath", Globals::BinariesPath.string() }
 	};
 }
 

@@ -1,7 +1,7 @@
 // SparkBuild.Private.BasePlatform
 // Copyright 2020 SparkyPotato
 
-// Platform - specific interface
+// Platform-specific interface
 
 #include "BasePlatform.h"
 
@@ -76,6 +76,7 @@ namespace BasePlatform
 		{
 			s_BaseCompilerCommand += LR"( /D"CONFIG_RELEASE" /O2 /GL )";
 			s_BaseLinkerCommand += LR"( /LTCG )";
+			s_BaseLibCommand += LR"( /LTCG )";
 		}
 	}
 
@@ -228,12 +229,38 @@ namespace BasePlatform
 		StartCompiler(command);
 	}
 
+	void GenerateExports(Module& buildModule)
+	{
+		std::wstring command = s_BaseLibCommand;
+
+		// Add all files to be exported
+		fs::directory_iterator objPath(Globals::IntermediatePath.wstring() + L"/" +
+			ToUTF16(CommandLine::GetProperty("config")) + L"/" + ToUTF16(buildModule.Name));
+		for (auto& entry : objPath)
+		{
+			command += L"\"" + entry.path().wstring() + L"\" ";
+		}
+
+		command += L"/OUT:" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config")) +
+			+L"/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".lib";
+
+		StartLib(command);
+	}
+
 	void Link(Module& buildModule)
 	{
 		std::wstring command = s_BaseLinkerCommand;
 
 		// Change later when executables are produced
 		command += L"/DLL ";
+
+		// Add import libraries for all dependencies
+		for (auto& dependency : buildModule.Dependencies)
+		{
+			fs::path path = Globals::ModuleRegistry[dependency]["BinaryPath"].get<String>() + "/" + CommandLine::GetProperty("config") 
+				+ "/" + buildModule.Name + "/" + buildModule.Name + ".lib";
+			command += L"\"" + path.wstring() + L"\" ";
+		}
 
 		// Add all files to be linked
 		fs::directory_iterator objPath(Globals::IntermediatePath.wstring() + L"/" +
@@ -242,6 +269,10 @@ namespace BasePlatform
 		{
 			command += L"\"" + entry.path().wstring() + L"\" ";
 		}
+
+		// Add exports file
+		command += L"\"" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config")) +
+			+L"/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".exp" + L"\" ";
 
 		command += L"/OUT:" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config")) + 
 			+ L"/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".dll";
