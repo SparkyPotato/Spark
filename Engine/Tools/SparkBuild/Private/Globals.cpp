@@ -65,12 +65,10 @@ namespace Globals
 
 		if (!fs::exists("Registry")) { fs::create_directory("Registry"); }
 
-		if (fs::exists("Registry/.modules"))
+		if (fs::exists("Registry/Modules.sreg"))
 		{
-			std::ifstream registry("Registry/.modules", std::ios::binary);
-			std::vector<uint8_t> vector((std::istreambuf_iterator<char>(registry)), std::istreambuf_iterator<char>());
-
-			ModuleRegistry = json::from_bson(vector);
+			std::ifstream registry("Registry/Modules.sreg");
+			registry >> ModuleRegistry;
 		}
 
 		if (!fs::exists(CommandLine::GetProperty("dir") + "/Intermediate")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Intermediate"); }
@@ -80,11 +78,9 @@ namespace Globals
 			fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/" + CommandLine::GetProperty("config") + ".cache"))
 		{
 			BuildCacheExists = true;
-			std::ifstream registry(CommandLine::GetProperty("dir") + "/Intermediate/" + 
-				CommandLine::GetProperty("config") + ".cache", std::ios::binary | std::ios::in);
-			std::vector<uint8_t> vector((std::istreambuf_iterator<char>(registry)), std::istreambuf_iterator<char>());
-
-			BuildCache = json::from_bson(vector);
+			std::ifstream cache(CommandLine::GetProperty("dir") + "/Intermediate/" + 
+				CommandLine::GetProperty("config") + ".cache");
+			cache >> BuildCache;
 		}
 
 		BasePlatform::SetupCompiler();
@@ -92,14 +88,11 @@ namespace Globals
 
 	void Save()
 	{
-		std::vector<std::uint8_t> moduleRegistry = json::to_bson(ModuleRegistry);
-		std::vector<std::uint8_t> buildCache = json::to_bson(BuildCache);
-
-		std::ofstream registry("Registry/.modules", std::ios::binary | std::ios::out);
-		registry.write((char*)moduleRegistry.data(), moduleRegistry.size());
+		std::ofstream registry("Registry/Modules.sreg");
+		registry << std::setw(2) << ModuleRegistry;
 
 		std::ofstream cache(CommandLine::GetProperty("dir") + "/Intermediate/" + CommandLine::GetProperty("config") + ".cache", std::ios::binary | std::ios::out);
-		cache.write((char*)buildCache.data(), buildCache.size());
+		cache << std::setw(2) << BuildCache;
 	}
 
 	bool VerifySwitch(const String& switchArg);

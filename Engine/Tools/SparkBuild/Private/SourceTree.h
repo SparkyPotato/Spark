@@ -19,8 +19,6 @@ struct File
 		WriteTime = fs::last_write_time(Path).time_since_epoch().count();
 	}
 
-	// A dirty file will be reparsed and recompiled
-	bool Dirty = false;
 	fs::path Path;
 	uint64_t WriteTime = 0;
 
@@ -84,6 +82,8 @@ struct Module
 	String Version;
 
 	std::vector<String> Dependencies;
+
+	bool Executable = false;
 
 	File Definition;
 

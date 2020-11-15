@@ -155,11 +155,16 @@ void Executor::ParseModule(Module& buildModule)
 	try { buildModule.Dependencies = parser.at("Dependencies").get<std::vector<String>>(); }
 	catch (...) { Warning("Module '", buildModule.Name, "' has no dependencies specifier, assuming none."); }
 
+	// Parse if module should be built as an executable as well
+	try { buildModule.Executable = parser.at("Executable"); }
+	catch (...) { Warning("Module '", buildModule.Name, "' has no executable specifier, assuming false."); }
+
 	Globals::ModuleRegistry[buildModule.Name] =
 	{
 		{ "Version", buildModule.Version },
 		{ "Path", buildModule.Location.Path.string() },
-		{ "BinaryPath", Globals::BinariesPath.string() }
+		{ "BinaryPath", Globals::BinariesPath.string() },
+		{ "Executable", buildModule.Executable }
 	};
 }
 
@@ -167,7 +172,6 @@ void Executor::DirtyFolder(Module& buildModule, Folder& folder)
 {
 	for (auto& source : folder.SourceFiles)
 	{
-		source.Dirty = true;
 		m_Tree.AddDirtySource(&buildModule, &source);
 	}
 

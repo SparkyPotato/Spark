@@ -252,7 +252,7 @@ namespace BasePlatform
 		std::wstring command = s_BaseLinkerCommand;
 
 		// Change later when executables are produced
-		command += L"/DLL ";
+		if (!buildModule.Executable) { command += L"/DLL "; }
 
 		// Add import libraries for all dependencies
 		for (auto& dependency : buildModule.Dependencies)
@@ -271,13 +271,32 @@ namespace BasePlatform
 		}
 
 		// Add exports file
-		command += L"\"" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config")) +
-			+L"/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".exp" + L"\" ";
+		if (!buildModule.Executable)
+		{
+			command += L"\"" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config")) +
+				+L"/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".exp" + L"\" ";
+		}
 
-		command += L"/OUT:" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config")) + 
-			+ L"/" + ToUTF16(buildModule.Name) + L"/" + ToUTF16(buildModule.Name) + L".dll";
+		command += L"/OUT:" + Globals::BinariesPath.wstring() + L"/" + ToUTF16(CommandLine::GetProperty("config"))
+			+ L"/" + ToUTF16(buildModule.Name) + L"/";
+
+		if (!buildModule.Executable)
+		{
+			command += ToUTF16(buildModule.Name) + L".dll";
+		}
+		else
+		{
+			command += L"Executable/" + ToUTF16(buildModule.Name) + L".exe";
+		}
 
 		StartLinker(command);
+
+		if (buildModule.Executable)
+		{
+			buildModule.Executable = false;
+			Link(buildModule);
+			buildModule.Executable = true;
+		}
 	}
 
 	String ToUTF8(const wchar_t* string)

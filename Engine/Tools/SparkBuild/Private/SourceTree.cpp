@@ -90,7 +90,6 @@ void SourceTree::CompareWithOld(const SourceTree& oldTree)
 			// Module definition was changed
 			if (oldModule->Definition.WriteTime != buildModule.Definition.WriteTime) 
 			{
-				buildModule.Definition.Dirty = true;
 				m_DirtyModules.emplace_back(&buildModule);
 				continue; // If a module is dirty, we're going to recompile it anyways
 			}
@@ -103,7 +102,6 @@ void SourceTree::CompareWithOld(const SourceTree& oldTree)
 		}
 		else
 		{
-			buildModule.Definition.Dirty = true;
 			m_DirtyModules.emplace_back(&buildModule);
 			continue;
 		}
@@ -129,6 +127,14 @@ void SourceTree::GenerateDirectories()
 		{
 			fs::create_directories(path);
 		}
+
+		if (buildModule.Executable)
+		{
+			if (!fs::exists(path + "/Executable"))
+			{
+				fs::create_directories(path + "/Executable");
+			}
+		}
 	}
 
 	std::string path = Globals::IntermediatePath.string() + "/DependencyGraph";
@@ -149,14 +155,12 @@ void SourceTree::CompareFolders(Module& buildModule, Folder& newFolder, const Fo
 		{
 			if (oldHeader->WriteTime != newHeader.WriteTime)
 			{
-				newHeader.Dirty = true;
 				m_DirtyHeaders.emplace_back(&buildModule, &newHeader);
 			}
 			// If not dirty we just skip it
 		}
 		else
 		{
-			newHeader.Dirty = true;
 			m_DirtyHeaders.emplace_back(&buildModule, &newHeader);
 		}
 
@@ -171,13 +175,11 @@ void SourceTree::CompareFolders(Module& buildModule, Folder& newFolder, const Fo
 		{
 			if (oldSource->WriteTime != newSource.WriteTime)
 			{
-				newSource.Dirty = true;
 				m_DirtySourceFiles.emplace_back(&buildModule, &newSource);
 			}
 		}
 		else
 		{
-			newSource.Dirty = true;
 			m_DirtySourceFiles.emplace_back(&buildModule, &newSource);
 		}
 	}
@@ -256,12 +258,12 @@ void SourceTree::Vectorize(Module& buildModule, Folder& folder)
 
 void to_json(json& j, const SourceTree& tree)
 {
-	j["Data"] = tree.m_Modules;
+	j = tree.m_Modules;
 }
 
 void from_json(const json& j, SourceTree& tree)
 {
-	tree.m_Modules = j["Data"].get<std::vector<Module>>();
+	tree.m_Modules = j.get<std::vector<Module>>();
 }
 
 void to_json(json& j, const Module& buildModule)
@@ -269,6 +271,7 @@ void to_json(json& j, const Module& buildModule)
 	j[" Name"] = buildModule.Name;
 	j["Version"] = buildModule.Version;
 	j["Dependencies"] = buildModule.Dependencies;
+	j["Executable"] = buildModule.Executable;
 	j["Definition"] = buildModule.Definition;
 	j["Location"] = buildModule.Location;
 }
@@ -278,6 +281,7 @@ void from_json(const json& j, Module& buildModule)
 	buildModule.Name = j[" Name"];
 	buildModule.Version = j["Version"];
 	buildModule.Dependencies = j["Dependencies"].get<std::vector<String>>();
+	buildModule.Executable = j["Executable"];
 	buildModule.Definition = j["Definition"];
 	buildModule.Location = j["Location"];
 }
