@@ -47,6 +47,7 @@ int wmain(int argc, wchar_t** argv)
 		executor.AddHeaderDependencies();
 
 		executor.Link();
+		executor.CopyDependencies();
 
 		SourceTree::SaveToCache(*currentTree);
 		Globals::Save();

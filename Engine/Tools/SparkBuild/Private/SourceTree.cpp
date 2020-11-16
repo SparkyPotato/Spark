@@ -98,6 +98,7 @@ void SourceTree::CompareWithOld(const SourceTree& oldTree)
 				buildModule.Name = oldModule->Name;
 				buildModule.Version = oldModule->Version;
 				buildModule.Dependencies = oldModule->Dependencies;
+				buildModule.Executable = oldModule->Executable;
 			}
 		}
 		else
@@ -268,7 +269,7 @@ void from_json(const json& j, SourceTree& tree)
 
 void to_json(json& j, const Module& buildModule)
 {
-	j[" Name"] = buildModule.Name;
+	j["Name"] = buildModule.Name;
 	j["Version"] = buildModule.Version;
 	j["Dependencies"] = buildModule.Dependencies;
 	j["Executable"] = buildModule.Executable;
@@ -278,7 +279,7 @@ void to_json(json& j, const Module& buildModule)
 
 void from_json(const json& j, Module& buildModule)
 {
-	buildModule.Name = j[" Name"];
+	buildModule.Name = j["Name"];
 	buildModule.Version = j["Version"];
 	buildModule.Dependencies = j["Dependencies"].get<std::vector<String>>();
 	buildModule.Executable = j["Executable"];
@@ -288,7 +289,7 @@ void from_json(const json& j, Module& buildModule)
 
 void to_json(json& j, const Folder& folder)
 {
-	j[" Path"] = fs::absolute(folder.Path).string();
+	j["Path"] = fs::absolute(folder.Path).string();
 	j["Headers"] = folder.HeaderFiles;
 	j["Source"] = folder.SourceFiles;
 	j["Subfolders"] = folder.Subfolders;
@@ -297,7 +298,7 @@ void to_json(json& j, const Folder& folder)
 
 void from_json(const json& j, Folder& folder)
 {
-	folder.Path = j[" Path"].get<String>();
+	folder.Path = j["Path"].get<String>();
 	folder.HeaderFiles = j["Headers"].get<std::vector<HeaderFile>>();
 	folder.SourceFiles = j["Source"].get<std::vector<File>>();
 	folder.Subfolders = j["Subfolders"].get<std::vector<Folder>>();
@@ -306,26 +307,26 @@ void from_json(const json& j, Folder& folder)
 
 void to_json(json& j, const File& file)
 {
-	j[" Path"] = fs::absolute(file.Path).string();
+	j["Path"] = fs::absolute(file.Path).string();
 	j["WriteTime"] = file.WriteTime;
 }
 
 void from_json(const json& j, File& file)
 {
-	file.Path = j[" Path"].get<String>();
+	file.Path = j["Path"].get<String>();
 	file.WriteTime = j["WriteTime"];
 }
 
 void to_json(json& j, const HeaderFile& file)
 {
-	j[" Path"] = fs::absolute(file.Path).string();
+	j["Path"] = fs::absolute(file.Path).string();
 	j["WriteTime"] = file.WriteTime;
 	j["DependedOn"] = file.DependedOn;
 }
 
 void from_json(const json& j, HeaderFile& file)
 {
-	file.Path = j[" Path"].get<String>();
+	file.Path = j["Path"].get<String>();
 	file.WriteTime = j["WriteTime"];
 	file.DependedOn = j["DependedOn"].get<std::vector<String>>();
 }

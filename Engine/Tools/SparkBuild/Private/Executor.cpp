@@ -71,7 +71,8 @@ void Executor::AddHeaderDependencies()
 		json j;
 		std::ifstream(entry.path()) >> j;
 
-		auto sourceDependencies = j["Data"]["Includes"].get<std::vector<String>>();
+		const auto& sourceDependencies = j["Data"]["Includes"].get<std::vector<String>>();
+
 		for (auto& header : sourceDependencies)
 		{
 			for (auto headerFile : m_Tree.GetHeaders())
@@ -95,6 +96,7 @@ void Executor::Link()
 
 	for (auto source : m_Tree.GetDirtySourceFiles())
 	{
+		if (source.first->Executable) { m_Executables.emplace_back(source.first); }
 		modulesToRelink[source.first] = 1;
 	}
 
@@ -106,6 +108,17 @@ void Executor::Link()
 	for (auto buildModule : modulesToRelink)
 	{
 		BasePlatform::Link(*buildModule.first);
+	}
+}
+
+void Executor::CopyDependencies()
+{
+	for (auto buildModule : m_Executables)
+	{
+		fs::path location = Globals::BinariesPath.string() + "/" + CommandLine::GetProperty("config")
+			+ "/" + buildModule->Name + "/Executable/";
+
+		CopyModuleDependencies(buildModule->Name, location);
 	}
 }
 
@@ -162,9 +175,10 @@ void Executor::ParseModule(Module& buildModule)
 	Globals::ModuleRegistry[buildModule.Name] =
 	{
 		{ "Version", buildModule.Version },
-		{ "Path", buildModule.Location.Path.string() },
-		{ "BinaryPath", Globals::BinariesPath.string() },
-		{ "Executable", buildModule.Executable }
+		{ "Path", fs::absolute(buildModule.Location.Path).string() },
+		{ "BinaryPath", fs::absolute(Globals::BinariesPath).string() },
+		{ "Executable", buildModule.Executable },
+		{ "Dependencies", buildModule.Dependencies }
 	};
 }
 
@@ -178,5 +192,21 @@ void Executor::DirtyFolder(Module& buildModule, Folder& folder)
 	for (auto& sub : folder.Subfolders)
 	{
 		DirtyFolder(buildModule, sub);
+	}
+}
+
+void Executor::CopyModuleDependencies(String& moduleName, fs::path location)
+{
+	for (auto& dependency : Globals::ModuleRegistry[moduleName]["Dependencies"].get<std::vector<String>>())
+	{
+		fs::path path = Globals::ModuleRegistry[dependency]["BinaryPath"].get<String>() + "/" +
+			CommandLine::GetProperty("config") + "/" + dependency + "/" + dependency + ".dll";
+
+		if (fs::exists(path))
+		{
+			fs::copy_file(path, location.string() + dependency + ".dll", fs::copy_options::overwrite_existing);
+		}
+
+		CopyModuleDependencies(dependency, location);
 	}
 }

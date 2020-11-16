@@ -20,13 +20,17 @@ public:
 	void Compile();
 	void AddHeaderDependencies();
 	void Link();
+	void CopyDependencies();
 
 private:
 	void ParseModule(Module& buildModule);
 
 	void DirtyFolder(Module& buildModule, Folder& folder);
 
+	void CopyModuleDependencies(String& moduleName, fs::path location);
+
 	SourceTree& m_Tree;
 
 	std::map<Module*, std::vector<File*>> m_CompileList;
+	std::vector<Module*> m_Executables;
 };

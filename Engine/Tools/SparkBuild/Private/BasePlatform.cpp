@@ -214,6 +214,13 @@ namespace BasePlatform
 			command += L"/I\"" + include.wstring() + L"/\" ";
 		}
 
+		// Add module's folder into its include path
+		fs::path include = Globals::ModuleRegistry[buildModule.Name]["Path"].get<String>();
+		command += L"/I\"" + include.wstring() + L"/\" ";
+
+		// Define BUILD_ModuleName while building a module
+		command += L"/D\"BUILD_" + ToUTF16(buildModule.Name) + L"\" ";
+
 		for (auto file : files)
 		{
 			command += L"\"" + file->Path.wstring() + L"\" ";
@@ -258,8 +265,11 @@ namespace BasePlatform
 		for (auto& dependency : buildModule.Dependencies)
 		{
 			fs::path path = Globals::ModuleRegistry[dependency]["BinaryPath"].get<String>() + "/" + CommandLine::GetProperty("config") 
-				+ "/" + buildModule.Name + "/" + buildModule.Name + ".lib";
-			command += L"\"" + path.wstring() + L"\" ";
+				+ "/" + dependency + "/" + dependency + ".lib";
+			if (fs::exists(path))
+			{
+				command += L"\"" + path.wstring() + L"\" ";
+			}
 		}
 
 		// Add all files to be linked
