@@ -27,10 +27,15 @@ private:
 
 	void DirtyFolder(Module& buildModule, Folder& folder);
 
-	void CopyModuleDependencies(String& moduleName, fs::path location);
+	void CopyModule(String& moduleName, fs::path location);
+
+	void DiscoverDependencies(const String& buildModule, std::vector<String>& dependencies);
 
 	SourceTree& m_Tree;
 
 	std::map<Module*, std::vector<File*>> m_CompileList;
-	std::vector<Module*> m_Executables;
+
+	// We abuse the fact that only one key can exist in a map,
+	// and checking is fast
+	std::map<Module*, int> m_ModulesToRelink;
 };

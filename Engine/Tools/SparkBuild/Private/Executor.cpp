@@ -90,22 +90,17 @@ void Executor::AddHeaderDependencies()
 
 void Executor::Link()
 {
-	// We abuse the fact that only one key can exist in a map,
-	// and checking is fast
-	std::map<Module*, int> modulesToRelink;
-
 	for (auto source : m_Tree.GetDirtySourceFiles())
 	{
-		if (source.first->Executable) { m_Executables.emplace_back(source.first); }
-		modulesToRelink[source.first] = 1;
+		m_ModulesToRelink[source.first] = 1;
 	}
 
-	for (auto buildModule : modulesToRelink)
+	for (auto buildModule : m_ModulesToRelink)
 	{
 		BasePlatform::GenerateExports(*buildModule.first);
 	}
 
-	for (auto buildModule : modulesToRelink)
+	for (auto buildModule : m_ModulesToRelink)
 	{
 		BasePlatform::Link(*buildModule.first);
 	}
@@ -113,12 +108,31 @@ void Executor::Link()
 
 void Executor::CopyDependencies()
 {
-	for (auto buildModule : m_Executables)
-	{
-		fs::path location = Globals::BinariesPath.string() + "/" + CommandLine::GetProperty("config")
-			+ "/" + buildModule->Name + "/Executable/";
+	std::vector<Module*> executables;
 
-		CopyModuleDependencies(buildModule->Name, location);
+	for (auto& buildModule : m_Tree.GetModules())
+	{
+		if (buildModule.Executable) { executables.emplace_back(&buildModule); }
+	}
+
+	std::map<String, std::vector<String>> executableDependencies;
+	for (auto executable : executables)
+	{
+		DiscoverDependencies(executable->Name, executableDependencies[executable->Name]);
+	}
+
+	for (auto buildModule : m_ModulesToRelink)
+	{
+		for (auto executable : executables)
+		{
+			fs::path executablePath = Globals::BinariesPath.string() + "/" +
+				CommandLine::GetProperty("config") + "/" + executable->Name + "/Executable/";
+
+			for (auto& dependency : executableDependencies[executable->Name])
+			{
+				CopyModule(dependency, executablePath);
+			}
+		}
 	}
 }
 
@@ -195,18 +209,24 @@ void Executor::DirtyFolder(Module& buildModule, Folder& folder)
 	}
 }
 
-void Executor::CopyModuleDependencies(String& moduleName, fs::path location)
+void Executor::CopyModule(String& moduleName, fs::path location)
 {
-	for (auto& dependency : Globals::ModuleRegistry[moduleName]["Dependencies"].get<std::vector<String>>())
+	fs::path path = Globals::ModuleRegistry[moduleName]["BinaryPath"].get<String>() + "/" +
+		CommandLine::GetProperty("config") + "/" + moduleName + "/" + moduleName + ".dll";
+
+	if (fs::exists(path))
 	{
-		fs::path path = Globals::ModuleRegistry[dependency]["BinaryPath"].get<String>() + "/" +
-			CommandLine::GetProperty("config") + "/" + dependency + "/" + dependency + ".dll";
+		fs::copy_file(path, location.string() + moduleName + ".dll", fs::copy_options::overwrite_existing);
+	}
+}
 
-		if (fs::exists(path))
-		{
-			fs::copy_file(path, location.string() + dependency + ".dll", fs::copy_options::overwrite_existing);
-		}
+void Executor::DiscoverDependencies(const String& buildModule, std::vector<String>& dependencies)
+{
+	const std::vector<String>& moduleDependencies = Globals::ModuleRegistry[buildModule]["Dependencies"].get<std::vector<String>>();
+	dependencies.insert(dependencies.end(), moduleDependencies.begin(), moduleDependencies.end());
 
-		CopyModuleDependencies(dependency, location);
+	for (auto& dependency : moduleDependencies)
+	{
+		DiscoverDependencies(dependency, dependencies);
 	}
 }
