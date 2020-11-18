@@ -21,20 +21,6 @@ SourceTree* SourceTree::GenerateFromDirectory()
 	}
 	tree->FindModules(Globals::SourcePath);
 
-	fs::path dependencyPath = projectDir.string() + "/Dependencies";
-	if (fs::exists(dependencyPath))
-	{
-		Verbose("Found project dependencies.");
-		tree->FindModules(dependencyPath);
-	}
-
-	fs::path toolPath = projectDir.string() + "/Tools";
-	if (fs::exists(toolPath))
-	{
-		Verbose("Found project tools.");
-		tree->FindModules(toolPath);
-	}
-
 	if (CommandLine::GetSwitch("verbose"))
 	{
 		Verbose(false, "");

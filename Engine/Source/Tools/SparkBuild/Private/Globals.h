@@ -7,7 +7,7 @@
 
 #ifdef _WIN32
 #	ifdef _WIN64
-#		define PLATFORM_WINDOWS
+#		define ON_WINDOWS
 #	else
 #		error 32-bit is not supported!
 #	endif

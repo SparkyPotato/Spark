@@ -1,0 +1,8 @@
+{
+	"Name": "Launch",
+	"Version": "0.0.0-beta",
+	"Dependencies": [
+		"Core"
+	],
+	"Executable": false
+}

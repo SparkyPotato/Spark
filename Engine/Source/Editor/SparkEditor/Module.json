@@ -1,0 +1,9 @@
+{
+	"Name": "SparkEditor",
+	"Version": "0.0.0-beta",
+	"Dependencies": [
+		"Core",
+		"Launch"
+	],
+	"Executable": true
+}

@@ -7,7 +7,7 @@
 #include "Executor.h"
 #include "SourceTree.h"
 
-#ifdef PLATFORM_WINDOWS
+#ifdef ON_WINDOWS
 
 #define WIN32_LEAN_AND_MEAN
 #include <fcntl.h>

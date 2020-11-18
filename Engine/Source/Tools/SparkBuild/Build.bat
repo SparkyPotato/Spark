@@ -6,7 +6,7 @@
 pushd %~dp0
 
 :: Go to the engine root
-cd ..\..\..
+cd ..\..\..\..
 
 set vswhere="C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
 call %vswhere% -latest -property installationPath>tmp

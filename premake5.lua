@@ -31,21 +31,32 @@ project "Spark"
 		"Engine/**/Public"
 	}
 	
+	filter "system:windows"
+		defines 
+		{
+			"PLATFORM_WINDOWS"
+		}
+	
+	filter {}
+	
 	files
 	{
 		"Engine/Source/**.h",
-		"Engine/Source/**.cpp"
+		"Engine/Source/**.cpp",
+		"Engine/Source/**.json"
 	}
 
 	buildcommands
 	{
-		"..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=Engine Config=\"%{cfg.buildcfg}\""
+		"..\\Engine\\Source\\Tools\\SparkBuild\\Build.bat Dir=Engine Config=\"%{cfg.buildcfg}\""
 	}
 	
 	rebuildcommands
 	{
-		"..\\Engine\\Tools\\SparkBuild\\Build.bat Dir=Engine Config=\"%{cfg.buildcfg}\" -Rebuild"
+		"..\\Engine\\Source\\Tools\\SparkBuild\\Build.bat Dir=Engine Config=\"%{cfg.buildcfg}\" -Rebuild"
 	}
+	
+	debugcommand "%{cfg.targetdir}\\..\\..\\..\\Engine\\Binaries\\%{cfg.buildcfg}\\SparkEditor\\Executable\\SparkEditor.exe"
 
 group "Tools"
 project "SparkBuild"
@@ -63,15 +74,15 @@ project "SparkBuild"
 	
 	characterset "Unicode"
 		
-	filter "configurations: Release"
+	filter "configurations:Release"
 		optimize "speed"
 		symbols "off"
 		
-	filter "configurations: Development"
+	filter "configurations:Development"
 		optimize "speed"
 		symbols "on"
 		
-	filter "configurations: Debug"
+	filter "configurations:Debug"
 		optimize "off"
 		symbols "on"
 		
@@ -89,13 +100,13 @@ project "SparkBuild"
 	
 	includedirs
 	{
-		"Engine/Tools/SparkBuild/Public",
-		"Engine/Dependencies/json/Public"
+		"Engine/Source/Tools/SparkBuild/Public",
+		"Engine/Source/Dependencies/json/Public"
 	}
 	
 	files
 	{
-		"Engine/Tools/SparkBuild/Public/**.h",
-		"Engine/Tools/SparkBuild/Private/**.h",
-		"Engine/Tools/SparkBuild/Private/**.cpp"
+		"Engine/Source/Tools/SparkBuild/Public/**.h",
+		"Engine/Source/Tools/SparkBuild/Private/**.h",
+		"Engine/Source/Tools/SparkBuild/Private/**.cpp"
 	}

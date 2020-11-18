@@ -11,7 +11,7 @@
 // SparkBuild is a small tool with very little platform-specific functionality used.
 // This is why we put all platform ifdefs in a single-file.
 
-#ifdef PLATFORM_WINDOWS
+#ifdef ON_WINDOWS
 
 #include <Windows.h>
 
@@ -211,15 +211,18 @@ namespace BasePlatform
 		for (auto& dependency : buildModule.Dependencies)
 		{
 			fs::path include = Globals::ModuleRegistry[dependency]["Path"].get<String>() + "/Public";
-			command += L"/I\"" + include.wstring() + L"/\" ";
+			command += L"/I\"" + include.wstring() + L"\" ";
 		}
 
 		// Add module's folder into its include path
-		fs::path include = Globals::ModuleRegistry[buildModule.Name]["Path"].get<String>();
+		fs::path include = Globals::ModuleRegistry[buildModule.Name]["Path"].get<String>() + "/Public/";
 		command += L"/I\"" + include.wstring() + L"/\" ";
 
-		// Define BUILD_ModuleName while building a module
+		// Define BUILD_Module when building a module
 		command += L"/D\"BUILD_" + ToUTF16(buildModule.Name) + L"\" ";
+
+		// Define platform
+		command += LR"( /D"PLATFORM_WINDOWS" )";
 
 		for (auto file : files)
 		{
