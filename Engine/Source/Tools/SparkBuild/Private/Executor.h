@@ -38,4 +38,5 @@ private:
 	// We abuse the fact that only one key can exist in a map,
 	// and checking is fast
 	std::map<Module*, int> m_ModulesToRelink;
+	std::vector<std::thread> m_LinkThreads;
 };

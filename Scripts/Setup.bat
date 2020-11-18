@@ -44,6 +44,7 @@ rmdir /q /s premake-core-master
 cd %startDir%
 
 cd Engine
+cd Source
 mkdir Dependencies
 cd Dependencies
 

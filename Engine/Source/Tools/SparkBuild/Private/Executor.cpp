@@ -97,13 +97,23 @@ void Executor::Link()
 
 	for (auto buildModule : m_ModulesToRelink)
 	{
-		BasePlatform::GenerateExports(*buildModule.first);
+		m_LinkThreads.emplace_back(&BasePlatform::GenerateExports, std::ref(*buildModule.first));
 	}
+	for (auto& thread : m_LinkThreads)
+	{
+		thread.join();
+	}
+	m_LinkThreads.clear();
 
 	for (auto buildModule : m_ModulesToRelink)
 	{
-		BasePlatform::Link(*buildModule.first);
+		m_LinkThreads.emplace_back(&BasePlatform::Link, std::ref(*buildModule.first));
 	}
+	for (auto& thread : m_LinkThreads)
+	{
+		thread.join();
+	}
+	m_LinkThreads.clear();
 }
 
 void Executor::CopyDependencies()

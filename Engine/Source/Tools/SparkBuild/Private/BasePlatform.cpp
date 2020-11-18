@@ -310,6 +310,8 @@ namespace BasePlatform
 			Link(buildModule);
 			buildModule.Executable = true;
 		}
+
+		Output("Linked module '", buildModule.Name, "'.");
 	}
 
 	String ToUTF8(const wchar_t* string)
