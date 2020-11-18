@@ -107,7 +107,7 @@ public:
 	std::vector<SourcePair>& GetDirtySourceFiles() { return m_DirtySourceFiles; }
 	std::vector<HeaderPair>& GetDirtyHeaders() { return m_DirtyHeaders; }
 
-	void AddDirtySource(Module* buildModule, File* source) { m_DirtySourceFiles.emplace_back(buildModule, source); }
+	void AddDirtySource(Module* buildModule, File* source);
 
 	// Generating source tree from caches and directories
 	static SourceTree* GenerateFromDirectory();

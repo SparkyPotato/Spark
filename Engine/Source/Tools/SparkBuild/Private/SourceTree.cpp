@@ -7,6 +7,14 @@
 
 #include "Error.h"
 
+void SourceTree::AddDirtySource(Module* buildModule, File* source)
+{
+	if (std::find(m_DirtySourceFiles.begin(), m_DirtySourceFiles.end(), SourcePair(buildModule, source))
+		!= m_DirtySourceFiles.end()) { return; }
+
+	m_DirtySourceFiles.emplace_back(buildModule, source);
+}
+
 SourceTree* SourceTree::GenerateFromDirectory()
 {
 	auto tree = new SourceTree;
@@ -143,6 +151,7 @@ void SourceTree::CompareFolders(Module& buildModule, Folder& newFolder, const Fo
 			if (oldHeader->WriteTime != newHeader.WriteTime)
 			{
 				m_DirtyHeaders.emplace_back(&buildModule, &newHeader);
+				newHeader.DependedOn = oldHeader->DependedOn;
 			}
 			// If not dirty we just skip it
 		}
@@ -150,8 +159,6 @@ void SourceTree::CompareFolders(Module& buildModule, Folder& newFolder, const Fo
 		{
 			m_DirtyHeaders.emplace_back(&buildModule, &newHeader);
 		}
-
-		newHeader.DependedOn = oldHeader->DependedOn;
 	}
 
 	// Compare source files
