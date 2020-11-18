@@ -28,7 +28,8 @@ project "Spark"
 	
 	includedirs
 	{
-		"Engine/**/Public"
+		"Engine/**/Public",
+		"Engine/Intermediate/GeneratedFiles"
 	}
 	
 	filter "system:windows"

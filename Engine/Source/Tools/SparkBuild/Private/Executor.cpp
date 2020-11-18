@@ -88,6 +88,26 @@ void Executor::AddHeaderDependencies()
 	fs::remove_all(dependencies);
 }
 
+void Executor::GenerateFiles()
+{
+	for (auto buildModule : m_Tree.GetDirtyModules())
+	{
+		std::ofstream header(Globals::GeneratedPath.string() + "/" + buildModule->Name + ".generated.h");
+		header << "#ifdef BUILD_" << buildModule->Name << "\n";
+		header << "#	define " << buildModule->Name << "_API " << BasePlatform::ExportDefine << "\n";
+		header << "#else \n";
+		header << "#	define " << buildModule->Name << "_API " << BasePlatform::ImportDefine << "\n";
+		header << "#endif \n\n";
+
+		header << "#ifdef " << buildModule->Name << "_GENERATED \n";
+		header << "#	error " << buildModule->Name << ".generated.h included multiple times! "
+			"Did you forget a #pragma once? \n";
+		header << "#endif \n\n";
+
+		header << "#define " << buildModule->Name << "_GENERATED \n";
+	}
+}
+
 void Executor::Link()
 {
 	for (auto source : m_Tree.GetDirtySourceFiles())

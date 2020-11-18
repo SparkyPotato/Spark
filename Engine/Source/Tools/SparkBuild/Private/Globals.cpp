@@ -11,6 +11,7 @@ namespace Globals
 {
 	fs::path SourcePath;
 	fs::path IntermediatePath;
+	fs::path GeneratedPath;
 	fs::path BinariesPath;
 
 	json ModuleRegistry;
@@ -33,6 +34,7 @@ namespace Globals
 
 		SourcePath = CommandLine::GetProperty("dir") + "/Source";
 		IntermediatePath = CommandLine::GetProperty("dir") + "/Intermediate";
+		GeneratedPath = IntermediatePath.string() + "/GeneratedFiles";
 		BinariesPath = CommandLine::GetProperty("dir") + "/Binaries";
 
 		if (CommandLine::GetSwitch("verbose"))
@@ -71,8 +73,9 @@ namespace Globals
 			registry >> ModuleRegistry;
 		}
 
-		if (!fs::exists(CommandLine::GetProperty("dir") + "/Intermediate")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Intermediate"); }
-		if (!fs::exists(CommandLine::GetProperty("dir") + "/Binaries")) { fs::create_directory(CommandLine::GetProperty("dir") + "/Binaries"); }
+		if (!fs::exists(IntermediatePath)) { fs::create_directory(IntermediatePath); }
+		if (!fs::exists(BinariesPath)) { fs::create_directory(BinariesPath); }
+		if (!fs::exists(GeneratedPath)) { fs::create_directory(GeneratedPath); }
 
 		if (!CommandLine::GetSwitch("rebuild") && // Do not load the cache if we are rebuilding
 			fs::exists(CommandLine::GetProperty("dir") + "/Intermediate/" + CommandLine::GetProperty("config") + ".cache"))

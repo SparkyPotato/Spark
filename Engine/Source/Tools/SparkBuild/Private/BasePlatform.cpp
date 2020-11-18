@@ -26,6 +26,9 @@ namespace BasePlatform
 	static std::wstring s_LibPath;
 	static std::wstring s_BaseLibCommand;
 
+	extern String ExportDefine = "__declspec(dllexport)";
+	extern String ImportDefine = "__declspec(dllimport)";
+
 	bool SetWorkingDirectory(const String& directory)
 	{
 		wchar_t dir[5000];
@@ -58,6 +61,7 @@ namespace BasePlatform
 		s_LibPath = ToUTF16(vsPath) + L"\\VC\\Tools\\MSVC\\" + ToUTF16(toolsetVersion) + L"\\bin\\Hostx64\\x64\\lib.exe";
 
 		s_BaseCompilerCommand = LR"( /D"UNICODE" /EHsc /D"_UNICODE" /W4 /c /utf-8 /diagnostics:caret /nologo /std:c++17 /MP )";
+		s_BaseCompilerCommand += L"/I\"" + Globals::GeneratedPath.wstring() + L"\" ";
 		s_BaseLinkerCommand = LR"( /NOLOGO )";
 		s_BaseLibCommand = LR"( /NOLOGO /DEF )";
 

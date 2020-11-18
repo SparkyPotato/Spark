@@ -19,6 +19,7 @@ public:
 	void CheckHeaders();
 	void Compile();
 	void AddHeaderDependencies();
+	void GenerateFiles();
 	void Link();
 	void CopyDependencies();
 

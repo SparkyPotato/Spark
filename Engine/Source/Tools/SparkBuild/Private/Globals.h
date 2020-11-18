@@ -33,6 +33,7 @@ namespace Globals
 
 	extern fs::path SourcePath;
 	extern fs::path IntermediatePath;
+	extern fs::path GeneratedPath;
 	extern fs::path BinariesPath;
 
 	extern json ModuleRegistry;

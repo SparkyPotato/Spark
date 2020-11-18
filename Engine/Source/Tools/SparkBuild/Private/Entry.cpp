@@ -42,6 +42,9 @@ int wmain(int argc, wchar_t** argv)
 		currentTree->GenerateDirectories();
 
 		executor.CheckHeaders();
+
+		executor.GenerateFiles();
+
 		executor.Compile();
 
 		executor.AddHeaderDependencies();

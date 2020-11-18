@@ -24,7 +24,7 @@ namespace BasePlatform
 	void Link(Module& buildModule);
 
 	// Convert the wide-characters (UTF-16 on Windows) to a UTF-8 encoded String.
-		String ToUTF8(const wchar_t* string);
+	String ToUTF8(const wchar_t* string);
 	// Convert a UTF-8 encoded string to a wide-string - to pass to the Windows API, for example.
 	std::wstring ToUTF16(const String& string);
 
@@ -53,4 +53,7 @@ namespace BasePlatform
 		std::wcout << arg;
 		Output(args...);
 	}
+
+	extern String ExportDefine;
+	extern String ImportDefine;
 }
