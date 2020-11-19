@@ -318,6 +318,24 @@ namespace BasePlatform
 		Output("Linked module '", buildModule.Name, "'.");
 	}
 
+	void EntryRoutine(Module& buildModule, std::ostream& source)
+	{
+		if (buildModule.Executable)
+		{
+			source << "#include \"Launch/Launch.h\" \n";
+			source << "#include <Windows.h> \n\n";
+
+			source << "int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE,_In_ LPWSTR lpCmdLine, _In_ int nShowCmd) \n";
+			source << "{ \n";
+			source << "	struct { HINSTANCE hInstance; LPWSTR lpCmdLine; int nShowCmd; } payload; \n";
+			source << "	payload.hInstance = hInstance; \n";
+			source << "	payload.lpCmdLine = lpCmdLine; \n";
+			source << "	payload.nShowCmd = nShowCmd; \n";
+			source << "	return Launch::EntryPoint(&payload); \n";
+			source << "} \n";
+		}
+	}
+
 	String ToUTF8(const wchar_t* string)
 	{
 		int size = WideCharToMultiByte(CP_UTF8, 0, string, -1, nullptr, 0, nullptr, nullptr);

@@ -23,6 +23,8 @@ namespace BasePlatform
 	void GenerateExports(Module& buildModule);
 	void Link(Module& buildModule);
 
+	void EntryRoutine(Module& buildModule, std::ostream& source);
+
 	// Convert the wide-characters (UTF-16 on Windows) to a UTF-8 encoded String.
 	String ToUTF8(const wchar_t* string);
 	// Convert a UTF-8 encoded string to a wide-string - to pass to the Windows API, for example.

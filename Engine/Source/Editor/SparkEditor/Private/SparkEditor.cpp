@@ -3,4 +3,6 @@
 
 // Base C++ file of the Spark Editor
 
+#include "SparkEditor/SparkEditor.h"
+
 #include "SparkEditor.gen.cpp"

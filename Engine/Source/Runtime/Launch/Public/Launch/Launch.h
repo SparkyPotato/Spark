@@ -9,5 +9,5 @@
 
 namespace Launch
 {
-	extern int Launch_API EntryPoint();
+	extern int Launch_API EntryPoint(void* launchPayload);
 }
