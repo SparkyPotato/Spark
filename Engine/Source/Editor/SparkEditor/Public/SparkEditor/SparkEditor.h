@@ -5,4 +5,4 @@
 
 #pragma once
 
-#include "SparkEditor.generated.h"
+#include "SparkEditor.gen.h"

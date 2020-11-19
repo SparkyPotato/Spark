@@ -5,4 +5,4 @@
 
 #pragma once
 
-#include "OSAL.generated.h"
+#include "OSAL.gen.h"

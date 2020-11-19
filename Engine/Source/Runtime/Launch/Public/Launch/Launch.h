@@ -5,4 +5,4 @@
 
 #pragma once
 
-#include "Launch.generated.h"
+#include "Launch.gen.h"

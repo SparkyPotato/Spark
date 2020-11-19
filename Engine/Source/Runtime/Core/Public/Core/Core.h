@@ -5,4 +5,4 @@
 
 #pragma once
 
-#include "Core.generated.h"
+#include "Core.gen.h"
