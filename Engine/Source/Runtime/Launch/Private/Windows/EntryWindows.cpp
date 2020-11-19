@@ -9,9 +9,12 @@
 
 #include <Windows.h>
 
-int Launch_API EntryPoint()
+namespace Launch
 {
-	return 0;
+	int Launch_API EntryPoint()
+	{
+		return EXIT_SUCCESS;
+	}
 }
 
 #endif

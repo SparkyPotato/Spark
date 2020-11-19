@@ -6,3 +6,8 @@
 #pragma once
 
 #include "Launch.gen.h"
+
+namespace Launch
+{
+	extern int Launch_API EntryPoint();
+}

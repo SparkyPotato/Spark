@@ -3,4 +3,4 @@
 
 // Base C++ file of the Spark Editor
 
-#include "Launch/ImplementLaunch.h"
+#include "SparkEditor.gen.cpp"
