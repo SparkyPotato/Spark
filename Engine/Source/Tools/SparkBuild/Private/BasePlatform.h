@@ -1,7 +1,7 @@
-// SparkBuild.Private.BasePlatform
 // Copyright 2020 SparkyPotato
 
-// Platform-specific interface
+/// \file
+/// Platform-specific interface
 
 #pragma once
 

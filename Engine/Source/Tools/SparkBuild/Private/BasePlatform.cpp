@@ -1,7 +1,4 @@
-// SparkBuild.Private.BasePlatform
 // Copyright 2020 SparkyPotato
-
-// Platform-specific interface
 
 #include "BasePlatform.h"
 
@@ -62,7 +59,7 @@ namespace BasePlatform
 
 		s_BaseCompilerCommand = LR"( /D"UNICODE" /EHsc /D"_UNICODE" /W4 /c /utf-8 /diagnostics:caret /nologo /std:c++17 /MP )";
 		s_BaseCompilerCommand += L"/I\"" + Globals::GeneratedPath.wstring() + L"\" ";
-		s_BaseLinkerCommand = LR"( /NOLOGO )";
+		s_BaseLinkerCommand = LR"( /NOLOGO "kernel32.lib" "user32.lib" "winspool.lib" "comdlg32.lib" "advapi32.lib" "shell32.lib" "ole32.lib" "oleaut32.lib" "uuid.lib" "odbc32.lib" "odbccp32.lib" )";
 		s_BaseLibCommand = LR"( /NOLOGO /DEF )";
 
 		std::string config = CommandLine::GetProperty("config");
@@ -207,16 +204,31 @@ namespace BasePlatform
 		CloseHandle(processInfo.hProcess);
 	}
 
+	void AddDependencies(std::wstring& append, const String& buildModule)
+	{
+		for (auto& dependency : Globals::ModuleRegistry[buildModule]["Dependencies"].get<std::vector<String>>())
+		{
+			fs::path include = Globals::ModuleRegistry[dependency]["Path"].get<String>() + "/Public";
+			append += L"/I\"" + include.wstring() + L"\" ";
+		}
+	}
+
+	void AddDependencies(std::wstring& append, Module& buildModule)
+	{
+		for (auto& dependency : buildModule.Dependencies)
+		{
+			fs::path include = Globals::ModuleRegistry[dependency]["Path"].get<String>() + "/Public";
+			append += L"/I\"" + include.wstring() + L"\" ";
+			AddDependencies(append, dependency);
+		}
+	}
+
 	void Compile(Module& buildModule, std::vector<File*> files)
 	{
 		std::wstring command = s_BaseCompilerCommand;
 
 		// Add Dependency/Public folders to include path
-		for (auto& dependency : buildModule.Dependencies)
-		{
-			fs::path include = Globals::ModuleRegistry[dependency]["Path"].get<String>() + "/Public";
-			command += L"/I\"" + include.wstring() + L"\" ";
-		}
+		AddDependencies(command, buildModule);
 
 		// Add module's folder into its include path
 		fs::path include = Globals::ModuleRegistry[buildModule.Name]["Path"].get<String>() + "/Public/";
@@ -261,6 +273,34 @@ namespace BasePlatform
 		StartLib(command);
 	}
 
+	void AddLinkDependencies(std::wstring& append, const String& buildModule)
+	{
+		for (auto& dependency : Globals::ModuleRegistry[buildModule]["Dependencies"].get<std::vector<String>>())
+		{
+			fs::path path = Globals::ModuleRegistry[dependency]["BinaryPath"].get<String>() + "/" + CommandLine::GetProperty("config")
+				+ "/" + dependency + "/" + dependency + ".lib";
+			if (fs::exists(path))
+			{
+				append += L"\"" + path.wstring() + L"\" ";
+			}
+		}
+	}
+
+	void AddLinkDependencies(std::wstring& append, Module& buildModule)
+	{
+		for (auto& dependency : buildModule.Dependencies)
+		{
+			fs::path path = Globals::ModuleRegistry[dependency]["BinaryPath"].get<String>() + "/" + CommandLine::GetProperty("config")
+				+ "/" + dependency + "/" + dependency + ".lib";
+			if (fs::exists(path))
+			{
+				append += L"\"" + path.wstring() + L"\" ";
+			}
+
+			AddLinkDependencies(append, dependency);
+		}
+	}
+
 	void Link(Module& buildModule)
 	{
 		std::wstring command = s_BaseLinkerCommand;
@@ -269,15 +309,7 @@ namespace BasePlatform
 		if (!buildModule.Executable) { command += L"/DLL "; }
 
 		// Add import libraries for all dependencies
-		for (auto& dependency : buildModule.Dependencies)
-		{
-			fs::path path = Globals::ModuleRegistry[dependency]["BinaryPath"].get<String>() + "/" + CommandLine::GetProperty("config") 
-				+ "/" + dependency + "/" + dependency + ".lib";
-			if (fs::exists(path))
-			{
-				command += L"\"" + path.wstring() + L"\" ";
-			}
-		}
+		AddLinkDependencies(command, buildModule);
 
 		// Add all files to be linked
 		fs::directory_iterator objPath(Globals::IntermediatePath.wstring() + L"/" +

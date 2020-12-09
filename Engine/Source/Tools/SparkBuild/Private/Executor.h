@@ -1,7 +1,7 @@
-// SparkBuild.Private.Executor
 // Copyright 2020 SparkyPotato
 
-// Executes all necessary operations on a source tree
+/// \file
+/// Executes all necessary operations on a source tree
 
 #pragma once
 

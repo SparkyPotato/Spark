@@ -1,7 +1,4 @@
-// SparkBuild.Private.Globals
 // Copyright 2020 SparkyPotato
-
-// Global definitions
 
 #include "Globals.h"
 

@@ -1,7 +1,4 @@
-// SparkBuild.Private.SourceTree
 // Copyright 2020 SparkyPotato
-
-// Tree of all source files and modules in the project
 
 #include "SourceTree.h"
 

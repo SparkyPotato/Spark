@@ -1,7 +1,7 @@
-// SparkBuild.Private.Error
 // Copyright 2020 SparkyPotato
 
-// Error emitter
+/// \file
+/// Error emitter
 
 #pragma once
 

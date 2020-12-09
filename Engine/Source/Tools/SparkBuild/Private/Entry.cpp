@@ -1,7 +1,4 @@
-// SparkBuild.Private.Entry
 // Copyright 2020 SparkyPotato
-
-// Entry point
 
 #include "Error.h"
 #include "Executor.h"

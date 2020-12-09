@@ -1,7 +1,7 @@
-// Launch.Public.Launch
 // Copyright 2020 SparkyPotato
 
-// Global header of module Launch
+/// \file
+/// Global header of module Launch
 
 #pragma once
 
@@ -9,5 +9,11 @@
 
 namespace Launch
 {
-	extern int Launch_API EntryPoint(void* launchPayload);
+	/// Startup the Engine. 
+	/// You shouldn't be calling this ever.
+	/// 
+	/// \param launchPayload Platform-specific payload to pass to the entry-point.
+	/// 
+	/// \return Exit-code of the Engine.
+	extern Launch_API int EntryPoint(void* launchPayload);
 }

@@ -1,11 +1,10 @@
-// Launch.Private.Windows.EntryWindows
 // Copyright 2020 SparkyPotato
-
-// Entry-point for every Windows Spark-based application
 
 #include "Launch/Launch.h"
 
 #ifdef PLATFORM_WINDOWS
+
+#include "OSAL/Memory.h"
 
 #include <Windows.h>
 
@@ -22,7 +21,6 @@ namespace Launch
 			LPWSTR lpCmdLine; 
 			int nShowCmd;
 		};
-
 		
 		auto payload = reinterpret_cast<Payload*>(launchPayload);
 

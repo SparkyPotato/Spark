@@ -32,6 +32,15 @@ project "Spark"
 		"Engine/Intermediate/GeneratedFiles"
 	}
 	
+	defines
+	{
+		"BUILD_Launch",
+		"BUILD_Core",
+		"BUILD_OSAL",
+		"BUILD_SparkEditor",
+		"BUILD_SparkBuild",
+	}
+	
 	filter "system:windows"
 		defines 
 		{
