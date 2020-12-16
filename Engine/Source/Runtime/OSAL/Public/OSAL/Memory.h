@@ -13,10 +13,19 @@ namespace OSAL
 	///
 	/// \param bytes The number of bytes to request from the OS.
 	///
-	/// \return A pointer to the first byte of the allocated memory.
+	/// \return Pointer to the first byte of the allocated memory.
 	/// 
 	/// \throw FatalOSError If allocation of the requested memory failed.
 	/// 
-	/// \sa ::FatalOSError()
-	extern OSAL_API void* RawAllocate(uint64 bytes);
+	/// \sa OSAL::FatalOSError()
+	OSAL_API void* RawAllocate(uint64 bytes);
+
+	/// Frees heap allocation.
+	///
+	/// \param pointer Pointer to the first byte of memory returned by RawAllocate().
+	/// 
+	/// \throw FatalOSError If deallocation of the memory failed.
+	/// 
+	/// \sa OSAL::FatalOSError()
+	OSAL_API void RawFree(void* pointer);
 }

@@ -8,7 +8,10 @@
 #include "BasePlatform.h"
 #include "Globals.h"
 
-// A fatal error that will stop building IMMEDIATELY
+/// A fatal error that will stop building.
+///
+/// \param args Arguments to be outputted to the console.
+///             Will be preceded by 'Error: '.
 template <typename ...Args>
 void Error(const Args&... args)
 {
@@ -17,7 +20,11 @@ void Error(const Args&... args)
 	throw -1;
 }
 
-// A warning which will stop building if the "fatalwarnings" switch is turned on.
+/// A warning.
+/// Will stop building if fatal warnings are enabled (-fatalwarnings).
+/// 
+/// \param args Arguments to be outputted to the console.
+///             Will be preceded by 'Warning: '.
 template<typename ...Args>
 void Warning(const Args&... args)
 {
@@ -36,14 +43,17 @@ void Warning(const Args&... args)
 	if (s_FatalWarnings) { BasePlatform::Output("Fatal Warning - cannot proceed."); throw -1; }
 }
 
-// Verbose message that only outputs if the switch "verbose" is set.
+/// A verbose message.
+/// Only outputs if verbose is enabled (-verbose).
+/// 
+/// \param args Arguments to be outputted to the console.
+///             Will be preceded by 'Verbose: '.
 template<typename ...Args>
 void Verbose(const Args&... args)
 {
 	static bool s_CheckedSwitch = false;
 	static bool s_Verbose = false;
 
-	// Getting a command-line switch is slow, so we cache the result
 	if (!s_CheckedSwitch)
 	{
 		s_Verbose = CommandLine::GetSwitch("verbose");
@@ -53,6 +63,11 @@ void Verbose(const Args&... args)
 	if (s_Verbose) { BasePlatform::Output("Verbose: ", args...); }
 }
 
+/// A verbose message.
+/// Only outputs if verbose is enabled (-verbose).
+/// 
+/// \param identifier Whether or not to print the 'Verbose: ' identifier before the message.
+/// \param args Arguments to be outputted to the console.
 template<typename ...Args>
 void Verbose(bool identifier, const Args&... args)
 {

@@ -10,7 +10,9 @@
 namespace Launch
 {
 	/// Startup the Engine. 
-	/// You shouldn't be calling this ever.
+	/// FOR INTERNAL ENGINE USE ONLY.
+	/// Is called by the entry-point of the executable module.
+	/// SparkBuild takes care of everything with generated files.
 	/// 
 	/// \param launchPayload Platform-specific payload to pass to the entry-point.
 	/// 

@@ -1,4 +1,3 @@
-// OSAL.Private.Memory
 // Copyright 2020 SparkyPotato
 
 // Abstraction for all Memory related functions
@@ -17,6 +16,14 @@ OSAL_API void* OSAL::RawAllocate(uint64 bytes)
 		FatalOSError("Heap allocation failed!");
 	}
 	return ptr;
+}
+
+OSAL_API void OSAL::RawFree(void* pointer)
+{
+	if (!HeapFree(GetProcessHeap(), 0, pointer))
+	{
+		FatalOSError("Heap deallocation failed!");
+	}
 }
 
 #endif

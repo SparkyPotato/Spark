@@ -1,5 +1,7 @@
 // Copyright 2020 SparkyPotato
 
+// Entry-point for Windows
+
 #include "Launch/Launch.h"
 
 #ifdef PLATFORM_WINDOWS

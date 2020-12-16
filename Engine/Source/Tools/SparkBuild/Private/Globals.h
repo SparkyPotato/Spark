@@ -28,7 +28,13 @@ namespace fs = std::filesystem;
 
 namespace Globals
 {
+	/// Store all command-line arguments and the build cache.
+	///
+	/// \param argc Argument count from main.
+	/// \param argv Arguments from main.
 	void Setup(int argc, wchar_t** argv);
+
+	/// Save the build cache to disk.
 	void Save();
 
 	extern fs::path SourcePath;
@@ -46,6 +52,17 @@ namespace CommandLine
 	extern std::map<String, String> Properties;
 	extern std::vector<String> Switches;
 
+	/// Get the value of the property.
+	///
+	/// \param property The property to get.
+	/// 
+	/// \return The value of the property. Is an empty string if it does not exist.
 	inline const String& GetProperty(const String& property) { return Properties[property]; }
+
+	/// Get the value of the switch.
+	///
+	/// \param property The switch to get.
+	/// 
+	/// \return The value of the switch (on, or off). Returns off if the switch does not exist.
 	inline bool GetSwitch(const String& property) { return std::find(Switches.begin(), Switches.end(), property) != Switches.end(); }
 }
