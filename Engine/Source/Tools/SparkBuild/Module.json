@@ -1,8 +1,0 @@
-{
-	"Name": "SparkBuild",
-	"Version": "1.1.0",
-	"Dependencies": [
-		"json"
-	],
-	"Executable": false
-}

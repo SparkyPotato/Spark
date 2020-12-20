@@ -14,13 +14,13 @@ workspace "Spark"
 	
 group "Engine"	
 project "Spark"
-	location "Intermediate"
+	location "Engine/Intermediate/ProjectFiles"
 
 	language "C++"
 	cppdialect "C++17"
 	
-	targetdir "Binaries/%{cfg.buildcfg}/Spark/"
-	objdir "Intermediate/%{cfg.buildcfg}/Spark/"
+	targetdir "Engine/Binaries/%{cfg.buildcfg}/Spark/"
+	objdir "Engine/Intermediate/%{cfg.buildcfg}/Spark/"
 	
 	dependson "SparkBuild"
 	
@@ -32,23 +32,6 @@ project "Spark"
 		"Engine/Intermediate/GeneratedFiles"
 	}
 	
-	defines
-	{
-		"BUILD_Launch",
-		"BUILD_Core",
-		"BUILD_OSAL",
-		"BUILD_SparkEditor",
-		"BUILD_SparkBuild",
-	}
-	
-	filter "system:windows"
-		defines 
-		{
-			"PLATFORM_WINDOWS"
-		}
-	
-	filter {}
-	
 	files
 	{
 		"Engine/Source/**.h",
@@ -58,27 +41,30 @@ project "Spark"
 
 	buildcommands
 	{
-		"..\\Engine\\Source\\Tools\\SparkBuild\\Build.bat Dir=Engine Config=\"%{cfg.buildcfg}\""
+		"..\\..\\Source\\Tools\\SparkBuild\\Build.bat Build Engine %{cfg.buildcfg}"
 	}
 	
 	rebuildcommands
 	{
-		"..\\Engine\\Source\\Tools\\SparkBuild\\Build.bat Dir=Engine Config=\"%{cfg.buildcfg}\" -Rebuild"
+		"..\\..\\Source\\Tools\\SparkBuild\\Build.bat Rebuild Engine %{cfg.buildcfg}"
 	}
 	
-	debugcommand "%{cfg.targetdir}\\..\\..\\..\\Engine\\Binaries\\%{cfg.buildcfg}\\SparkEditor\\Executable\\SparkEditor.exe"
+	cleancommands
+	{
+		"..\\..\\Source\\Tools\\SparkBuild\\Build.bat Clean Engine %{cfg.buildcfg}"
+	}
 
 group "Tools"
 project "SparkBuild"
-	location "Intermediate"
+	location "Engine/Intermediate/ProjectFiles"
 
 	language "C++"
 	cppdialect "C++17"
 	staticruntime "on"
 	runtime "Release"
 	
-	targetdir "Binaries/%{cfg.buildcfg}/SparkBuild/"
-	objdir "Intermediate/%{cfg.buildcfg}/SparkBuild/"
+	targetdir "Engine/Binaries/%{cfg.buildcfg}/SparkBuild/"
+	objdir "Engine/Intermediate/%{cfg.buildcfg}/SparkBuild/"
 	
 	kind "ConsoleApp"
 	
@@ -111,7 +97,8 @@ project "SparkBuild"
 	includedirs
 	{
 		"Engine/Source/Tools/SparkBuild/Public",
-		"Engine/Source/Dependencies/json/Public"
+		"Engine/Source/Tools/SparkBuild/Private",
+		"Engine/Dependencies/json/Public"
 	}
 	
 	files

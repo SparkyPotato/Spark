@@ -14,9 +14,10 @@ set /p vsPath=<tmp
 del /q /f tmp
 
 :: If the release version of SparkBuild exists, call it
-if exist "Binaries\Release\SparkBuild\SparkBuild.exe" (
-	call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat">Intermediate\tmp
-	call "Binaries\Release\SparkBuild\SparkBuild.exe" %*
+if exist "Engine\Binaries\Release\SparkBuild\SparkBuild.exe" (
+	call "%vsPath%\VC\Auxiliary\Build\vcvars64.bat">Engine\Intermediate\tmp
+	set SPARK_BUILD="True"
+	call "Engine\Binaries\Release\SparkBuild\SparkBuild.exe" %*
 ) else (
 	echo Error: SparkBuild needs to be built in the Release configuration!
 )

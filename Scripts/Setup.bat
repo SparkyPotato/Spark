@@ -44,7 +44,6 @@ rmdir /q /s premake-core-master
 cd %startDir%
 
 cd Engine
-cd Source
 mkdir Dependencies
 cd Dependencies
 
@@ -57,5 +56,11 @@ del json.zip /q /f
 ren json-develop json
 
 cd %startDir%
+
+echo Generating Project Files
+call Scripts\GenerateProjectFiles.bat
+
+echo Building SparkBuild
+call msbuild Engine\Intermediate\ProjectFiles\SparkBuild.vcxproj /p:Configuration=Release /p:Platform=x64
 
 popd
